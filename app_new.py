@@ -20,117 +20,290 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS 스타일 - 흰색 배경, 푸른 계열 색상
+# CSS 스타일 - 트렌디한 모던 디자인
 st.markdown("""
 <style>
+    /* 전체 배경 */
+    .stApp {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    
+    /* 메인 헤더 */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
+        font-size: 3.5rem;
+        font-weight: 800;
         text-align: center;
-        color: #1e3a8a;
-        margin-bottom: 2rem;
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        margin-bottom: 2rem;
+        text-shadow: 0 4px 8px rgba(30, 58, 138, 0.1);
+        letter-spacing: -0.02em;
     }
+    
+    /* 뉴스 카드 */
     .news-card {
-        background-color: #ffffff;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 
+            0 4px 6px rgba(30, 58, 138, 0.05),
+            0 10px 15px rgba(30, 58, 138, 0.1),
+            0 0 0 1px rgba(59, 130, 246, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
+    
+    .news-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #1e3a8a, #3b82f6, #60a5fa);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
     .news-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(30, 58, 138, 0.15);
-        border-color: #3b82f6;
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 
+            0 20px 25px rgba(30, 58, 138, 0.15),
+            0 10px 10px rgba(30, 58, 138, 0.1),
+            0 0 0 1px rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.3);
     }
+    
+    .news-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    /* 뉴스 제목 */
     .news-title {
-        font-size: 1.3rem;
-        font-weight: bold;
+        font-size: 1.4rem;
+        font-weight: 700;
         color: #1e3a8a;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
         line-height: 1.4;
+        letter-spacing: -0.01em;
     }
+    
+    /* 뉴스 메타 정보 */
     .news-meta {
         font-size: 0.9rem;
-        color: #6b7280;
-        margin-bottom: 0.8rem;
+        color: #64748b;
+        margin-bottom: 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
+        font-weight: 500;
     }
+    
+    /* 뉴스 설명 */
     .news-description {
         font-size: 1rem;
-        color: #374151;
-        line-height: 1.6;
-        margin-bottom: 1rem;
+        color: #475569;
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+        font-weight: 400;
     }
+    
+    /* 뉴스 링크 버튼 */
     .news-link {
-        display: inline-block;
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
         text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    .news-link:hover {
-        background: linear-gradient(135deg, #1e40af, #2563eb);
-        color: white;
-        text-decoration: none;
-        transform: translateY(-1px);
-    }
-    .stButton > button {
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-        color: white;
-        border-radius: 20px;
-        padding: 0.5rem 2rem;
-        font-weight: bold;
-        border: none;
-    }
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #1e40af, #2563eb);
-    }
-    .search-stats {
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        margin-bottom: 2rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+        position: relative;
+        overflow: hidden;
     }
-    .trend-chart {
-        background-color: #ffffff;
-        border: 2px solid #e5e7eb;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
+    
+    .news-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
     }
-    .map-container {
-        background-color: #ffffff;
-        border: 2px solid #e5e7eb;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
-    }
-    .risk-indicator {
-        background: linear-gradient(135deg, #dc2626, #ef4444);
+    
+    .news-link:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: bold;
-        display: inline-block;
-        margin: 0.5rem 0;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
     }
-    .stApp {
-        background-color: #ffffff;
+    
+    .news-link:hover::before {
+        left: 100%;
+    }
+    
+    /* Streamlit 버튼 */
+    .stButton > button {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1rem;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(30, 58, 138, 0.3);
+    }
+    
+    /* 검색 통계 카드 */
+    .search-stats {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 24px;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 20px 25px rgba(30, 58, 138, 0.2),
+            0 10px 10px rgba(30, 58, 138, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .search-stats::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    /* 위험 지표 */
+    .risk-indicator {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    /* 차트 컨테이너 */
+    .trend-chart {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 4px 6px rgba(30, 58, 138, 0.05),
+            0 10px 15px rgba(30, 58, 138, 0.1);
+    }
+    
+    /* 지도 컨테이너 */
+    .map-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 4px 6px rgba(30, 58, 138, 0.05),
+            0 10px 15px rgba(30, 58, 138, 0.1);
+    }
+    
+    /* 사이드바 스타일 */
+    .css-1d391kg {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(59, 130, 246, 0.1);
+    }
+    
+    /* 스크롤바 스타일 */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #1e40af, #2563eb);
+    }
+    
+    /* 로딩 애니메이션 */
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(59, 130, 246, 0.3);
+        border-radius: 50%;
+        border-top-color: #3b82f6;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2.5rem;
+        }
+        
+        .news-card {
+            padding: 1.5rem;
+        }
+        
+        .search-stats {
+            padding: 1.5rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)

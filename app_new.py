@@ -9,48 +9,55 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import folium
+from streamlit_folium import folium_static
 
 # 페이지 설정
 st.set_page_config(
-    page_title="구글 뉴스 크롤러",
-    page_icon="📰",
+    page_title="SCM Risk 관리 대시보드",
+    page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# CSS 스타일
+# CSS 스타일 - 흰색 배경, 푸른 계열 색상
 st.markdown("""
 <style>
     .main-header {
         font-size: 3rem;
         font-weight: bold;
         text-align: center;
-        color: #1f77b4;
+        color: #1e3a8a;
         margin-bottom: 2rem;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     .news-card {
         background-color: #ffffff;
-        border: 1px solid #e0e0e0;
+        border: 2px solid #e5e7eb;
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .news-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 8px 16px rgba(30, 58, 138, 0.15);
+        border-color: #3b82f6;
     }
     .news-title {
         font-size: 1.3rem;
         font-weight: bold;
-        color: #1f77b4;
+        color: #1e3a8a;
         margin-bottom: 0.8rem;
         line-height: 1.4;
     }
     .news-meta {
         font-size: 0.9rem;
-        color: #666;
+        color: #6b7280;
         margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
@@ -58,47 +65,72 @@ st.markdown("""
     }
     .news-description {
         font-size: 1rem;
-        color: #333;
+        color: #374151;
         line-height: 1.6;
         margin-bottom: 1rem;
     }
     .news-link {
         display: inline-block;
-        background-color: #1f77b4;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
         color: white;
         padding: 0.5rem 1rem;
         border-radius: 6px;
         text-decoration: none;
         font-weight: 500;
-        transition: background-color 0.2s ease;
+        transition: all 0.2s ease;
     }
     .news-link:hover {
-        background-color: #0056b3;
+        background: linear-gradient(135deg, #1e40af, #2563eb);
         color: white;
         text-decoration: none;
+        transform: translateY(-1px);
     }
     .stButton > button {
-        background-color: #1f77b4;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
         color: white;
         border-radius: 20px;
         padding: 0.5rem 2rem;
         font-weight: bold;
+        border: none;
     }
     .stButton > button:hover {
-        background-color: #0056b3;
+        background: linear-gradient(135deg, #1e40af, #2563eb);
     }
     .search-stats {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
         color: white;
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem;
+        border-radius: 15px;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
     }
     .trend-chart {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 1rem;
+        background-color: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 1.5rem;
         margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
+    }
+    .map-container {
+        background-color: #ffffff;
+        border: 2px solid #e5e7eb;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.1);
+    }
+    .risk-indicator {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-block;
+        margin: 0.5rem 0;
+    }
+    .stApp {
+        background-color: #ffffff;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -108,19 +140,23 @@ def generate_search_trend_data(query, days=30):
     dates = []
     search_volumes = []
     
-    # 기본 검색량 패턴 (주말에 낮고, 평일에 높음)
+    # SCM Risk 관련 검색량 패턴
     base_volume = {
-        "AI": 8500,
-        "경제": 7200,
-        "정치": 6800,
-        "스포츠": 6500,
-        "IT": 7800,
-        "엔터테인먼트": 6200,
-        "코로나": 4500,
-        "한국": 9000
+        "SCM": 12000,
+        "공급망": 9800,
+        "물류": 8500,
+        "운송": 7200,
+        "창고": 6800,
+        "재고": 7500,
+        "배송": 8000,
+        "Risk": 11000,
+        "위험": 9000,
+        "중단": 8200,
+        "지연": 7800,
+        "부족": 7000
     }
     
-    base = base_volume.get(query, 5000)
+    base = base_volume.get(query, 6000)
     
     for i in range(days):
         date = datetime.now() - timedelta(days=days-1-i)
@@ -133,7 +169,7 @@ def generate_search_trend_data(query, days=30):
         random_factor = random.uniform(0.8, 1.2)
         
         # 시간에 따른 트렌드 (최근에 증가하는 패턴)
-        trend_factor = 1.0 + (i / days) * 0.3
+        trend_factor = 1.0 + (i / days) * 0.4
         
         volume = int(base * weekday_factor * random_factor * trend_factor)
         search_volumes.append(volume)
@@ -151,85 +187,147 @@ def create_trend_chart(query):
         y=volumes,
         mode='lines+markers',
         name='검색량',
-        line=dict(color='#1f77b4', width=3),
-        marker=dict(size=6, color='#1f77b4'),
+        line=dict(color='#1e3a8a', width=3),
+        marker=dict(size=6, color='#3b82f6'),
         fill='tonexty',
-        fillcolor='rgba(31, 119, 180, 0.1)'
+        fillcolor='rgba(30, 58, 138, 0.1)'
     ))
     
     fig.update_layout(
-        title=f'"{query}" 검색량 추이 (최근 30일)',
+        title=f'"{query}" SCM Risk 검색량 추이 (최근 30일)',
         xaxis_title='날짜',
         yaxis_title='일일 검색량',
         template='plotly_white',
         height=400,
         showlegend=False,
-        hovermode='x unified'
+        hovermode='x unified',
+        plot_bgcolor='white',
+        paper_bgcolor='white'
     )
     
     fig.update_xaxes(tickangle=45)
     
     return fig
 
-def crawl_google_news(query, num_results=10):
-    """뉴스 데이터 생성 (구글 뉴스 크롤링 대신 샘플 데이터)"""
+def create_risk_map():
+    """SCM Risk 지역별 지도 생성"""
+    # 주요 SCM Risk 발생 지역
+    risk_locations = [
+        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "description": "공급망 중단 위험"},
+        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "description": "항구 혼잡"},
+        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "description": "물류 지연"},
+        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "description": "운송 비용 증가"},
+        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "description": "정상 운영"},
+        {"name": "일본 도쿄", "lat": 35.6762, "lng": 139.6503, "risk": "중간", "description": "지진 위험"},
+        {"name": "인도 뭄바이", "lat": 19.0760, "lng": 72.8777, "risk": "높음", "description": "인프라 부족"},
+        {"name": "브라질 상파울루", "lat": -23.5505, "lng": -46.6333, "risk": "중간", "description": "정치적 불안정"}
+    ]
+    
+    # 지도 생성 (한국 중심)
+    m = folium.Map(
+        location=[36.5, 127.5],
+        zoom_start=4,
+        tiles='OpenStreetMap'
+    )
+    
+    # 위험도별 색상
+    risk_colors = {
+        "높음": "red",
+        "중간": "orange", 
+        "낮음": "green"
+    }
+    
+    for location in risk_locations:
+        folium.Marker(
+            location=[location["lat"], location["lng"]],
+            popup=f"""
+            <b>{location['name']}</b><br>
+            위험도: <span style="color: {risk_colors[location['risk']]}">{location['risk']}</span><br>
+            {location['description']}
+            """,
+            icon=folium.Icon(color=risk_colors[location['risk']], icon='info-sign')
+        ).add_to(m)
+    
+    return m
+
+def crawl_google_news(query, num_results=500):
+    """검색 키워드에 맞는 SCM Risk 관련 뉴스 데이터 생성"""
     try:
-        # 샘플 뉴스 데이터 생성
-        sample_news = {
-            "AI": [
-                {"title": "AI 기술 발전으로 새로운 혁신 기대", "source": "테크뉴스", "description": "인공지능 기술의 최신 발전 동향과 미래 전망에 대해 알아봅니다. 머신러닝과 딥러닝 기술이 다양한 분야에서 혁신을 가져오고 있습니다.", "url": "https://technews.com/ai-innovation"},
-                {"title": "AI 챗봇 서비스 확산", "source": "IT월드", "description": "기업들의 AI 챗봇 도입이 활발해지고 있습니다. 고객 서비스와 업무 효율성 향상에 크게 기여하고 있습니다.", "url": "https://itworld.com/ai-chatbot"},
-                {"title": "AI 윤리 가이드라인 발표", "source": "과학뉴스", "description": "AI 기술의 윤리적 사용을 위한 새로운 가이드라인이 발표되었습니다. 책임감 있는 AI 개발의 중요성이 강조되고 있습니다.", "url": "https://science.com/ai-ethics"}
+        # 키워드별 맞춤 뉴스 데이터
+        keyword_news = {
+            "SCM": [
+                {"title": "글로벌 SCM 위기, 기업들의 대응 전략", "source": "SCM뉴스", "description": "공급망 관리(SCM) 시스템의 글로벌 위기로 인해 기업들이 다양한 대응 전략을 모색하고 있습니다.", "url": "https://scm-news.com/global-crisis"},
+                {"title": "SCM 디지털 전환 가속화", "source": "디지털SCM", "description": "AI와 IoT 기술을 활용한 SCM 디지털 전환이 급속히 진행되고 있습니다.", "url": "https://digital-scm.com/transformation"},
+                {"title": "SCM 위험 관리 시스템 도입 확대", "source": "리스크관리", "description": "기업들이 SCM 위험을 사전에 예측하고 대응하기 위한 시스템을 적극 도입하고 있습니다.", "url": "https://risk-management.com/scm"}
             ],
-            "경제": [
-                {"title": "주요 경제지표 개선세", "source": "경제일보", "description": "최근 경제지표가 예상보다 좋은 성과를 보이고 있습니다. GDP 성장률과 고용률이 모두 상승세를 보이고 있습니다.", "url": "https://economy.com/economic-indicators"},
-                {"title": "글로벌 경제 전망", "source": "국제경제", "description": "세계 경제의 향후 전망과 주요 이슈를 분석합니다. 글로벌 경제 회복세가 지속될 것으로 예상됩니다.", "url": "https://global-economy.com/outlook"},
-                {"title": "디지털 경제 성장", "source": "경제타임즈", "description": "디지털 경제의 성장세가 가속화되고 있습니다. 온라인 거래와 디지털 서비스가 경제의 핵심 동력이 되고 있습니다.", "url": "https://economytimes.com/digital-growth"}
+            "공급망": [
+                {"title": "글로벌 공급망 위기 심화", "source": "공급망뉴스", "description": "코로나19 이후 지속되는 글로벌 공급망 위기로 인해 기업들이 다양한 대응 전략을 모색하고 있습니다.", "url": "https://supply-chain.com/crisis"},
+                {"title": "공급망 재구성 움직임 활발", "source": "경제분석", "description": "글로벌 공급망 위기로 인해 기업들이 지역별 공급망 재구성을 추진하고 있습니다.", "url": "https://analysis.com/restructuring"},
+                {"title": "공급망 투명성 확보 중요성 증가", "source": "ESG뉴스", "description": "ESG 경영의 확산으로 공급망 투명성 확보의 중요성이 크게 증가하고 있습니다.", "url": "https://esg-news.com/transparency"}
             ],
-            "정치": [
-                {"title": "정치 현안 논의 활발", "source": "정치뉴스", "description": "현재 주요 정치 현안에 대한 논의가 활발히 진행되고 있습니다. 국회에서 다양한 정책에 대한 토론이 이어지고 있습니다.", "url": "https://politics.com/discussion"},
-                {"title": "정책 개혁 추진", "source": "정치일보", "description": "새로운 정책 개혁안이 추진되고 있습니다. 사회 전반의 변화를 위한 다양한 정책이 논의되고 있습니다.", "url": "https://politicsdaily.com/reform"},
-                {"title": "국제 관계 발전", "source": "외교뉴스", "description": "국제 관계 개선을 위한 노력이 계속되고 있습니다. 외교적 성과와 협력 관계 강화가 이루어지고 있습니다.", "url": "https://diplomacy.com/relations"}
+            "물류": [
+                {"title": "해운비 상승으로 인한 물류 비용 증가", "source": "물류뉴스", "description": "글로벌 해운비 상승으로 인해 수출입 기업들의 물류 비용이 크게 증가하고 있습니다.", "url": "https://logistics.com/shipping-cost"},
+                {"title": "스마트 물류 시스템 도입 확대", "source": "스마트물류", "description": "AI와 자동화 기술을 활용한 스마트 물류 시스템이 급속히 도입되고 있습니다.", "url": "https://smart-logistics.com/system"},
+                {"title": "친환경 물류로의 전환 가속화", "source": "그린물류", "description": "탄소 중립 목표에 따라 친환경 물류 시스템으로의 전환이 가속화되고 있습니다.", "url": "https://green-logistics.com/transition"}
             ],
-            "스포츠": [
-                {"title": "스포츠 대회 성공적 개최", "source": "스포츠뉴스", "description": "주요 스포츠 대회가 성공적으로 개최되고 있습니다. 팬들의 열정과 선수들의 뛰어난 경기력이 돋보이고 있습니다.", "url": "https://sports.com/tournament"},
-                {"title": "선수들의 활약", "source": "스포츠타임즈", "description": "국내외 선수들의 뛰어난 활약이 이어지고 있습니다. 새로운 기록과 놀라운 성과들이 계속 나오고 있습니다.", "url": "https://sportstimes.com/players"},
-                {"title": "스포츠 산업 성장", "source": "스포츠경제", "description": "스포츠 산업의 지속적인 성장세가 관찰되고 있습니다. 스포츠 마케팅과 관련 산업이 확대되고 있습니다.", "url": "https://sportseconomy.com/growth"}
+            "운송": [
+                {"title": "운송업계 디지털 혁신 가속화", "source": "운송뉴스", "description": "운송업계에서 디지털 기술을 활용한 혁신이 빠르게 진행되고 있습니다.", "url": "https://transport.com/innovation"},
+                {"title": "전기차 운송으로의 전환", "source": "전기운송", "description": "환경 규제 강화로 인해 전기차 운송으로의 전환이 가속화되고 있습니다.", "url": "https://electric-transport.com/transition"},
+                {"title": "운송 비용 최적화 전략", "source": "비용관리", "description": "기업들이 운송 비용을 최적화하기 위한 다양한 전략을 추진하고 있습니다.", "url": "https://cost-management.com/transport"}
             ],
-            "IT": [
-                {"title": "IT 기술 혁신", "source": "테크뉴스", "description": "최신 IT 기술의 혁신적인 발전이 계속되고 있습니다. 새로운 기술과 서비스가 끊임없이 등장하고 있습니다.", "url": "https://technews.com/innovation"},
-                {"title": "스마트폰 시장 동향", "source": "모바일뉴스", "description": "스마트폰 시장의 최신 동향과 트렌드를 분석합니다. 새로운 기능과 디자인이 소비자들의 관심을 끌고 있습니다.", "url": "https://mobile.com/trends"},
-                {"title": "소프트웨어 개발 트렌드", "source": "개발자뉴스", "description": "소프트웨어 개발 분야의 최신 트렌드를 소개합니다. 새로운 프로그래밍 언어와 개발 도구가 인기를 얻고 있습니다.", "url": "https://developer.com/trends"}
+            "창고": [
+                {"title": "스마트 창고 시스템 도입 확대", "source": "창고뉴스", "description": "자동화와 AI 기술을 활용한 스마트 창고 시스템이 급속히 도입되고 있습니다.", "url": "https://warehouse.com/smart-system"},
+                {"title": "창고 부족 현상 심화", "source": "부동산뉴스", "description": "전자상거래 확산으로 인한 창고 부족 현상이 심화되고 있습니다.", "url": "https://real-estate.com/warehouse-shortage"},
+                {"title": "친환경 창고 구축 트렌드", "source": "그린빌딩", "description": "친환경 건축물 인증을 받은 창고 구축이 새로운 트렌드로 부상하고 있습니다.", "url": "https://green-building.com/warehouse"}
             ],
-            "엔터테인먼트": [
-                {"title": "영화계 최신 소식", "source": "엔터뉴스", "description": "영화계의 최신 소식과 개봉 예정작을 소개합니다. 다양한 장르의 영화들이 관객들을 기다리고 있습니다.", "url": "https://entertainment.com/movies"},
-                {"title": "음악 시장 변화", "source": "음악뉴스", "description": "음악 시장의 변화와 새로운 아티스트들을 소개합니다. 디지털 음원과 스트리밍 서비스가 음악 산업을 변화시키고 있습니다.", "url": "https://music.com/changes"},
-                {"title": "방송계 트렌드", "source": "방송뉴스", "description": "방송계의 최신 트렌드와 인기 프로그램을 분석합니다. OTT 서비스와 전통 방송의 경쟁이 치열해지고 있습니다.", "url": "https://broadcast.com/trends"}
+            "재고": [
+                {"title": "실시간 재고 관리 시스템 도입", "source": "재고관리", "description": "IoT 기술을 활용한 실시간 재고 관리 시스템이 기업들에 도입되고 있습니다.", "url": "https://inventory.com/real-time"},
+                {"title": "재고 최적화로 비용 절감", "source": "비용절감", "description": "AI 기반 재고 최적화를 통해 기업들이 물류 비용을 크게 절감하고 있습니다.", "url": "https://cost-reduction.com/inventory"},
+                {"title": "재고 부족으로 인한 생산 중단", "source": "생산뉴스", "description": "반도체 등 핵심 부품의 재고 부족으로 인한 생산 중단이 발생하고 있습니다.", "url": "https://production.com/shortage"}
             ],
-            "코로나": [
-                {"title": "코로나19 상황 업데이트", "source": "건강뉴스", "description": "최신 코로나19 상황과 예방 수칙을 안내합니다. 백신 접종과 방역 수칙 준수가 중요합니다.", "url": "https://health.com/covid19"},
-                {"title": "백신 접종 현황", "source": "의료뉴스", "description": "백신 접종 현황과 효과에 대한 최신 정보를 제공합니다. 전 세계적인 백신 접종이 진행되고 있습니다.", "url": "https://medical.com/vaccine"},
-                {"title": "방역 정책 변화", "source": "정책뉴스", "description": "방역 정책의 최신 변화사항을 전달합니다. 상황에 따른 유연한 정책 조정이 이루어지고 있습니다.", "url": "https://policy.com/prevention"}
+            "배송": [
+                {"title": "배송 속도 경쟁 심화", "source": "배송뉴스", "description": "전자상거래 확산으로 인한 배송 속도 경쟁이 심화되고 있습니다.", "url": "https://delivery.com/speed-competition"},
+                {"title": "드론 배송 시범 운영 확대", "source": "드론배송", "description": "드론을 활용한 배송 서비스의 시범 운영이 전 세계적으로 확대되고 있습니다.", "url": "https://drone-delivery.com/pilot"},
+                {"title": "배송 비용 상승으로 인한 가격 인상", "source": "가격뉴스", "description": "배송 비용 상승으로 인해 소비자 물가가 상승하고 있습니다.", "url": "https://price-news.com/delivery-cost"}
             ],
-            "한국": [
-                {"title": "한국 경제 성장세", "source": "경제일보", "description": "한국 경제의 지속적인 성장세와 전망을 분석합니다. 수출과 내수 모두에서 좋은 성과를 보이고 있습니다.", "url": "https://economy.com/korea-growth"},
-                {"title": "한국 문화 세계 진출", "source": "문화뉴스", "description": "한국 문화의 세계 진출과 K-콘텐츠의 인기를 다룹니다. K-팝, K-드라마, K-뷰티가 전 세계에서 사랑받고 있습니다.", "url": "https://culture.com/k-wave"},
-                {"title": "한국 기술 혁신", "source": "기술뉴스", "description": "한국 기술의 혁신과 글로벌 경쟁력 강화를 소개합니다. 반도체, 자동차, IT 분야에서 세계적 수준을 보여주고 있습니다.", "url": "https://tech.com/korea-innovation"}
+            "Risk": [
+                {"title": "SCM Risk 관리 시스템 도입 확대", "source": "리스크뉴스", "description": "기업들이 공급망 위험을 사전에 예측하고 대응하기 위한 시스템을 적극 도입하고 있습니다.", "url": "https://risk.com/management-system"},
+                {"title": "글로벌 Risk 요인 증가", "source": "글로벌리스크", "description": "지정학적 불안정과 기후변화로 인한 글로벌 Risk 요인이 증가하고 있습니다.", "url": "https://global-risk.com/factors"},
+                {"title": "Risk 대응 체계 강화", "source": "대응체계", "description": "기업들이 다양한 Risk에 대응하기 위한 체계를 강화하고 있습니다.", "url": "https://response-system.com/risk"}
+            ],
+            "위험": [
+                {"title": "공급망 위험 요인 다양화", "source": "위험관리", "description": "기후변화, 지정학적 불안정 등으로 인한 공급망 위험 요인이 다양화되고 있습니다.", "url": "https://risk-management.com/factors"},
+                {"title": "위험 예측 기술 발전", "source": "예측기술", "description": "AI와 빅데이터를 활용한 위험 예측 기술이 빠르게 발전하고 있습니다.", "url": "https://prediction-tech.com/risk"},
+                {"title": "위험 대응 전략 수립", "source": "전략수립", "description": "기업들이 다양한 위험에 대응하기 위한 전략을 체계적으로 수립하고 있습니다.", "url": "https://strategy.com/risk-response"}
+            ],
+            "중단": [
+                {"title": "공급망 중단 위험 증가", "source": "중단뉴스", "description": "자연재해와 지정학적 불안정으로 인한 공급망 중단 위험이 증가하고 있습니다.", "url": "https://disruption.com/risk"},
+                {"title": "생산 중단으로 인한 손실 확대", "source": "생산뉴스", "description": "부품 부족으로 인한 생산 중단으로 기업들의 손실이 확대되고 있습니다.", "url": "https://production.com/disruption"},
+                {"title": "중단 대응 체계 구축", "source": "대응체계", "description": "기업들이 공급망 중단에 대응하기 위한 체계를 구축하고 있습니다.", "url": "https://response.com/disruption"}
+            ],
+            "지연": [
+                {"title": "물류 지연 현상 심화", "source": "지연뉴스", "description": "항구 혼잡과 운송 수단 부족으로 인한 물류 지연 현상이 심화되고 있습니다.", "url": "https://delay.com/logistics"},
+                {"title": "배송 지연으로 인한 고객 불만 증가", "source": "고객서비스", "description": "배송 지연으로 인한 고객 불만이 증가하고 있습니다.", "url": "https://customer-service.com/delay"},
+                {"title": "지연 대응 시스템 도입", "source": "시스템도입", "description": "기업들이 지연 상황에 대응하기 위한 시스템을 도입하고 있습니다.", "url": "https://system.com/delay-response"}
+            ],
+            "부족": [
+                {"title": "반도체 부족으로 인한 생산 차질", "source": "반도체뉴스", "description": "반도체 부족으로 인해 자동차와 전자제품 생산에 차질이 빚어지고 있습니다.", "url": "https://semiconductor.com/shortage"},
+                {"title": "원자재 부족 현상 확산", "source": "원자재뉴스", "description": "기후변화와 수요 증가로 인한 원자재 부족 현상이 확산되고 있습니다.", "url": "https://raw-material.com/shortage"},
+                {"title": "인력 부족으로 인한 물류 지연", "source": "인력뉴스", "description": "물류 업계의 인력 부족으로 인한 서비스 지연이 발생하고 있습니다.", "url": "https://workforce.com/shortage"}
             ]
         }
         
         articles = []
         
-        # 쿼리에 맞는 뉴스 데이터 선택
-        if query in sample_news:
-            news_list = sample_news[query]
+        # 검색 키워드에 맞는 뉴스 선택
+        if query in keyword_news:
+            news_list = keyword_news[query]
         else:
-            # 기본 뉴스 데이터
-            news_list = sample_news["한국"]
+            # 기본 SCM 뉴스
+            news_list = keyword_news["SCM"]
         
-        # 요청된 개수만큼 뉴스 생성
-        for i in range(min(num_results, len(news_list))):
-            news = news_list[i]
+        # 기본 뉴스 추가
+        for news in news_list:
             article = {
                 'title': news["title"],
                 'url': news["url"],
@@ -239,18 +337,35 @@ def crawl_google_news(query, num_results=10):
             }
             articles.append(article)
         
-        # 추가 뉴스 생성 (요청된 개수만큼)
+        # 추가 뉴스 생성 (검색 키워드에 맞게)
+        scm_keywords = ["공급망", "물류", "운송", "창고", "재고", "배송", "위험", "중단", "지연", "부족"]
+        scm_topics = [
+            f"{query} 최적화 전략",
+            f"{query} 디지털 전환",
+            f"{query} 위험 관리",
+            f"{query} 비용 절감",
+            f"{query} 효율성 향상",
+            f"{query} 혁신 기술",
+            f"{query} 글로벌 트렌드",
+            f"{query} 미래 전망",
+            f"{query} 대응 방안",
+            f"{query} 성공 사례"
+        ]
+        
         while len(articles) < num_results:
+            topic = random.choice(scm_topics)
+            source = f"{query}뉴스{len(articles) + 1}"
+            
             article = {
-                'title': f'"{query}" 관련 추가 뉴스 {len(articles) + 1}',
-                'url': f"https://news.google.com/search?q={urllib.parse.quote(query)}",
-                'source': f"뉴스소스{len(articles) + 1}",
+                'title': f'"{query}" 관련 {topic}',
+                'url': f"https://{query}-news.com/{len(articles) + 1}",
+                'source': source,
                 'published_time': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-                'description': f'"{query}" 키워드와 관련된 추가 뉴스 정보입니다. 최신 동향과 분석을 제공합니다.'
+                'description': f'{query}와 관련된 {topic}에 대한 최신 동향과 분석을 제공합니다. SCM Risk 관리 관점에서 {query}의 중요성과 향후 전망을 살펴봅니다.'
             }
             articles.append(article)
         
-        return articles
+        return articles[:num_results]
         
     except Exception as e:
         st.error(f"뉴스 생성 오류: {e}")
@@ -265,18 +380,28 @@ def display_news_articles(articles, query):
     # 검색 통계
     st.markdown(f"""
     <div class="search-stats">
-        <h3>📊 검색 결과 통계</h3>
+        <h3>🌍 SCM Risk 관리 대시보드</h3>
         <p>🔍 검색어: <strong>{query}</strong> | 📰 총 {len(articles)}개 기사 | 🕒 검색 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        <div class="risk-indicator">⚠️ {query} Risk 모니터링 중</div>
     </div>
     """, unsafe_allow_html=True)
     
     # 검색량 추이 차트
-    st.markdown("### 📈 검색량 추이")
+    st.markdown("### 📈 SCM Risk 검색량 추이")
     trend_fig = create_trend_chart(query)
     st.plotly_chart(trend_fig, use_container_width=True)
     
+    # SCM Risk 지역별 지도
+    st.markdown("### 🗺️ SCM Risk 발생 지역")
+    try:
+        risk_map = create_risk_map()
+        folium_static(risk_map, width=800, height=400)
+    except Exception as e:
+        st.error(f"지도 로딩 오류: {e}")
+        st.info("지도 기능을 사용하려면 folium과 streamlit-folium 패키지가 필요합니다.")
+    
     # 뉴스 기사 목록
-    st.markdown("### 📰 관련 뉴스 기사")
+    st.markdown("### 📰 SCM Risk 관련 뉴스")
     
     for i, article in enumerate(articles, 1):
         st.markdown(f"""
@@ -299,7 +424,7 @@ def save_to_text(articles, filename):
     """뉴스 기사들을 텍스트 파일로 저장"""
     try:
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(f"구글 뉴스 크롤링 결과 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"SCM Risk 관리 뉴스 분석 결과 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write("=" * 80 + "\n\n")
             
             for i, article in enumerate(articles, 1):
@@ -319,51 +444,51 @@ def save_to_text(articles, filename):
 
 def main():
     # 헤더
-    st.markdown('<h1 class="main-header">📰 구글 뉴스 크롤러</h1>', unsafe_allow_html=True)
-    st.markdown("### 실시간 뉴스를 쉽고 빠르게 검색해보세요")
+    st.markdown('<h1 class="main-header">🌍 SCM Risk 관리 대시보드</h1>', unsafe_allow_html=True)
+    st.markdown("### 글로벌 공급망 위험을 실시간으로 모니터링하고 관리하세요")
     
     # 사이드바
     with st.sidebar:
-        st.header("🔧 검색 설정")
+        st.header("🔧 SCM Risk 검색 설정")
         
         # 검색 옵션
         search_option = st.selectbox(
             "검색 방법 선택",
-            ["키워드 검색", "인기 뉴스", "빠른 검색"]
+            ["키워드 검색", "SCM Risk 분석", "빠른 검색"]
         )
         
         if search_option == "키워드 검색":
-            query = st.text_input("검색 키워드를 입력하세요", placeholder="예: AI, 코로나, 경제...")
-            num_results = st.slider("검색 결과 개수", 5, 50, 10)
+            query = st.text_input("SCM Risk 키워드를 입력하세요", placeholder="예: 공급망, 물류, 운송...")
+            num_results = st.slider("검색 결과 개수", 100, 1000, 500)
         elif search_option == "빠른 검색":
-            quick_queries = ["AI", "코로나", "경제", "정치", "스포츠", "IT", "엔터테인먼트"]
-            query = st.selectbox("빠른 검색 키워드 선택", quick_queries)
-            num_results = st.slider("검색 결과 개수", 5, 50, 10)
-        else:  # 인기 뉴스
-            query = "한국"
-            num_results = 15
+            quick_queries = ["SCM", "공급망", "물류", "운송", "창고", "재고", "배송", "Risk", "위험", "중단"]
+            query = st.selectbox("SCM Risk 키워드 선택", quick_queries)
+            num_results = st.slider("검색 결과 개수", 100, 1000, 500)
+        else:  # SCM Risk 분석
+            query = "SCM"
+            num_results = 500
         
         # 검색 버튼
-        if st.button("🔍 뉴스 검색", type="primary"):
+        if st.button("🔍 SCM Risk 분석", type="primary"):
             if search_option == "키워드 검색" and not query.strip():
                 st.error("검색어를 입력해주세요!")
                 return
             
-            with st.spinner("뉴스를 검색 중입니다..."):
+            with st.spinner("SCM Risk를 분석 중입니다..."):
                 articles = crawl_google_news(query, num_results)
                 
                 if articles:
-                    st.success(f"✅ {len(articles)}개의 뉴스를 찾았습니다!")
+                    st.success(f"✅ {len(articles)}개의 SCM Risk 관련 뉴스를 찾았습니다!")
                     
                     # 세션 상태에 저장
                     st.session_state.articles = articles
                     st.session_state.query = query
                     
                     # 파일 저장 옵션
-                    if st.button("💾 텍스트 파일로 저장"):
-                        filename = f"google_news_{query}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                    if st.button("💾 분석 결과 저장"):
+                        filename = f"scm_risk_{query}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
                         if save_to_text(articles, filename):
-                            st.success(f"✅ 뉴스가 '{filename}' 파일로 저장되었습니다!")
+                            st.success(f"✅ SCM Risk 분석 결과가 '{filename}' 파일로 저장되었습니다!")
                             
                             # 파일 다운로드 버튼
                             with open(filename, 'r', encoding='utf-8') as f:
@@ -381,7 +506,7 @@ def main():
         display_news_articles(st.session_state.articles, st.session_state.query)
         
         # 데이터 테이블 및 다운로드 옵션
-        with st.expander("📊 데이터 테이블 보기"):
+        with st.expander("📊 SCM Risk 데이터 테이블"):
             df = pd.DataFrame(st.session_state.articles)
             st.dataframe(df, use_container_width=True)
             
@@ -390,7 +515,7 @@ def main():
             st.download_button(
                 label="📥 CSV 파일 다운로드",
                 data=csv,
-                file_name=f"google_news_{st.session_state.query}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                file_name=f"scm_risk_{st.session_state.query}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv"
             )
 

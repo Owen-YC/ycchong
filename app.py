@@ -5,7 +5,8 @@ import urllib.parse
 import time
 import random
 from datetime import datetime
-import pandas as pd
+import csv
+import io
 
 # 페이지 설정
 st.set_page_config(
@@ -174,6 +175,26 @@ def save_to_text(articles, filename):
         st.error(f"파일 저장 오류: {e}")
         return False
 
+def create_csv_data(articles):
+    """뉴스 기사들을 CSV 형식으로 변환"""
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # 헤더 작성
+    writer.writerow(['제목', 'URL', '출처', '발행시간', '설명'])
+    
+    # 데이터 작성
+    for article in articles:
+        writer.writerow([
+            article['title'],
+            article['url'],
+            article['source'],
+            article['published_time'] or '',
+            article['description'] or ''
+        ])
+    
+    return output.getvalue()
+
 def main():
     # 헤더
     st.markdown('<h1 class="main-header">📰 구글 뉴스 크롤러</h1>', unsafe_allow_html=True)
@@ -211,21 +232,7 @@ def main():
                 
                 if articles:
                     st.success(f"✅ {len(articles)}개의 뉴스를 찾았습니다!")
-                    
-                    # 파일 저장 옵션
-                    if st.button("💾 텍스트 파일로 저장"):
-                        filename = f"google_news_{query}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                        if save_to_text(articles, filename):
-                            st.success(f"✅ 뉴스가 '{filename}' 파일로 저장되었습니다!")
-                            
-                            # 파일 다운로드 버튼
-                            with open(filename, 'r', encoding='utf-8') as f:
-                                st.download_button(
-                                    label="📥 파일 다운로드",
-                                    data=f.read(),
-                                    file_name=filename,
-                                    mime="text/plain"
-                                )
+                    st.session_state.articles = articles
                 else:
                     st.warning("검색 결과가 없습니다. 다른 키워드로 시도해보세요.")
     
@@ -264,19 +271,58 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
         
-        # 데이터프레임으로 표시
+        # 데이터 테이블
         st.subheader("📊 데이터 테이블")
-        df = pd.DataFrame(articles)
-        st.dataframe(df, use_container_width=True)
         
-        # CSV 다운로드
-        csv = df.to_csv(index=False, encoding='utf-8-sig')
-        st.download_button(
-            label="📥 CSV 파일 다운로드",
-            data=csv,
-            file_name=f"google_news_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv"
-        )
+        # 간단한 테이블 생성
+        table_data = []
+        for i, article in enumerate(articles, 1):
+            table_data.append({
+                "번호": i,
+                "제목": article['title'],
+                "출처": article['source'],
+                "발행시간": article['published_time'] or "N/A",
+                "URL": article['url']
+            })
+        
+        st.dataframe(table_data, use_container_width=True)
+        
+        # 파일 다운로드 섹션
+        st.subheader("💾 파일 다운로드")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # 텍스트 파일 다운로드
+            text_content = f"구글 뉴스 크롤링 결과 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            text_content += "=" * 80 + "\n\n"
+            
+            for i, article in enumerate(articles, 1):
+                text_content += f"[{i}] {article['title']}\n"
+                text_content += f"출처: {article['source']}\n"
+                if article['published_time']:
+                    text_content += f"발행시간: {article['published_time']}\n"
+                text_content += f"URL: {article['url']}\n"
+                if article['description']:
+                    text_content += f"설명: {article['description']}\n"
+                text_content += "-" * 60 + "\n\n"
+            
+            st.download_button(
+                label="📥 텍스트 파일 다운로드",
+                data=text_content,
+                file_name=f"google_news_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                mime="text/plain"
+            )
+        
+        with col2:
+            # CSV 파일 다운로드
+            csv_data = create_csv_data(articles)
+            st.download_button(
+                label="📥 CSV 파일 다운로드",
+                data=csv_data,
+                file_name=f"google_news_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv"
+            )
 
 if __name__ == "__main__":
     main()

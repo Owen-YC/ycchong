@@ -1003,13 +1003,81 @@ def crawl_google_news(query, num_results=20):
         
         articles = []
         
-        # SCM Risk 관련 키워드 필터링
+        # SCM Risk 관련 키워드 필터링 (더욱 강화된 필터링)
         scm_keywords = [
+            # 영어 SCM 키워드
             'supply chain', 'SCM', 'logistics', 'procurement', 'inventory', 'warehouse',
             'shipping', 'freight', 'transportation', 'distribution', 'supplier',
+            'risk', 'disruption', 'shortage', 'delay', 'port', 'trade', 'manufacturing', 
+            'production', 'semiconductor', 'chip', 'electronics', 'automotive', 'steel',
+            'commodity', 'raw material', 'export', 'import', 'tariff', 'sanction',
+            'blockade', 'embargo', 'shortage', 'crisis', 'disruption', 'shortfall',
+            'supply', 'demand', 'shortage', 'bottleneck', 'congestion', 'backlog',
+            'factory', 'plant', 'facility', 'industrial', 'manufacturing', 'production',
+            'component', 'part', 'material', 'resource', 'commodity', 'trade',
+            'export', 'import', 'tariff', 'duty', 'customs', 'border', 'regulation',
+            'policy', 'restriction', 'ban', 'prohibition', 'embargo', 'sanction',
+            'tension', 'conflict', 'dispute', 'war', 'military', 'defense', 'security',
+            'geopolitical', 'political', 'diplomatic', 'relationship', 'alliance',
+            'partnership', 'agreement', 'treaty', 'negotiation', 'talks', 'meeting',
+            'summit', 'conference', 'forum', 'organization', 'institution', 'agency',
+            'authority', 'government', 'administration', 'ministry', 'department',
+            'bureau', 'office', 'commission', 'committee', 'council', 'board',
+            'panel', 'task force', 'working group', 'team', 'unit', 'division',
+            'section', 'branch', 'subsidiary', 'affiliate', 'partner', 'associate',
+            'collaborator', 'contractor', 'vendor', 'supplier', 'provider', 'distributor',
+            'wholesaler', 'retailer', 'dealer', 'agent', 'broker', 'intermediary',
+            'middleman', 'trader', 'merchant', 'business', 'company', 'corporation',
+            'enterprise', 'firm', 'organization', 'institution', 'establishment',
+            'operation', 'facility', 'plant', 'factory', 'workshop', 'laboratory',
+            'research', 'development', 'innovation', 'technology', 'engineering',
+            'design', 'planning', 'strategy', 'management', 'administration',
+            'coordination', 'integration', 'optimization', 'efficiency', 'productivity',
+            'performance', 'quality', 'standard', 'specification', 'requirement',
+            'compliance', 'regulation', 'policy', 'procedure', 'protocol', 'guideline',
+            'framework', 'system', 'platform', 'infrastructure', 'network', 'connection',
+            'link', 'bridge', 'gateway', 'hub', 'center', 'node', 'point', 'location',
+            'site', 'area', 'region', 'zone', 'territory', 'district', 'sector',
+            'industry', 'market', 'economy', 'commerce', 'business', 'trade',
+            'exchange', 'transaction', 'deal', 'agreement', 'contract', 'arrangement',
+            'settlement', 'payment', 'finance', 'investment', 'funding', 'capital',
+            'money', 'currency', 'dollar', 'yen', 'euro', 'yuan', 'won', 'peso',
+            'rupee', 'ruble', 'lira', 'franc', 'mark', 'pound', 'sterling', 'crown',
+            'krona', 'krone', 'forint', 'zloty', 'koruna', 'lev', 'lei', 'dinar',
+            'dirham', 'riyal', 'ringgit', 'baht', 'dong', 'rupiah', 'peso', 'real',
+            'rand', 'naira', 'cedi', 'shilling', 'franc', 'pound', 'dollar',
+            
+            # 한국어 SCM 키워드
             '공급망', '물류', '구매', '재고', '창고', '운송', '배송', '공급업체',
-            'risk', '위험', 'disruption', '중단', 'shortage', '부족', 'delay', '지연',
-            'port', '항구', 'trade', '무역', 'manufacturing', '제조', 'production', '생산'
+            '위험', '중단', '부족', '지연', '항구', '무역', '제조', '생산',
+            '반도체', '칩', '전자', '자동차', '철강', '원자재', '수출', '수입',
+            '관세', '제재', '봉쇄', '금수', '부족', '위기', '중단', '부족',
+            '공급', '수요', '병목', '혼잡', '지연', '공장', '플랜트', '시설',
+            '산업', '제조', '생산', '부품', '소재', '자원', '상품', '무역',
+            '수출', '수입', '관세', '세금', '세관', '국경', '규제', '정책',
+            '제한', '금지', '금수', '제재', '긴장', '갈등', '분쟁', '전쟁',
+            '군사', '국방', '보안', '지정학', '정치', '외교', '관계', '동맹',
+            '파트너십', '협정', '조약', '협상', '회담', '회의', '정상회담',
+            '회의', '포럼', '기구', '기관', '청', '정부', '행정부', '부처',
+            '부', '국', '과', '팀', '단위', '부서', '본부', '지사', '지점',
+            '협력사', '계약업체', '벤더', '공급업체', '공급자', '유통업체',
+            '도매업체', '소매업체', '딜러', '에이전트', '브로커', '중개업자',
+            '무역업자', '상인', '기업', '회사', '법인', '기업', '회사', '조직',
+            '기관', '시설', '공장', '플랜트', '공장', '작업장', '연구소',
+            '연구', '개발', '혁신', '기술', '공학', '설계', '계획', '전략',
+            '관리', '행정', '조정', '통합', '최적화', '효율성', '생산성',
+            '성과', '품질', '표준', '규격', '요구사항', '준수', '규제', '정책',
+            '절차', '프로토콜', '가이드라인', '프레임워크', '시스템', '플랫폼',
+            '인프라', '네트워크', '연결', '링크', '브리지', '게이트웨이', '허브',
+            '센터', '노드', '포인트', '위치', '사이트', '지역', '구역', '영역',
+            '지구', '섹터', '산업', '시장', '경제', '상업', '무역', '거래',
+            '교환', '거래', '거래', '계약', '협정', '합의', '결제', '지불',
+            '금융', '투자', '자금', '자본', '돈', '통화', '달러', '엔', '유로',
+            '위안', '원', '페소', '루피', '루블', '리라', '프랑', '마르크',
+            '파운드', '스털링', '크라운', '크로나', '크로네', '포린트', '즐로티',
+            '코루나', '레프', '레이', '디나르', '디르함', '리얄', '링깃', '바트',
+            '동', '루피아', '페소', '레알', '랜드', '나이라', '세디', '실링',
+            '프랑', '파운드', '달러'
         ]
         
         for item in items[:num_results * 3]:  # 더 많은 아이템을 가져와서 필터링
@@ -1021,8 +1089,44 @@ def crawl_google_news(query, num_results=20):
             # 제목이 비어있지 않고 SCM Risk 관련 키워드가 포함된 경우에만 처리
             if title.strip():
                 title_lower = title.lower()
-                # SCM Risk 관련 키워드가 하나라도 포함되어 있는지 확인
-                if any(keyword.lower() in title_lower for keyword in scm_keywords):
+                source_lower = source.lower() if source else ""
+                
+                # 제목에서 SCM Risk 관련 키워드 확인
+                title_has_scm = any(keyword.lower() in title_lower for keyword in scm_keywords)
+                
+                # 출처에서도 SCM 관련 키워드 확인 (추가 필터링)
+                source_has_scm = any(keyword.lower() in source_lower for keyword in [
+                    'reuters', 'bloomberg', 'wsj', 'cnbc', 'financial times', 'bbc', 'cnn', 'ap',
+                    'business', 'economy', 'trade', 'industry', 'manufacturing', 'logistics',
+                    '경제', '무역', '산업', '제조', '물류', '비즈니스'
+                ])
+                
+                # 제외할 키워드들 (스포츠, 엔터테인먼트 등)
+                exclude_keywords = [
+                    'sport', 'football', 'soccer', 'basketball', 'baseball', 'tennis', 'golf',
+                    'olympic', 'championship', 'league', 'tournament', 'match', 'game', 'player',
+                    'team', 'coach', 'athlete', 'fitness', 'workout', 'exercise', 'gym',
+                    'movie', 'film', 'actor', 'actress', 'celebrity', 'star', 'entertainment',
+                    'music', 'singer', 'band', 'concert', 'album', 'song', 'performance',
+                    'tv', 'television', 'show', 'program', 'series', 'drama', 'comedy',
+                    'fashion', 'style', 'beauty', 'cosmetic', 'makeup', 'clothing', 'designer',
+                    'food', 'restaurant', 'cooking', 'recipe', 'chef', 'cuisine', 'dining',
+                    'travel', 'tourism', 'vacation', 'holiday', 'trip', 'destination', 'hotel',
+                    '스포츠', '축구', '야구', '농구', '테니스', '골프', '올림픽', '챔피언십',
+                    '리그', '토너먼트', '경기', '게임', '선수', '팀', '코치', '운동선수',
+                    '피트니스', '운동', '체육관', '영화', '배우', '연예인', '스타', '엔터테인먼트',
+                    '음악', '가수', '밴드', '콘서트', '앨범', '노래', '공연', 'TV', '텔레비전',
+                    '쇼', '프로그램', '시리즈', '드라마', '코미디', '패션', '스타일', '뷰티',
+                    '화장품', '메이크업', '의류', '디자이너', '음식', '레스토랑', '요리',
+                    '레시피', '셰프', '요리', '식사', '여행', '관광', '휴가', '휴일',
+                    '여행', '목적지', '호텔'
+                ]
+                
+                # 제외 키워드가 제목에 포함되어 있는지 확인
+                has_exclude_keyword = any(keyword.lower() in title_lower for keyword in exclude_keywords)
+                
+                # 제목에 SCM 키워드가 있고, 제외 키워드가 없는 경우에만 처리
+                if (title_has_scm or source_has_scm) and not has_exclude_keyword:
                     # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
                     if link.startswith('https://news.google.com'):
                         try:

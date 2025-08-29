@@ -1383,13 +1383,38 @@ def filter_articles(articles, sort_by="최신순"):
     return filtered_articles
 
 def create_risk_map():
-    """SCM Risk 지역별 지도 생성 - 직관적이고 조화로운 UI/UX"""
+    """SCM Risk 지역별 지도 생성 - 전쟁, 자연재해, 기타 Risk 분류"""
     # 지역별 관련 뉴스 데이터 (Google 검색 링크로 실제 확인 가능)
     location_news = {
+        "우크라이나": [
+            {"title": "우크라이나 전쟁으로 인한 곡물 수출 중단", "url": "https://www.google.com/search?q=우크라이나+전쟁+곡물+수출+중단+reuters"},
+            {"title": "러시아-우크라이나 분쟁으로 인한 에너지 공급 위기", "url": "https://www.google.com/search?q=러시아+우크라이나+분쟁+에너지+공급+위기+bloomberg"},
+            {"title": "우크라이나 항구 봉쇄로 인한 글로벌 식량 위기", "url": "https://www.google.com/search?q=우크라이나+항구+봉쇄+글로벌+식량+위기+wsj"}
+        ],
+        "대만": [
+            {"title": "대만 해협 긴장으로 인한 반도체 공급망 위기", "url": "https://www.google.com/search?q=대만+해협+긴장+반도체+공급망+위기+cnbc"},
+            {"title": "중국-대만 관계 악화로 인한 전자제품 공급 중단", "url": "https://www.google.com/search?q=중국+대만+관계+악화+전자제품+공급+중단+financial+times"},
+            {"title": "대만 반도체 산업 지리적 위험 증가", "url": "https://www.google.com/search?q=대만+반도체+산업+지리적+위험+증가+reuters"}
+        ],
+        "홍해": [
+            {"title": "홍해 호세이드 공격으로 인한 해상 운송 위기", "url": "https://www.google.com/search?q=홍해+호세이드+공격+해상+운송+위기+bloomberg"},
+            {"title": "홍해 봉쇄로 인한 글로벌 물류 혼잡", "url": "https://www.google.com/search?q=홍해+봉쇄+글로벌+물류+혼잡+wsj"},
+            {"title": "홍해 해적 활동 증가로 인한 운송비 상승", "url": "https://www.google.com/search?q=홍해+해적+활동+증가+운송비+상승+cnbc"}
+        ],
+        "일본 후쿠시마": [
+            {"title": "후쿠시마 원전 사고로 인한 수산물 수출 제한", "url": "https://www.google.com/search?q=후쿠시마+원전+사고+수산물+수출+제한+reuters"},
+            {"title": "일본 원전 오염수 방류로 인한 식품 안전 위기", "url": "https://www.google.com/search?q=일본+원전+오염수+방류+식품+안전+위기+bloomberg"},
+            {"title": "후쿠시마 방사능 오염으로 인한 농수산물 교역 중단", "url": "https://www.google.com/search?q=후쿠시마+방사능+오염+농수산물+교역+중단+wsj"}
+        ],
+        "미국 텍사스": [
+            {"title": "텍사스 폭설로 인한 반도체 공장 가동 중단", "url": "https://www.google.com/search?q=텍사스+폭설+반도체+공장+가동+중단+cnbc"},
+            {"title": "텍사스 정전으로 인한 석유화학 공급 중단", "url": "https://www.google.com/search?q=텍사스+정전+석유화학+공급+중단+financial+times"},
+            {"title": "텍사스 극한 기후로 인한 에너지 인프라 위기", "url": "https://www.google.com/search?q=텍사스+극한+기후+에너지+인프라+위기+reuters"}
+        ],
         "중국 상하이": [
-            {"title": "중국 상하이 항구 혼잡으로 인한 공급망 지연", "url": "https://www.google.com/search?q=중국+상하이+항구+혼잡+공급망+지연+reuters"},
             {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.google.com/search?q=상하이+봉쇄+글로벌+공급망+위기+bloomberg"},
-            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.google.com/search?q=중국+제조업+생산+중단+부품+부족+wsj"}
+            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.google.com/search?q=중국+제조업+생산+중단+부품+부족+wsj"},
+            {"title": "상하이 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=상하이+항구+혼잡+물류+지연+cnbc"}
         ],
         "미국 로스앤젤레스": [
             {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=LA+항구+혼잡+물류+지연+cnbc"},
@@ -1414,11 +1439,21 @@ def create_risk_map():
     }
     
     risk_locations = [
-        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "description": "공급망 중단 위험", "color": "red", "icon": "🚨", "news": location_news["중국 상하이"]},
-        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "description": "항구 혼잡", "color": "orange", "icon": "⚠️", "news": location_news["미국 로스앤젤레스"]},
-        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "description": "물류 지연", "color": "green", "icon": "✅", "news": location_news["독일 함부르크"]},
-        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "description": "운송 비용 증가", "color": "orange", "icon": "⚠️", "news": location_news["싱가포르"]},
-        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "description": "정상 운영", "color": "green", "icon": "✅", "news": location_news["한국 부산"]}
+        # 전쟁/분쟁 위험
+        {"name": "우크라이나", "lat": 48.3794, "lng": 31.1656, "risk": "높음", "risk_type": "전쟁", "description": "러시아-우크라이나 전쟁", "color": "red", "icon": "⚔️", "news": location_news["우크라이나"]},
+        {"name": "대만", "lat": 23.6978, "lng": 121.1354, "risk": "높음", "risk_type": "전쟁", "description": "중국-대만 긴장", "color": "red", "icon": "⚔️", "news": location_news["대만"]},
+        {"name": "홍해", "lat": 15.5527, "lng": 42.4497, "risk": "높음", "risk_type": "전쟁", "description": "호세이드 해적 활동", "color": "red", "icon": "⚔️", "news": location_news["홍해"]},
+        
+        # 자연재해 위험
+        {"name": "일본 후쿠시마", "lat": 37.7603, "lng": 140.4733, "risk": "중간", "risk_type": "자연재해", "description": "원전 사고 영향", "color": "orange", "icon": "🌊", "news": location_news["일본 후쿠시마"]},
+        {"name": "미국 텍사스", "lat": 31.9686, "lng": -99.9018, "risk": "중간", "risk_type": "자연재해", "description": "극한 기후 영향", "color": "orange", "icon": "🌊", "news": location_news["미국 텍사스"]},
+        
+        # 기타 위험
+        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "risk_type": "기타", "description": "공급망 중단 위험", "color": "red", "icon": "🚨", "news": location_news["중국 상하이"]},
+        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "risk_type": "기타", "description": "항구 혼잡", "color": "orange", "icon": "⚠️", "news": location_news["미국 로스앤젤레스"]},
+        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "risk_type": "기타", "description": "물류 지연", "color": "green", "icon": "✅", "news": location_news["독일 함부르크"]},
+        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "risk_type": "기타", "description": "운송 비용 증가", "color": "orange", "icon": "⚠️", "news": location_news["싱가포르"]},
+        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "risk_type": "기타", "description": "정상 운영", "color": "green", "icon": "✅", "news": location_news["한국 부산"]}
     ]
     
     # 더 직관적인 지도 스타일
@@ -1436,6 +1471,13 @@ def create_risk_map():
         "낮음": "#10b981"
     }
     
+    # 위험 유형별 색상 매핑
+    risk_type_colors = {
+        "전쟁": "#dc2626",
+        "자연재해": "#f59e0b",
+        "기타": "#3b82f6"
+    }
+    
     for location in risk_locations:
         # 관련 뉴스 링크 HTML 생성 (더 깔끔한 스타일)
         news_links_html = ""
@@ -1448,7 +1490,7 @@ def create_risk_map():
             </div>
             """
         
-        # 더 직관적인 팝업 디자인
+        # 더 직관적인 팝업 디자인 (위험 유형 포함)
         popup_html = f"""
         <div style="width: 320px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid {risk_colors[location['risk']]};">
@@ -1459,6 +1501,11 @@ def create_risk_map():
                         <span style="background: {risk_colors[location['risk']]}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
                             {location['risk']} 위험
                         </span>
+                        <span style="background: {risk_type_colors[location['risk_type']]}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            {location['risk_type']}
+                        </span>
+                    </div>
+                    <div style="margin-top: 4px;">
                         <span style="color: #64748b; font-size: 11px;">{location['description']}</span>
                     </div>
                 </div>
@@ -1485,6 +1532,58 @@ def create_risk_map():
         ).add_to(m)
     
     return m, risk_locations
+
+def generate_ai_strategy(article_title, article_description):
+    """뉴스 기사에 대한 AI 대응전략 생성"""
+    try:
+        # 기사 내용을 분석하여 대응전략 생성
+        strategy_prompt = f"""
+        다음 SCM Risk 뉴스 기사에 대한 구체적인 대응전략을 제시해주세요:
+        
+        제목: {article_title}
+        설명: {article_description}
+        
+        다음 형식으로 답변해주세요:
+        
+        🎯 **즉시 대응 방안**
+        - 구체적인 단기 대응 조치 (1-2주 내)
+        
+        📊 **중기 전략 (1-3개월)**
+        - 공급망 다변화 및 대안 확보
+        
+        🔮 **장기 대응 (3-6개월)**
+        - 근본적인 리스크 관리 체계 구축
+        
+        💡 **AI/디지털 솔루션**
+        - 기술적 대응 방안
+        
+        답변은 한국어로 작성하고, 실무적으로 실행 가능한 구체적인 조치를 포함해주세요.
+        """
+        
+        response = model.generate_content(strategy_prompt)
+        return response.text
+        
+    except Exception as e:
+        # 오류 발생 시 기본 전략 반환
+        return f"""🤖 **AI 대응전략**
+
+🎯 **즉시 대응 방안**
+- 현재 재고 상황 점검 및 긴급 조달 계획 수립
+- 주요 공급업체와의 긴급 연락망 확인
+
+📊 **중기 전략 (1-3개월)**
+- 공급망 다변화를 위한 대안 공급업체 발굴
+- 재고 안전재고량 조정 및 물류 경로 최적화
+
+🔮 **장기 대응 (3-6개월)**
+- 디지털 공급망 관리 시스템 구축
+- 리스크 모니터링 대시보드 운영
+
+💡 **AI/디지털 솔루션**
+- 실시간 공급망 모니터링 시스템 도입
+- 예측 분석을 통한 리스크 사전 감지
+
+*상세한 전략은 AI 챗봇에 문의하세요.*"""
 
 def gemini_chatbot_response(user_input):
     """Gemini API를 사용한 챗봇 응답 (오류 처리 개선)"""
@@ -1647,6 +1746,12 @@ def main():
                 except:
                     formatted_time = article['published_time']
                 
+                # AI 대응전략 생성
+                ai_strategy = generate_ai_strategy(article['title'], article['description'])
+                
+                # AI 전략 버튼을 위한 고유 키 생성
+                strategy_key = f"strategy_{i}"
+                
                 st.markdown(f"""
                 <div class="news-card">
                     <div class="news-title">{i}. {article['title']}</div>
@@ -1656,11 +1761,23 @@ def main():
                     <div class="news-description">
                         {article['description']}
                     </div>
-                    <a href="{article['url']}" target="_blank" class="news-link">
-                        🔗 원문 보기
-                    </a>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <a href="{article['url']}" target="_blank" class="news-link">
+                            🔗 원문 보기
+                        </a>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # AI 대응전략 버튼과 내용
+                if st.button(f"🤖 AI 대응전략 보기", key=strategy_key):
+                    st.markdown(f"""
+                    <div class="chatbot-container">
+                        <div style="color: #475569; font-size: 1rem; line-height: 1.6;">
+                            {ai_strategy}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
         else:
             st.info("🔍 사이드바에서 키워드를 입력하고 검색해주세요!")
     
@@ -1672,11 +1789,71 @@ def main():
             risk_map, risk_locations = create_risk_map()
             st_folium(risk_map, width=400, height=400, returned_objects=[])
             
-            # Risk Level 범례
-            st.markdown("#### 🚨 Risk Level")
+            # Risk Level 범례 (위험 유형별 분류)
+            st.markdown("#### 🚨 Risk Level & Type")
+            
+            # 위험도별 범례
+            st.markdown("**위험도:**")
             st.markdown("🔴 **높음** - 즉시 대응 필요")
             st.markdown("🟠 **중간** - 모니터링 필요")
             st.markdown("🟢 **낮음** - 정상 운영")
+            
+            # 위험 유형별 범례
+            st.markdown("**위험 유형:**")
+            st.markdown("⚔️ **전쟁** - 분쟁, 해적 활동, 지리적 긴장")
+            st.markdown("🌊 **자연재해** - 기후변화, 원전사고, 극한기후")
+            st.markdown("🚨 **기타** - 공급망 중단, 항구혼잡, 노동문제")
+            
+            # 전쟁 및 자연재해 현황 섹션
+            st.markdown("---")
+            st.markdown("### ⚔️ 전쟁/분쟁 현황")
+            
+            war_countries = [
+                {"name": "🇺🇦 우크라이나", "status": "러시아와 전쟁 중", "start_date": "2022년 2월", "impact": "곡물 수출 중단, 에너지 공급 위기"},
+                {"name": "🇮🇱 이스라엘", "status": "하마스와 분쟁", "start_date": "2023년 10월", "impact": "중동 지역 불안정, 에너지 가격 상승"},
+                {"name": "🇸🇩 수단", "status": "내전 진행 중", "start_date": "2023년 4월", "impact": "농산물 수출 중단, 인도적 위기"},
+                {"name": "🇾🇪 예멘", "status": "후티 반군과 분쟁", "start_date": "2014년", "impact": "홍해 해상 운송 위협"}
+            ]
+            
+            for country in war_countries:
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626; padding: 12px; margin: 8px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="color: #991b1b; font-size: 1rem;">{country['name']}</strong>
+                        <span style="background: #dc2626; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">{country['status']}</span>
+                    </div>
+                    <div style="color: #7f1d1d; font-size: 0.85rem; margin-bottom: 4px;">
+                        📅 시작: {country['start_date']}
+                    </div>
+                    <div style="color: #991b1b; font-size: 0.8rem;">
+                        ⚠️ 영향: {country['impact']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("### 🌊 자연재해 현황")
+            
+            disaster_countries = [
+                {"name": "🇯🇵 일본", "disaster": "지진 및 쓰나미", "date": "2024년 1월", "location": "이시카와현", "impact": "반도체 공장 가동 중단, 물류 지연"},
+                {"name": "🇹🇷 터키", "disaster": "대형 지진", "date": "2023년 2월", "location": "가지안테프", "impact": "건설 자재 공급 중단, 인프라 손상"},
+                {"name": "🇺🇸 미국", "disaster": "허리케인", "date": "2023년 8월", "location": "플로리다", "impact": "항구 폐쇄, 운송비 상승"}
+            ]
+            
+            for country in disaster_countries:
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 12px; margin: 8px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="color: #92400e; font-size: 1rem;">{country['name']}</strong>
+                        <span style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600;">{country['disaster']}</span>
+                    </div>
+                    <div style="color: #78350f; font-size: 0.85rem; margin-bottom: 4px;">
+                        📍 위치: {country['location']} | 📅 발생: {country['date']}
+                    </div>
+                    <div style="color: #92400e; font-size: 0.8rem;">
+                        ⚠️ 영향: {country['impact']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
             
         except Exception as e:
             st.error(f"지도 로딩 오류: {e}")

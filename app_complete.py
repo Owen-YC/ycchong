@@ -35,101 +35,124 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + Motion 애니메이션
+# 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + 귀여운 Motion 애니메이션
 st.markdown("""
 <style>
-    /* 전체 배경 - 깔끔한 흰색 */
+    /* 전체 배경 - 2025 트렌드 Glassmorphism + Neumorphism */
     .stApp {
-        background: #ffffff;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%);
         min-height: 100vh;
+        animation: gentleBackgroundShift 15s ease-in-out infinite;
     }
     
-    /* 메인 헤더 - Compact하고 세련된 디자인 */
+    /* 메인 헤더 - 2025 트렌드 Glassmorphism */
     .main-header {
-        font-size: 2.8rem;
-        font-weight: 800;
+        font-size: 3.2rem;
+        font-weight: 900;
         text-align: center;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 25%, #60a5fa 50%, #93c5fd 75%, #dbeafe 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1.5rem;
-        letter-spacing: -0.02em;
+        margin-bottom: 2rem;
+        letter-spacing: -0.03em;
         position: relative;
-        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite;
+        animation: fadeInDown 1s ease-out, headerFloat 6s ease-in-out infinite, headerGlow 8s ease-in-out infinite;
+        text-shadow: 0 0 30px rgba(30, 64, 175, 0.3);
     }
     
-    /* 서브 헤더 - 작은 폰트 + 화려한 Motion */
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        border-radius: 4px;
+        animation: expandWidth 3s ease-out, rainbowGlow 10s ease-in-out infinite;
+    }
+    
+    /* 서브 헤더 - 귀여운 Motion */
     .sub-header {
-        font-size: 1.1rem;
-        font-weight: 500;
+        font-size: 1.3rem;
+        font-weight: 600;
         text-align: center;
-        background: linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
+        background: linear-gradient(135deg, #475569 0%, #64748b 50%, #94a3b8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 2.5rem;
-        letter-spacing: 0.02em;
+        margin-bottom: 3rem;
+        letter-spacing: 0.03em;
         position: relative;
-        animation: fadeInUp 1.2s ease-out, subHeaderGlow 6s ease-in-out infinite, gentlePulse 10s ease-in-out infinite;
+        animation: fadeInUp 1.5s ease-out, subHeaderFloat 8s ease-in-out infinite, gentlePulse 12s ease-in-out infinite;
     }
     
     .sub-header::before {
         content: '';
         position: absolute;
-        top: -8px;
+        top: -10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 50px;
-        height: 2px;
+        width: 60px;
+        height: 3px;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-        border-radius: 2px;
-        animation: expandWidth 2s ease-out, glowPulse 4s ease-in-out infinite;
+        border-radius: 3px;
+        animation: expandWidth 2.5s ease-out, glowPulse 6s ease-in-out infinite;
     }
     
+    /* 귀여운 Motion 애니메이션들 */
     @keyframes expandWidth {
-        from { width: 0px; }
-        to { width: 50px; }
+        from { width: 0px; opacity: 0; }
+        to { width: 100px; opacity: 1; }
     }
     
     @keyframes glowPulse {
         0%, 100% { 
-            box-shadow: 0 0 5px rgba(30, 64, 175, 0.3);
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.4);
         }
         50% { 
-            box-shadow: 0 0 20px rgba(30, 64, 175, 0.6);
+            box-shadow: 0 0 25px rgba(30, 64, 175, 0.8);
         }
     }
     
     @keyframes headerFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-4px) rotate(0.5deg); }
+        50% { transform: translateY(-6px) rotate(0deg); }
+        75% { transform: translateY(-4px) rotate(-0.5deg); }
+    }
+    
+    @keyframes subHeaderFloat {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-3px); }
     }
     
     @keyframes subHeaderGlow {
-        0%, 100% { filter: brightness(1); }
-        50% { filter: brightness(1.2); }
+        0%, 100% { filter: brightness(1) drop-shadow(0 0 5px rgba(30, 64, 175, 0.2)); }
+        50% { filter: brightness(1.3) drop-shadow(0 0 15px rgba(30, 64, 175, 0.5)); }
     }
     
     @keyframes gentlePulse {
         0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.02); }
+        50% { transform: scale(1.03); }
     }
     
-    /* 추가적인 화려한 Motion 애니메이션 */
+    /* 화려한 Motion 애니메이션 */
     @keyframes rainbowGlow {
-        0% { filter: hue-rotate(0deg) brightness(1); }
-        25% { filter: hue-rotate(90deg) brightness(1.1); }
-        50% { filter: hue-rotate(180deg) brightness(1.2); }
-        75% { filter: hue-rotate(270deg) brightness(1.1); }
-        100% { filter: hue-rotate(360deg) brightness(1); }
+        0% { filter: hue-rotate(0deg) brightness(1) drop-shadow(0 0 10px rgba(30, 64, 175, 0.3)); }
+        25% { filter: hue-rotate(90deg) brightness(1.1) drop-shadow(0 0 15px rgba(59, 130, 246, 0.4)); }
+        50% { filter: hue-rotate(180deg) brightness(1.2) drop-shadow(0 0 20px rgba(96, 165, 250, 0.5)); }
+        75% { filter: hue-rotate(270deg) brightness(1.1) drop-shadow(0 0 15px rgba(147, 197, 253, 0.4)); }
+        100% { filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 10px rgba(30, 64, 175, 0.3)); }
     }
     
     @keyframes continuousFloat {
         0%, 100% { transform: translateY(0px) rotate(0deg); }
-        25% { transform: translateY(-2px) rotate(0.5deg); }
-        50% { transform: translateY(-4px) rotate(0deg); }
-        75% { transform: translateY(-2px) rotate(-0.5deg); }
+        25% { transform: translateY(-3px) rotate(0.8deg); }
+        50% { transform: translateY(-5px) rotate(0deg); }
+        75% { transform: translateY(-3px) rotate(-0.8deg); }
     }
     
     @keyframes breathingEffect {
@@ -138,8 +161,8 @@ st.markdown("""
             opacity: 1;
         }
         50% { 
-            transform: scale(1.05);
-            opacity: 0.9;
+            transform: scale(1.08);
+            opacity: 0.95;
         }
     }
     
@@ -148,124 +171,262 @@ st.markdown("""
         100% { background-position: 200% center; }
     }
     
-    /* 전체 페이지에 조화로운 Motion 적용 */
-    .stApp {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        min-height: 100vh;
-        animation: gentleBackgroundShift 20s ease-in-out infinite;
-    }
-    
     @keyframes gentleBackgroundShift {
-        0%, 100% { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
-        50% { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
+        0%, 100% { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #e2e8f0 100%); }
+        25% { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%); }
+        50% { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%); }
+        75% { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%); }
     }
     
-    /* 뉴스 카드 - Motion 제거하고 깔끔하게 */
+    /* 뉴스 카드 - 2025 트렌드 Glassmorphism */
     .news-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(30, 64, 175, 0.08);
-        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(30, 64, 175, 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 
+            0 8px 32px rgba(30, 64, 175, 0.1),
+            0 4px 16px rgba(30, 64, 175, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        animation: slideInLeft 0.6s ease-out;
+        animation: slideInLeft 0.8s ease-out, continuousFloat 12s ease-in-out infinite;
     }
     
-    /* 뉴스 제목 - Motion 제거 */
+    .news-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(30, 64, 175, 0.1), transparent);
+        animation: shimmerEffect 3s ease-in-out infinite;
+    }
+    
+    .news-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 
+            0 20px 40px rgba(30, 64, 175, 0.15),
+            0 8px 16px rgba(30, 64, 175, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+    
+    /* 뉴스 제목 - 귀여운 Motion */
     .news-title {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #1e293b;
-        margin-bottom: 1rem;
-        line-height: 1.4;
+        margin-bottom: 1.2rem;
+        line-height: 1.5;
         position: relative;
+        animation: titleGlow 8s ease-in-out infinite;
     }
     
     .news-title::before {
         content: '';
         position: absolute;
-        left: -10px;
+        left: -15px;
         top: 50%;
         transform: translateY(-50%);
-        width: 4px;
+        width: 5px;
         height: 0;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        animation: expandHeight 2s ease-out;
+        border-radius: 3px;
+        animation: expandHeight 2.5s ease-out, glowPulse 6s ease-in-out infinite;
     }
     
     @keyframes expandHeight {
-        from { height: 0; }
-        to { height: 80%; }
+        from { height: 0; opacity: 0; }
+        to { height: 90%; opacity: 1; }
     }
     
-    /* 뉴스 링크 버튼 - Motion 제거 */
+    @keyframes titleGlow {
+        0%, 100% { 
+            text-shadow: 0 0 5px rgba(30, 64, 175, 0.2);
+        }
+        50% { 
+            text-shadow: 0 0 15px rgba(30, 64, 175, 0.4);
+        }
+    }
+    
+    /* 뉴스 링크 버튼 - 귀여운 Motion */
     .news-link {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        gap: 0.6rem;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
         color: white !important;
+        padding: 0.8rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
         position: relative;
         overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: buttonGlow 6s ease-in-out infinite;
+        box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
     }
     
-    /* 실시간 정보 - 낮/밤 테마 */
+    .news-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmerEffect 2s ease-in-out infinite;
+    }
+    
+    .news-link:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+    }
+    
+    @keyframes buttonGlow {
+        0%, 100% { 
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        50% { 
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.5);
+        }
+    }
+    
+    /* 실시간 정보 - 2025 트렌드 Glassmorphism */
     .weather-info.day {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        background: rgba(219, 234, 254, 0.9);
+        backdrop-filter: blur(20px);
         color: #1e40af;
-        border: 2px solid #3b82f6;
+        border: 2px solid rgba(59, 130, 246, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 
+            0 8px 32px rgba(59, 130, 246, 0.15),
+            0 4px 16px rgba(59, 130, 246, 0.1);
+        animation: weatherFloat 8s ease-in-out infinite;
     }
     
     .weather-info.night {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        background: rgba(30, 41, 59, 0.9);
+        backdrop-filter: blur(20px);
         color: #e2e8f0;
-        border: 2px solid #475569;
+        border: 2px solid rgba(71, 85, 105, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 
+            0 8px 32px rgba(71, 85, 105, 0.15),
+            0 4px 16px rgba(71, 85, 105, 0.1);
+        animation: weatherFloat 8s ease-in-out infinite;
     }
     
     .weather-info.rainy {
-        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-        animation: rainEffect 2s ease-in-out infinite;
+        background: rgba(203, 213, 225, 0.9);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(148, 163, 184, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 
+            0 8px 32px rgba(148, 163, 184, 0.15),
+            0 4px 16px rgba(148, 163, 184, 0.1);
+        animation: rainEffect 3s ease-in-out infinite, weatherFloat 8s ease-in-out infinite;
     }
     
     .weather-info.snowy {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        animation: snowEffect 3s ease-in-out infinite;
+        background: rgba(241, 245, 249, 0.9);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(226, 232, 240, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 
+            0 8px 32px rgba(226, 232, 240, 0.15),
+            0 4px 16px rgba(226, 232, 240, 0.1);
+        animation: snowEffect 4s ease-in-out infinite, weatherFloat 8s ease-in-out infinite;
+    }
+    
+    @keyframes weatherFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-3px) rotate(0.3deg); }
+        50% { transform: translateY(-5px) rotate(0deg); }
+        75% { transform: translateY(-3px) rotate(-0.3deg); }
     }
     
     @keyframes rainEffect {
-        0%, 100% { background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%); }
-        50% { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); }
+        0%, 100% { 
+            background: rgba(203, 213, 225, 0.9);
+            box-shadow: 0 8px 32px rgba(148, 163, 184, 0.15);
+        }
+        50% { 
+            background: rgba(148, 163, 184, 0.9);
+            box-shadow: 0 8px 32px rgba(100, 116, 139, 0.2);
+        }
     }
     
     @keyframes snowEffect {
-        0%, 100% { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
-        50% { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); }
+        0%, 100% { 
+            background: rgba(241, 245, 249, 0.9);
+            box-shadow: 0 8px 32px rgba(226, 232, 240, 0.15);
+        }
+        50% { 
+            background: rgba(226, 232, 240, 0.9);
+            box-shadow: 0 8px 32px rgba(203, 213, 225, 0.2);
+        }
     }
     
-    /* 환율 및 금속 가격 카드 - 작은 사이즈 */
+    /* 환율 및 금속 가격 카드 - 2025 트렌드 Glassmorphism */
     .exchange-rate-card {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 1px solid #0ea5e9;
-        border-radius: 12px;
-        padding: 0.8rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
-        animation: slideInUp 0.6s ease-out, exchangePulse 4s ease-in-out infinite;
+        background: rgba(240, 249, 255, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(14, 165, 233, 0.3);
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 0.8rem 0;
+        box-shadow: 
+            0 8px 32px rgba(14, 165, 233, 0.15),
+            0 4px 16px rgba(14, 165, 233, 0.1);
+        animation: slideInUp 0.8s ease-out, exchangeFloat 10s ease-in-out infinite;
         font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .exchange-rate-card:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 
+            0 12px 40px rgba(14, 165, 233, 0.2),
+            0 6px 20px rgba(14, 165, 233, 0.15);
     }
     
     .metal-price-card {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        border: 1px solid #f59e0b;
-        border-radius: 12px;
-        padding: 0.8rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-        animation: slideInUp 0.6s ease-out, metalSlideIn 0.8s ease-out, metalFloat 6s ease-in-out infinite;
+        background: rgba(254, 243, 199, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 0.8rem 0;
+        box-shadow: 
+            0 8px 32px rgba(245, 158, 11, 0.15),
+            0 4px 16px rgba(245, 158, 11, 0.1);
+        animation: slideInUp 0.8s ease-out, metalFloat 12s ease-in-out infinite;
         font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .metal-price-card:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 
+            0 12px 40px rgba(245, 158, 11, 0.2),
+            0 6px 20px rgba(245, 158, 11, 0.15);
+    }
+    
+    @keyframes exchangeFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-2px) rotate(0.2deg); }
+        50% { transform: translateY(-4px) rotate(0deg); }
+        75% { transform: translateY(-2px) rotate(-0.2deg); }
     }
     
     .price-change {
@@ -375,142 +536,301 @@ st.markdown("""
         }
     }
     
-    /* 뉴스 소스 표시 - 빨간색 박스 */
+    /* 뉴스 소스 표시 - 2025 트렌드 Glassmorphism */
     .news-source {
         display: inline-block;
-        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        background: rgba(220, 38, 38, 0.9);
+        backdrop-filter: blur(20px);
         color: white;
-        padding: 0.3rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
         font-weight: 600;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 
+            0 4px 16px rgba(220, 38, 38, 0.3),
+            0 2px 8px rgba(220, 38, 38, 0.2);
+        animation: sourcePulse 6s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* AI 전략 버튼 */
+    .news-source:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 
+            0 8px 24px rgba(220, 38, 38, 0.4),
+            0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
+    @keyframes sourcePulse {
+        0%, 100% { 
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        }
+        50% { 
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+        }
+    }
+    
+    /* AI 전략 버튼 - 2025 트렌드 Glassmorphism */
     .ai-strategy-btn {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        gap: 0.6rem;
+        background: rgba(5, 150, 105, 0.9);
+        backdrop-filter: blur(20px);
         color: white !important;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
         text-decoration: none;
         font-weight: 600;
         font-size: 0.9rem;
         margin-left: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 
+            0 4px 16px rgba(5, 150, 105, 0.3),
+            0 2px 8px rgba(5, 150, 105, 0.2);
+        animation: strategyFloat 8s ease-in-out infinite;
     }
     
     .ai-strategy-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.5);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 
+            0 8px 24px rgba(5, 150, 105, 0.4),
+            0 4px 12px rgba(5, 150, 105, 0.3);
         color: white !important;
     }
     
-    /* 챗봇 컨테이너 */
+    @keyframes strategyFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-2px) rotate(0.2deg); }
+        50% { transform: translateY(-3px) rotate(0deg); }
+        75% { transform: translateY(-2px) rotate(-0.2deg); }
+    }
+    
+    /* 챗봇 컨테이너 - 2025 트렌드 Glassmorphism */
     .chatbot-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+        background: rgba(248, 250, 252, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(30, 64, 175, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 1.5rem;
+        box-shadow: 
+            0 8px 32px rgba(30, 64, 175, 0.1),
+            0 4px 16px rgba(30, 64, 175, 0.05);
+        animation: chatbotFloat 10s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* 검색 통계 */
+    .chatbot-container:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 12px 40px rgba(30, 64, 175, 0.15),
+            0 6px 20px rgba(30, 64, 175, 0.1);
+    }
+    
+    @keyframes chatbotFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-2px); }
+    }
+    
+    /* 검색 통계 - 2025 트렌드 Glassmorphism */
     .search-stats {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border: 1px solid #0ea5e9;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+        background: rgba(240, 249, 255, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(14, 165, 233, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 
+            0 8px 32px rgba(14, 165, 233, 0.15),
+            0 4px 16px rgba(14, 165, 233, 0.1);
+        animation: statsFloat 12s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* 필터 버튼 */
+    .search-stats:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 12px 40px rgba(14, 165, 233, 0.2),
+            0 6px 20px rgba(14, 165, 233, 0.15);
+    }
+    
+    @keyframes statsFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-2px) rotate(0.1deg); }
+        50% { transform: translateY(-3px) rotate(0deg); }
+        75% { transform: translateY(-2px) rotate(-0.1deg); }
+    }
+    
+    /* 필터 버튼 - 2025 트렌드 Glassmorphism */
     .filter-btn {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: rgba(99, 102, 241, 0.9);
+        backdrop-filter: blur(20px);
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
         font-weight: 600;
-        margin: 0.5rem;
+        margin: 0.6rem;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 
+            0 4px 16px rgba(99, 102, 241, 0.3),
+            0 2px 8px rgba(99, 102, 241, 0.2);
+        animation: filterFloat 8s ease-in-out infinite;
     }
     
     .filter-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 
+            0 8px 24px rgba(99, 102, 241, 0.4),
+            0 4px 12px rgba(99, 102, 241, 0.3);
     }
     
     .filter-btn.active {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.5);
+        background: rgba(30, 64, 175, 0.9);
+        backdrop-filter: blur(20px);
+        box-shadow: 
+            0 6px 20px rgba(30, 64, 175, 0.4),
+            0 3px 10px rgba(30, 64, 175, 0.3);
     }
     
-    /* 지도 범례 */
+    @keyframes filterFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-2px); }
+    }
+    
+    /* 지도 범례 - 2025 트렌드 Glassmorphism */
     .map-legend {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(30, 64, 175, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 
+            0 8px 32px rgba(30, 64, 175, 0.1),
+            0 4px 16px rgba(30, 64, 175, 0.05);
+        animation: legendFloat 14s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .map-legend:hover {
+        transform: translateY(-2px);
+        box-shadow: 
+            0 12px 40px rgba(30, 64, 175, 0.15),
+            0 6px 20px rgba(30, 64, 175, 0.1);
+    }
+    
+    @keyframes legendFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-1px) rotate(0.1deg); }
+        50% { transform: translateY(-2px) rotate(0deg); }
+        75% { transform: translateY(-1px) rotate(-0.1deg); }
     }
     
     .legend-item {
         display: flex;
         align-items: center;
-        margin: 0.5rem 0;
-        font-size: 0.9rem;
+        margin: 0.8rem 0;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+    
+    .legend-item:hover {
+        transform: translateX(5px);
     }
     
     .legend-icon {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
-        margin-right: 0.5rem;
+        margin-right: 0.8rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        animation: iconBounce 4s ease-in-out infinite;
     }
     
-    /* 전쟁/자연재해 현황 */
+    @keyframes iconBounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    /* 전쟁/자연재해 현황 - 2025 트렌드 Glassmorphism */
     .status-section {
-        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-        border: 1px solid #fecaca;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+        background: rgba(254, 242, 242, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 
+            0 8px 32px rgba(239, 68, 68, 0.15),
+            0 4px 16px rgba(239, 68, 68, 0.1);
+        animation: statusFloat 16s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .status-section:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 12px 40px rgba(239, 68, 68, 0.2),
+            0 6px 20px rgba(239, 68, 68, 0.15);
+    }
+    
+    @keyframes statusFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-2px) rotate(0.1deg); }
+        50% { transform: translateY(-3px) rotate(0deg); }
+        75% { transform: translateY(-2px) rotate(-0.1deg); }
     }
     
     .status-item {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid #fecaca;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(254, 202, 202, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 0.8rem 0;
+        box-shadow: 
+            0 4px 16px rgba(0, 0, 0, 0.1),
+            0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: itemFloat 6s ease-in-out infinite;
+    }
+    
+    .status-item:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 
+            0 8px 24px rgba(0, 0, 0, 0.15),
+            0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    @keyframes itemFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-1px); }
     }
     
     .status-title {
         font-weight: 700;
         color: #dc2626;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+        animation: titleGlow 8s ease-in-out infinite;
     }
     
     .status-details {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         color: #6b7280;
-        line-height: 1.4;
+        line-height: 1.5;
+        transition: all 0.3s ease;
+    }
+    
+    .status-details:hover {
+        color: #374151;
     }
 </style>
 """, unsafe_allow_html=True)

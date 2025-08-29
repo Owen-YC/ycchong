@@ -1025,45 +1025,45 @@ def crawl_google_news(query, num_results=20):
                 if any(keyword.lower() in title_lower for keyword in scm_keywords):
                     # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
                     if link.startswith('https://news.google.com'):
+                        try:
+                            news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
+                            actual_url = news_response.url
+                            # Google 검색 결과가 아닌 실제 뉴스 사이트인지 확인
+                            if 'google.com/search' in actual_url:
+                                continue  # Google 검색 결과는 건너뛰기
+                        except:
+                            continue  # 링크 접근 실패 시 건너뛰기
+                    else:
+                        actual_url = link
+                
+                    # 링크 유효성 검증 (실제 기사가 존재하는지 확인)
                     try:
-                        news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
-                        actual_url = news_response.url
-                        # Google 검색 결과가 아닌 실제 뉴스 사이트인지 확인
-                        if 'google.com/search' in actual_url:
-                            continue  # Google 검색 결과는 건너뛰기
+                        article_response = requests.head(actual_url, headers=headers, timeout=5)
+                        if article_response.status_code != 200:
+                            continue  # 기사가 존재하지 않으면 건너뛰기
                     except:
                         continue  # 링크 접근 실패 시 건너뛰기
-                else:
-                    actual_url = link
-                
-                # 링크 유효성 검증 (실제 기사가 존재하는지 확인)
-                try:
-                    article_response = requests.head(actual_url, headers=headers, timeout=5)
-                    if article_response.status_code != 200:
-                        continue  # 기사가 존재하지 않으면 건너뛰기
-                except:
-                    continue  # 링크 접근 실패 시 건너뛰기
-                
-                # 발행 시간 파싱
-                try:
-                    from email.utils import parsedate_to_datetime
-                    parsed_date = parsedate_to_datetime(pub_date)
-                    formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-                except:
-                    formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-                
-                article = {
-                    'title': title,
-                    'url': actual_url,
-                    'source': source,
-                    'published_time': formatted_date,
-                    'description': f"{title} - {source}에서 제공하는 {query} 관련 뉴스입니다.",
-                    'views': random.randint(500, 5000)  # 조회수는 시뮬레이션
-                }
-                articles.append(article)
-                
-                if len(articles) >= num_results:
-                    break
+                    
+                    # 발행 시간 파싱
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        parsed_date = parsedate_to_datetime(pub_date)
+                        formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    except:
+                        formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+                    
+                    article = {
+                        'title': title,
+                        'url': actual_url,
+                        'source': source,
+                        'published_time': formatted_date,
+                        'description': f"{title} - {source}에서 제공하는 {query} 관련 뉴스입니다.",
+                        'views': random.randint(500, 5000)  # 조회수는 시뮬레이션
+                    }
+                    articles.append(article)
+                    
+                    if len(articles) >= num_results:
+                        break
         
         # 실제 뉴스가 부족한 경우에만 백업 뉴스 추가 (SCM Risk 관련)
         if len(articles) < num_results:

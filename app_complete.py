@@ -10,7 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium
 import google.generativeai as genai
 import json
 import pytz
@@ -879,10 +879,10 @@ def get_metal_prices():
             "은": "SI=F",      # Silver
             "구리": "HG=F",    # Copper
             "알루미늄": "ALI=F",  # Aluminum
-            "니켈": "NID=F",   # Nickel
-            "아연": "ZNC=F",   # Zinc
-            "납": "LED=F",     # Lead
-            "주석": "SN=F"     # Tin
+            "니켈": "NICKEL=F",   # Nickel
+            "아연": "ZINC=F",   # Zinc
+            "납": "LEAD=F",     # Lead
+            "주석": "TIN=F"     # Tin
         }
         
         metal_prices = {}
@@ -1566,7 +1566,7 @@ def main():
         
         try:
             risk_map, risk_locations = create_risk_map()
-            folium_static(risk_map, width=400, height=400)
+            st_folium(risk_map, width=400, height=400, returned_objects=[])
             
             # Risk Level 범례
             st.markdown("#### 🚨 Risk Level")

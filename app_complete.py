@@ -56,7 +56,108 @@ st.markdown("""
         margin-bottom: 2rem;
         letter-spacing: -0.02em;
         position: relative;
-        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite;
+        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite, headerFloat 8s ease-in-out infinite;
+    }
+    
+    /* 서브 헤더 - 작은 폰트 + 화려한 Motion */
+    .sub-header {
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        background: linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 3rem;
+        letter-spacing: 0.02em;
+        position: relative;
+        animation: fadeInUp 1.2s ease-out, subHeaderGlow 6s ease-in-out infinite, gentlePulse 10s ease-in-out infinite;
+    }
+    
+    .sub-header::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        border-radius: 2px;
+        animation: expandWidth 2s ease-out, glowPulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes expandWidth {
+        from { width: 0px; }
+        to { width: 60px; }
+    }
+    
+    @keyframes glowPulse {
+        0%, 100% { 
+            box-shadow: 0 0 5px rgba(30, 64, 175, 0.3);
+        }
+        50% { 
+            box-shadow: 0 0 20px rgba(30, 64, 175, 0.6);
+        }
+    }
+    
+    @keyframes headerFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-3px); }
+    }
+    
+    @keyframes subHeaderGlow {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+    }
+    
+    @keyframes gentlePulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+    
+    /* 추가적인 화려한 Motion 애니메이션 */
+    @keyframes rainbowGlow {
+        0% { filter: hue-rotate(0deg) brightness(1); }
+        25% { filter: hue-rotate(90deg) brightness(1.1); }
+        50% { filter: hue-rotate(180deg) brightness(1.2); }
+        75% { filter: hue-rotate(270deg) brightness(1.1); }
+        100% { filter: hue-rotate(360deg) brightness(1); }
+    }
+    
+    @keyframes continuousFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-2px) rotate(0.5deg); }
+        50% { transform: translateY(-4px) rotate(0deg); }
+        75% { transform: translateY(-2px) rotate(-0.5deg); }
+    }
+    
+    @keyframes breathingEffect {
+        0%, 100% { 
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% { 
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+    }
+    
+    @keyframes shimmerEffect {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    
+    /* 전체 페이지에 조화로운 Motion 적용 */
+    .stApp {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        min-height: 100vh;
+        animation: gentleBackgroundShift 20s ease-in-out infinite;
+    }
+    
+    @keyframes gentleBackgroundShift {
+        0%, 100% { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
+        50% { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
     }
     
     @keyframes fadeInDown {
@@ -101,7 +202,7 @@ st.markdown("""
         }
     }
     
-    /* 뉴스 카드 - 2025 트렌드 + Motion */
+    /* 뉴스 카드 - 2025 트렌드 + 화려한 Motion */
     .news-card {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border: 1px solid #e2e8f0;
@@ -112,7 +213,18 @@ st.markdown("""
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        animation: slideInLeft 0.6s ease-out, gentleFloat 6s ease-in-out infinite;
+        animation: slideInLeft 0.6s ease-out, continuousFloat 8s ease-in-out infinite, breathingEffect 12s ease-in-out infinite;
+    }
+    
+    .news-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+        animation: shimmerEffect 3s ease-in-out infinite;
     }
     
     @keyframes slideInLeft {
@@ -161,14 +273,32 @@ st.markdown("""
         border-color: #3b82f6;
     }
     
-    /* 뉴스 제목 */
+    /* 뉴스 제목 - 화려한 Motion */
     .news-title {
         font-size: 1.4rem;
         font-weight: 700;
         color: #1e293b;
         margin-bottom: 1rem;
         line-height: 1.4;
-        animation: titleGlow 5s ease-in-out infinite;
+        animation: titleGlow 5s ease-in-out infinite, gentlePulse 8s ease-in-out infinite;
+        position: relative;
+    }
+    
+    .news-title::before {
+        content: '';
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 0;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        animation: expandHeight 2s ease-out;
+    }
+    
+    @keyframes expandHeight {
+        from { height: 0; }
+        to { height: 80%; }
     }
     
     /* 뉴스 메타 정보 */
@@ -191,13 +321,37 @@ st.markdown("""
         animation: descriptionPulse 7s ease-in-out infinite;
     }
     
-    /* 뉴스 링크 버튼 - 2025 트렌드 + Motion */
+    /* 뉴스 링크 버튼 - 2025 트렌드 + 화려한 Motion */
     .news-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
         color: white !important;
+        animation: buttonGlow 4s ease-in-out infinite, gentleFloat 6s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmerEffect 2s ease-in-out infinite;
+    }
+    
+    @keyframes buttonGlow {
+        0%, 100% { 
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+        50% { 
+            box-shadow: 0 4px 25px rgba(30, 64, 175, 0.6);
+        }
+    }
         padding: 0.75rem 1.5rem;
         border-radius: 12px;
         text-decoration: none;
@@ -1761,7 +1915,7 @@ SCM Risk 관리는 공급망의 불확실성을 식별하고 관리하는 과정
 def main():
     # 헤더
     st.markdown('<h1 class="main-header">🤖 SCM Risk Management AI</h1>', unsafe_allow_html=True)
-    st.markdown("### 🌍 글로벌 공급망 위험을 실시간으로 모니터링하고 관리하세요")
+    st.markdown('<h2 class="sub-header">🌍 글로벌 공급망 위험을 실시간으로 모니터링하고 관리하세요</h2>', unsafe_allow_html=True)
     
     # 사이드바 - 날짜, 시간, 날씨 정보 + 챗봇
     with st.sidebar:

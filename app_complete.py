@@ -14,7 +14,14 @@ from streamlit_folium import folium_static
 import google.generativeai as genai
 import json
 import pytz
-import yfinance as yf
+
+# yfinance 임포트 시도 (없으면 시뮬레이션 모드)
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+    st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
 
 # Gemini API 설정
 genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
@@ -780,6 +787,19 @@ def get_weather_info():
 
 def get_exchange_rate():
     """실시간 원/달러 환율 정보 가져오기"""
+    # yfinance가 없으면 시뮬레이션 데이터만 사용
+    if not YFINANCE_AVAILABLE:
+        base_rate = random.uniform(1300, 1400)
+        change = random.uniform(-10, 10)
+        change_percent = (change / base_rate) * 100
+        
+        return {
+            "rate": round(base_rate, 2),
+            "change": round(change, 2),
+            "change_percent": round(change_percent, 2),
+            "status": "up" if change > 0 else "down" if change < 0 else "stable"
+        }
+    
     try:
         # USD/KRW 환율 정보 가져오기
         usdkrw = yf.Ticker("USDKRW=X")
@@ -825,6 +845,31 @@ def get_exchange_rate():
 
 def get_metal_prices():
     """런던금속거래소(LME) 주요 광물 가격 정보 가져오기"""
+    # yfinance가 없으면 시뮬레이션 데이터만 사용
+    if not YFINANCE_AVAILABLE:
+        metal_prices = {}
+        base_prices = {
+            "구리": random.uniform(8000, 10000),
+            "알루미늄": random.uniform(2000, 3000),
+            "니켈": random.uniform(15000, 25000),
+            "아연": random.uniform(2500, 3500),
+            "납": random.uniform(1800, 2500),
+            "주석": random.uniform(25000, 35000)
+        }
+        
+        for metal_name, base_price in base_prices.items():
+            change = random.uniform(-base_price * 0.05, base_price * 0.05)
+            change_percent = (change / base_price) * 100
+            
+            metal_prices[metal_name] = {
+                "price": round(base_price, 2),
+                "change": round(change, 2),
+                "change_percent": round(change_percent, 2),
+                "status": "up" if change > 0 else "down" if change < 0 else "stable"
+            }
+        
+        return metal_prices
+    
     try:
         # 주요 금속 티커들
         metal_tickers = {

@@ -1090,7 +1090,7 @@ def main():
                 except:
                     formatted_time = article['published_time']
                 
-                                st.markdown(f"""
+                st.markdown(f"""
                 <div class="news-card">
                     <div class="news-title">{i}. {article['title']}</div>
                     <div class="news-meta">

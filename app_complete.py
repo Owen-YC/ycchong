@@ -17,7 +17,7 @@ import pytz
 
 # Gemini API 설정
 genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel('gemini-1.5-pro')
 
 # 페이지 설정
 st.set_page_config(
@@ -48,7 +48,7 @@ st.markdown("""
         margin-bottom: 2rem;
         letter-spacing: -0.02em;
         position: relative;
-        animation: fadeInDown 1s ease-out;
+        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite;
     }
     
     @keyframes fadeInDown {
@@ -84,6 +84,15 @@ st.markdown("""
         }
     }
     
+    @keyframes headerGlow {
+        0%, 100% {
+            filter: brightness(1);
+        }
+        50% {
+            filter: brightness(1.1);
+        }
+    }
+    
     /* 뉴스 카드 - 2025 트렌드 + Motion */
     .news-card {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -95,7 +104,7 @@ st.markdown("""
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        animation: slideInLeft 0.6s ease-out;
+        animation: slideInLeft 0.6s ease-out, gentleFloat 6s ease-in-out infinite;
     }
     
     @keyframes slideInLeft {
@@ -129,6 +138,15 @@ st.markdown("""
         }
     }
     
+    @keyframes gentleFloat {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-2px);
+        }
+    }
+    
     .news-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 40px rgba(30, 64, 175, 0.12);
@@ -142,6 +160,7 @@ st.markdown("""
         color: #1e293b;
         margin-bottom: 1rem;
         line-height: 1.4;
+        animation: titleGlow 5s ease-in-out infinite;
     }
     
     /* 뉴스 메타 정보 */
@@ -152,6 +171,7 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 1rem;
+        animation: metaFade 6s ease-in-out infinite;
     }
     
     /* 뉴스 설명 */
@@ -160,6 +180,7 @@ st.markdown("""
         color: #475569;
         line-height: 1.6;
         margin-bottom: 1.5rem;
+        animation: descriptionPulse 7s ease-in-out infinite;
     }
     
     /* 뉴스 링크 버튼 - 2025 트렌드 + Motion */
@@ -178,7 +199,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
         position: relative;
         overflow: hidden;
-        animation: pulse 2s infinite;
+        animation: pulse 2s infinite, float 3s ease-in-out infinite;
     }
     
     @keyframes pulse {
@@ -190,6 +211,15 @@ st.markdown("""
         }
         100% {
             box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-3px);
         }
     }
     
@@ -226,7 +256,7 @@ st.markdown("""
         border: none;
         box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
         transition: all 0.3s ease;
-        animation: bounceIn 0.8s ease-out;
+        animation: bounceIn 0.8s ease-out, buttonPulse 3s ease-in-out infinite;
     }
     
     @keyframes bounceIn {
@@ -247,6 +277,15 @@ st.markdown("""
         }
     }
     
+    @keyframes buttonPulse {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
+        }
+        50% {
+            box-shadow: 0 6px 18px rgba(30, 64, 175, 0.3);
+        }
+    }
+    
     .stButton > button:hover {
         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         transform: translateY(-2px);
@@ -261,7 +300,7 @@ st.markdown("""
         padding: 2rem;
         margin-bottom: 2rem;
         box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-        animation: fadeIn 1s ease-out;
+        animation: fadeIn 1s ease-out, softPulse 5s ease-in-out infinite;
     }
     
     @keyframes fadeIn {
@@ -270,6 +309,15 @@ st.markdown("""
         }
         to {
             opacity: 1;
+        }
+    }
+    
+    @keyframes softPulse {
+        0%, 100% {
+            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
+        }
+        50% {
+            box-shadow: 0 6px 25px rgba(30, 64, 175, 0.15);
         }
     }
     
@@ -285,7 +333,7 @@ st.markdown("""
         gap: 0.5rem;
         margin: 1rem 0;
         box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        animation: shake 2s infinite;
+        animation: shake 2s infinite, glow 1.5s ease-in-out infinite alternate;
     }
     
     @keyframes shake {
@@ -300,6 +348,15 @@ st.markdown("""
         }
     }
     
+    @keyframes glow {
+        from {
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        to {
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.6), 0 0 30px rgba(220, 38, 38, 0.4);
+        }
+    }
+    
     /* 챗봇 컨테이너 */
     .chatbot-container {
         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -308,7 +365,7 @@ st.markdown("""
         padding: 2rem;
         margin-bottom: 2rem;
         box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-        animation: slideInRight 0.8s ease-out;
+        animation: slideInRight 0.8s ease-out, gentleWave 7s ease-in-out infinite;
     }
     
     @keyframes slideInRight {
@@ -322,6 +379,18 @@ st.markdown("""
         }
     }
     
+    @keyframes gentleWave {
+        0%, 100% {
+            transform: translateX(0px);
+        }
+        25% {
+            transform: translateX(1px);
+        }
+        75% {
+            transform: translateX(-1px);
+        }
+    }
+    
     /* 날씨 정보 */
     .weather-info {
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
@@ -330,7 +399,7 @@ st.markdown("""
         padding: 1.5rem;
         margin-bottom: 1rem;
         box-shadow: 0 4px 20px rgba(30, 64, 175, 0.2);
-        animation: rotateIn 1s ease-out;
+        animation: rotateIn 1s ease-out, breathe 4s ease-in-out infinite;
     }
     
     @keyframes rotateIn {
@@ -341,6 +410,15 @@ st.markdown("""
         to {
             opacity: 1;
             transform: rotate(0) scale(1);
+        }
+    }
+    
+    @keyframes breathe {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.02);
         }
     }
     
@@ -356,6 +434,7 @@ st.markdown("""
         font-size: 0.8rem;
         transition: all 0.3s ease;
         box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
+        animation: mapLinkGlow 4s ease-in-out infinite;
     }
     
     .map-news-link:hover {
@@ -363,6 +442,42 @@ st.markdown("""
         transform: translateX(5px);
         color: white !important;
         text-decoration: none;
+    }
+    
+    @keyframes mapLinkGlow {
+        0%, 100% {
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
+        }
+        50% {
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+        }
+    }
+    
+    @keyframes titleGlow {
+        0%, 100% {
+            color: #1e293b;
+        }
+        50% {
+            color: #1e40af;
+        }
+    }
+    
+    @keyframes metaFade {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+    
+    @keyframes descriptionPulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.01);
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -385,178 +500,173 @@ def get_weather_info():
     }
 
 def crawl_google_news(query, num_results=20):
-    """Google News API를 사용한 뉴스 크롤링 (시뮬레이션)"""
+    """Google News RSS API를 사용한 실제 SCM Risk 뉴스 크롤링"""
     try:
-        # 실제 뉴스 데이터 (더 많은 기사)
-        scm_risk_news = [
-            {
-                "title": "글로벌 SCM 위기, 기업들의 디지털 전환 가속화",
-                "source": "SCM뉴스",
-                "description": "공급망 관리(SCM) 시스템의 글로벌 위기로 인해 기업들이 AI와 IoT 기술을 활용한 디지털 전환을 가속화하고 있습니다.",
-                "url": "https://www.scm-news.com/global-crisis-digital-transformation",
-                "published_time": "2024-01-15T10:30:00Z",
-                "views": random.randint(1000, 5000)
-            },
-            {
-                "title": "반도체 부족으로 인한 자동차 생산 중단 확산",
-                "source": "자동차뉴스",
-                "description": "글로벌 반도체 부족으로 인해 주요 자동차 제조업체들의 생산 중단이 확산되고 있습니다.",
-                "url": "https://www.autonews.com/semiconductor-shortage-production-disruption",
-                "published_time": "2024-01-14T15:45:00Z",
-                "views": random.randint(800, 4000)
-            },
-            {
-                "title": "해운비 상승으로 인한 물류 비용 증가 심화",
-                "source": "물류뉴스",
-                "description": "글로벌 해운비 상승으로 인해 수출입 기업들의 물류 비용이 크게 증가하고 있습니다.",
-                "url": "https://www.logistics-news.com/shipping-cost-increase",
-                "published_time": "2024-01-13T09:20:00Z",
-                "views": random.randint(1200, 6000)
-            },
-            {
-                "title": "스마트 물류 시스템 도입으로 효율성 향상",
-                "source": "스마트물류",
-                "description": "AI와 자동화 기술을 활용한 스마트 물류 시스템이 급속히 도입되어 물류 효율성이 크게 향상되고 있습니다.",
-                "url": "https://www.smart-logistics.com/ai-automation-efficiency",
-                "published_time": "2024-01-12T14:15:00Z",
-                "views": random.randint(900, 4500)
-            },
-            {
-                "title": "공급망 투명성 확보의 중요성 증가",
-                "source": "ESG뉴스",
-                "description": "ESG 경영의 확산으로 공급망 투명성 확보의 중요성이 크게 증가하고 있습니다.",
-                "url": "https://www.esg-news.com/supply-chain-transparency",
-                "published_time": "2024-01-11T11:30:00Z",
-                "views": random.randint(700, 3500)
-            },
-            {
-                "title": "친환경 물류로의 전환 가속화",
-                "source": "그린물류",
-                "description": "탄소 중립 목표에 따라 친환경 물류 시스템으로의 전환이 가속화되고 있습니다.",
-                "url": "https://www.green-logistics.com/carbon-neutral-transition",
-                "published_time": "2024-01-10T16:45:00Z",
-                "views": random.randint(600, 3000)
-            },
-            {
-                "title": "실시간 재고 관리 시스템으로 비용 절감",
-                "source": "재고관리",
-                "description": "IoT 기술을 활용한 실시간 재고 관리 시스템이 기업들의 물류 비용을 크게 절감하고 있습니다.",
-                "url": "https://www.inventory-management.com/iot-real-time-cost-reduction",
-                "published_time": "2024-01-09T13:20:00Z",
-                "views": random.randint(1100, 5500)
-            },
-            {
-                "title": "드론 배송 시범 운영 확대",
-                "source": "드론배송",
-                "description": "드론을 활용한 배송 서비스의 시범 운영이 전 세계적으로 확대되고 있습니다.",
-                "url": "https://www.drone-delivery.com/pilot-expansion",
-                "published_time": "2024-01-08T10:10:00Z",
-                "views": random.randint(800, 4000)
-            },
-            {
-                "title": "SCM Risk 관리 시스템 도입 확대",
-                "source": "리스크관리",
-                "description": "기업들이 공급망 위험을 사전에 예측하고 대응하기 위한 시스템을 적극 도입하고 있습니다.",
-                "url": "https://www.risk-management.com/scm-prediction-system",
-                "published_time": "2024-01-07T12:30:00Z",
-                "views": random.randint(1000, 5000)
-            },
-            {
-                "title": "공급망 재구성 움직임 활발",
-                "source": "경제분석",
-                "description": "글로벌 공급망 위기로 인해 기업들이 지역별 공급망 재구성을 추진하고 있습니다.",
-                "url": "https://www.economic-analysis.com/supply-chain-restructuring",
-                "published_time": "2024-01-06T08:45:00Z",
-                "views": random.randint(1300, 6500)
-            },
-            {
-                "title": "AI 기반 공급망 예측 시스템 도입",
-                "source": "AI뉴스",
-                "description": "머신러닝과 AI를 활용한 공급망 예측 시스템이 기업들의 위험 관리 능력을 크게 향상시키고 있습니다.",
-                "url": "https://www.ai-news.com/supply-chain-prediction",
-                "published_time": "2024-01-05T14:20:00Z",
-                "views": random.randint(1500, 7000)
-            },
-            {
-                "title": "블록체인 기술로 공급망 투명성 확보",
-                "source": "블록체인뉴스",
-                "description": "블록체인 기술을 활용한 공급망 추적 시스템이 제품의 원산지부터 소비자까지의 모든 과정을 투명하게 관리합니다.",
-                "url": "https://www.blockchain-news.com/supply-chain-transparency",
-                "published_time": "2024-01-04T11:15:00Z",
-                "views": random.randint(1200, 5800)
-            },
-            {
-                "title": "글로벌 물류 허브 경쟁 심화",
-                "source": "물류허브",
-                "description": "아시아 지역의 물류 허브 경쟁이 심화되면서 각국이 인프라 투자를 확대하고 있습니다.",
-                "url": "https://www.logistics-hub.com/global-competition",
-                "published_time": "2024-01-03T09:30:00Z",
-                "views": random.randint(1000, 4800)
-            },
-            {
-                "title": "공급망 복원력 강화의 중요성",
-                "source": "경영전략",
-                "description": "코로나19 이후 공급망 복원력 강화가 기업의 생존과 성장에 핵심 요소로 부상하고 있습니다.",
-                "url": "https://www.strategy-news.com/supply-chain-resilience",
-                "published_time": "2024-01-02T16:45:00Z",
-                "views": random.randint(1400, 6200)
-            },
-            {
-                "title": "디지털 트윈으로 공급망 최적화",
-                "source": "디지털트윈",
-                "description": "디지털 트윈 기술을 활용한 가상 공급망 시뮬레이션이 실제 운영 효율성을 크게 향상시키고 있습니다.",
-                "url": "https://www.digital-twin.com/supply-chain-optimization",
-                "published_time": "2024-01-01T13:10:00Z",
-                "views": random.randint(1100, 5200)
-            }
-        ]
+        # Google News RSS 피드 URL 구성
+        search_query = f"{query} supply chain risk management"
+        encoded_query = urllib.parse.quote(search_query)
+        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
+        
+        # 실제 뉴스 크롤링
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(news_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        # XML 파싱
+        soup = BeautifulSoup(response.content, 'xml')
+        items = soup.find_all('item')
         
         articles = []
-        
-        # 기본 SCM Risk 뉴스 추가
-        for news in scm_risk_news:
-            article = {
-                'title': news["title"],
-                'url': news["url"],
-                'source': news["source"],
-                'published_time': news["published_time"],
-                'description': news["description"],
-                'views': news["views"]
-            }
-            articles.append(article)
-        
-        # 추가 뉴스 생성
-        scm_topics = [
-            f"{query} 최적화 전략", f"{query} 디지털 전환", f"{query} 위험 관리",
-            f"{query} 비용 절감", f"{query} 효율성 향상", f"{query} 혁신 기술",
-            f"{query} 글로벌 트렌드", f"{query} 미래 전망", f"{query} 대응 방안"
+        scm_keywords = [
+            'supply chain', 'SCM', 'logistics', 'procurement', 'inventory', 'warehouse',
+            'shipping', 'freight', 'transportation', 'distribution', 'supplier',
+            '공급망', '물류', '구매', '재고', '창고', '운송', '배송', '공급업체',
+            'risk', '위험', 'disruption', '중단', 'shortage', '부족', 'delay', '지연'
         ]
         
-        while len(articles) < num_results:
-            topic = random.choice(scm_topics)
-            source = f"{query}뉴스{len(articles) + 1}"
+        for item in items[:num_results * 2]:  # 더 많은 아이템을 가져와서 필터링
+            title = item.find('title').text if item.find('title') else ""
+            link = item.find('link').text if item.find('link') else ""
+            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
+            source = item.find('source').text if item.find('source') else ""
             
-            # 랜덤 발행 시간 생성
-            random_days = random.randint(0, 30)
-            random_hours = random.randint(0, 23)
-            random_minutes = random.randint(0, 59)
-            published_time = (datetime.now() - timedelta(days=random_days, hours=random_hours, minutes=random_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
-            
-            article = {
-                'title': f'"{query}" 관련 {topic}',
-                'url': f"https://www.{query.lower()}-news.com/{len(articles) + 1}",
-                'source': source,
-                'published_time': published_time,
-                'description': f'{query}와 관련된 {topic}에 대한 최신 동향과 분석을 제공합니다. SCM Risk 관리 관점에서 {query}의 중요성과 향후 전망을 살펴봅니다.',
-                'views': random.randint(500, 3000)
-            }
-            articles.append(article)
+            # SCM Risk 관련 키워드 필터링
+            title_lower = title.lower()
+            if any(keyword.lower() in title_lower for keyword in scm_keywords):
+                # 실제 뉴스 링크로 리다이렉트
+                if link.startswith('https://news.google.com'):
+                    # Google News 링크를 실제 뉴스 링크로 변환
+                    try:
+                        news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
+                        actual_url = news_response.url
+                    except:
+                        actual_url = link
+                else:
+                    actual_url = link
+                
+                # 발행 시간 파싱
+                try:
+                    from email.utils import parsedate_to_datetime
+                    parsed_date = parsedate_to_datetime(pub_date)
+                    formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                except:
+                    formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+                
+                article = {
+                    'title': title,
+                    'url': actual_url,
+                    'source': source,
+                    'published_time': formatted_date,
+                    'description': f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다.",
+                    'views': random.randint(500, 5000)  # 조회수는 시뮬레이션
+                }
+                articles.append(article)
+                
+                if len(articles) >= num_results:
+                    break
+        
+        # SCM Risk 관련 뉴스가 부족한 경우 추가 생성
+        if len(articles) < num_results:
+            additional_articles = generate_scm_risk_news(query, num_results - len(articles))
+            articles.extend(additional_articles)
         
         return articles[:num_results]
         
     except Exception as e:
-        st.error(f"뉴스 생성 오류: {e}")
-        return []
+        st.error(f"뉴스 크롤링 오류: {e}")
+        # 오류 발생 시 기본 SCM Risk 뉴스 반환
+        return generate_scm_risk_news(query, num_results)
+
+def generate_scm_risk_news(query, num_results):
+    """SCM Risk 관련 뉴스 생성 (백업용)"""
+    scm_risk_news = [
+        {
+            "title": "글로벌 SCM 위기, 기업들의 디지털 전환 가속화",
+            "source": "SCM뉴스",
+            "description": "공급망 관리(SCM) 시스템의 글로벌 위기로 인해 기업들이 AI와 IoT 기술을 활용한 디지털 전환을 가속화하고 있습니다.",
+            "url": "https://www.google.com/search?q=SCM+위기+디지털+전환",
+            "published_time": "2024-01-15T10:30:00Z",
+            "views": random.randint(1000, 5000)
+        },
+        {
+            "title": "반도체 부족으로 인한 자동차 생산 중단 확산",
+            "source": "자동차뉴스",
+            "description": "글로벌 반도체 부족으로 인해 주요 자동차 제조업체들의 생산 중단이 확산되고 있습니다.",
+            "url": "https://www.google.com/search?q=반도체+부족+자동차+생산+중단",
+            "published_time": "2024-01-14T15:45:00Z",
+            "views": random.randint(800, 4000)
+        },
+        {
+            "title": "해운비 상승으로 인한 물류 비용 증가 심화",
+            "source": "물류뉴스",
+            "description": "글로벌 해운비 상승으로 인해 수출입 기업들의 물류 비용이 크게 증가하고 있습니다.",
+            "url": "https://www.google.com/search?q=해운비+상승+물류+비용+증가",
+            "published_time": "2024-01-13T09:20:00Z",
+            "views": random.randint(1200, 6000)
+        },
+        {
+            "title": "스마트 물류 시스템 도입으로 효율성 향상",
+            "source": "스마트물류",
+            "description": "AI와 자동화 기술을 활용한 스마트 물류 시스템이 급속히 도입되어 물류 효율성이 크게 향상되고 있습니다.",
+            "url": "https://www.google.com/search?q=스마트+물류+시스템+AI+자동화",
+            "published_time": "2024-01-12T14:15:00Z",
+            "views": random.randint(900, 4500)
+        },
+        {
+            "title": "공급망 투명성 확보의 중요성 증가",
+            "source": "ESG뉴스",
+            "description": "ESG 경영의 확산으로 공급망 투명성 확보의 중요성이 크게 증가하고 있습니다.",
+            "url": "https://www.google.com/search?q=공급망+투명성+ESG+경영",
+            "published_time": "2024-01-11T11:30:00Z",
+            "views": random.randint(700, 3500)
+        }
+    ]
+    
+    articles = []
+    
+    # 기본 SCM Risk 뉴스 추가
+    for news in scm_risk_news:
+        article = {
+            'title': news["title"],
+            'url': news["url"],
+            'source': news["source"],
+            'published_time': news["published_time"],
+            'description': news["description"],
+            'views': news["views"]
+        }
+        articles.append(article)
+    
+    # 추가 뉴스 생성
+    scm_topics = [
+        f"{query} 최적화 전략", f"{query} 디지털 전환", f"{query} 위험 관리",
+        f"{query} 비용 절감", f"{query} 효율성 향상", f"{query} 혁신 기술",
+        f"{query} 글로벌 트렌드", f"{query} 미래 전망", f"{query} 대응 방안"
+    ]
+    
+    while len(articles) < num_results:
+        topic = random.choice(scm_topics)
+        source = f"{query}뉴스{len(articles) + 1}"
+        
+        # 랜덤 발행 시간 생성
+        random_days = random.randint(0, 30)
+        random_hours = random.randint(0, 23)
+        random_minutes = random.randint(0, 59)
+        published_time = (datetime.now() - timedelta(days=random_days, hours=random_hours, minutes=random_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        
+        article = {
+            'title': f'"{query}" 관련 {topic}',
+            'url': f"https://www.google.com/search?q={query}+{topic.replace(' ', '+')}",
+            'source': source,
+            'published_time': published_time,
+            'description': f'{query}와 관련된 {topic}에 대한 최신 동향과 분석을 제공합니다. SCM Risk 관리 관점에서 {query}의 중요성과 향후 전망을 살펴봅니다.',
+            'views': random.randint(500, 3000)
+        }
+        articles.append(article)
+    
+    return articles[:num_results]
 
 def filter_articles(articles, sort_by="최신순"):
     """뉴스 기사 필터링 및 정렬"""
@@ -583,29 +693,29 @@ def create_risk_map():
     # 지역별 관련 뉴스 데이터
     location_news = {
         "중국 상하이": [
-            {"title": "중국 상하이 항구 혼잡으로 인한 공급망 지연", "url": "https://www.china-news.com/shanghai-port-delay"},
-            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.global-news.com/shanghai-lockdown"},
-            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.manufacturing-news.com/china-shortage"}
+            {"title": "중국 상하이 항구 혼잡으로 인한 공급망 지연", "url": "https://www.google.com/search?q=중국+상하이+항구+혼잡+공급망+지연"},
+            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.google.com/search?q=상하이+봉쇄+글로벌+공급망+위기"},
+            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.google.com/search?q=중국+제조업+생산+중단+부품+부족"}
         ],
         "미국 로스앤젤레스": [
-            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.us-news.com/la-port-congestion"},
-            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.labor-news.com/west-coast-strike"},
-            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.automation-news.com/la-port-automation"}
+            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=LA+항구+혼잡+물류+지연"},
+            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.google.com/search?q=미국+서부+해안+노동자+파업+위기"},
+            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.google.com/search?q=LA+항구+자동화+시스템+도입+확대"}
         ],
         "독일 함부르크": [
-            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.germany-news.com/hamburg-efficiency"},
-            {"title": "독일 물류 디지털화 가속화", "url": "https://www.digital-news.com/germany-logistics"},
-            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.smart-port.com/hamburg-project"}
+            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.google.com/search?q=함부르크+항구+물류+효율성+향상"},
+            {"title": "독일 물류 디지털화 가속화", "url": "https://www.google.com/search?q=독일+물류+디지털화+가속화"},
+            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.google.com/search?q=함부르크+스마트+포트+프로젝트"}
         ],
         "싱가포르": [
-            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.singapore-news.com/logistics-hub"},
-            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.digital-platform.com/singapore"},
-            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.green-logistics.com/singapore-policy"}
+            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.google.com/search?q=싱가포르+물류+허브+경쟁력+강화"},
+            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.google.com/search?q=싱가포르+디지털+물류+플랫폼+도입"},
+            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.google.com/search?q=싱가포르+친환경+물류+정책"}
         ],
         "한국 부산": [
-            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.korea-news.com/busan-smart-logistics"},
-            {"title": "부산항 자동화 시설 확충", "url": "https://www.automation-news.com/busan-expansion"},
-            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.efficiency-news.com/busan-ranking"}
+            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.google.com/search?q=부산항+스마트+물류+시스템+구축"},
+            {"title": "부산항 자동화 시설 확충", "url": "https://www.google.com/search?q=부산항+자동화+시설+확충"},
+            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.google.com/search?q=부산항+물류+효율성+세계+1위+달성"}
         ]
     }
     

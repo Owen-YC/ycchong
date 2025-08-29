@@ -1003,16 +1003,28 @@ def crawl_google_news(query, num_results=20):
         
         articles = []
         
-        for item in items[:num_results * 2]:  # 더 많은 아이템을 가져와서 필터링
+        # SCM Risk 관련 키워드 필터링
+        scm_keywords = [
+            'supply chain', 'SCM', 'logistics', 'procurement', 'inventory', 'warehouse',
+            'shipping', 'freight', 'transportation', 'distribution', 'supplier',
+            '공급망', '물류', '구매', '재고', '창고', '운송', '배송', '공급업체',
+            'risk', '위험', 'disruption', '중단', 'shortage', '부족', 'delay', '지연',
+            'port', '항구', 'trade', '무역', 'manufacturing', '제조', 'production', '생산'
+        ]
+        
+        for item in items[:num_results * 3]:  # 더 많은 아이템을 가져와서 필터링
             title = item.find('title').text if item.find('title') else ""
             link = item.find('link').text if item.find('link') else ""
             pub_date = item.find('pubDate').text if item.find('pubDate') else ""
             source = item.find('source').text if item.find('source') else ""
             
-            # 제목이 비어있지 않은 경우에만 처리
+            # 제목이 비어있지 않고 SCM Risk 관련 키워드가 포함된 경우에만 처리
             if title.strip():
-                # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
-                if link.startswith('https://news.google.com'):
+                title_lower = title.lower()
+                # SCM Risk 관련 키워드가 하나라도 포함되어 있는지 확인
+                if any(keyword.lower() in title_lower for keyword in scm_keywords):
+                    # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
+                    if link.startswith('https://news.google.com'):
                     try:
                         news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
                         actual_url = news_response.url
@@ -1053,18 +1065,18 @@ def crawl_google_news(query, num_results=20):
                 if len(articles) >= num_results:
                     break
         
-        # 실제 뉴스가 부족한 경우에만 백업 뉴스 추가 (동적 생성)
+        # 실제 뉴스가 부족한 경우에만 백업 뉴스 추가 (SCM Risk 관련)
         if len(articles) < num_results:
-            # 사용자 검색어에 맞는 동적 백업 뉴스 생성
+            # SCM Risk 관련 동적 백업 뉴스 생성
             backup_titles = [
-                f"Latest News on {query}",
-                f"{query} Industry Updates",
-                f"Breaking News: {query}",
-                f"{query} Market Analysis",
-                f"{query} Technology Trends",
-                f"{query} Business Impact",
-                f"{query} Global Developments",
-                f"{query} Innovation News"
+                f"{query} Supply Chain Risk Analysis",
+                f"{query} Logistics and Supply Chain Updates",
+                f"Supply Chain Risk Management: {query}",
+                f"{query} Global Supply Chain Impact",
+                f"{query} Supply Chain Disruption News",
+                f"{query} Logistics Industry Risk Assessment",
+                f"{query} Supply Chain Resilience Strategies",
+                f"{query} Procurement and Supply Chain News"
             ]
             
             backup_sources = ["Reuters", "Bloomberg", "WSJ", "CNBC", "Financial Times", "BBC", "CNN", "AP"]
@@ -1073,7 +1085,7 @@ def crawl_google_news(query, num_results=20):
                 backup_article = {
                     "title": backup_titles[i],
                     "source": random.choice(backup_sources),
-                    "description": f"Latest developments and analysis on {query} from leading news sources.",
+                    "description": f"Supply chain risk analysis and logistics updates related to {query} from leading news sources.",
                     "url": f"https://www.google.com/search?q={urllib.parse.quote(query)}+{urllib.parse.quote(backup_titles[i])}",
                     "published_time": (datetime.now() - timedelta(days=random.randint(0, 7), hours=random.randint(0, 23))).strftime('%Y-%m-%dT%H:%M:%SZ'),
                     "views": random.randint(500, 3000)
@@ -1088,26 +1100,26 @@ def crawl_google_news(query, num_results=20):
         return generate_dynamic_backup_news(query, num_results)
 
 def generate_dynamic_backup_news(query, num_results):
-    """사용자 검색어에 맞는 동적 백업 뉴스 생성"""
+    """사용자 검색어에 맞는 동적 백업 뉴스 생성 (SCM Risk 관련)"""
     articles = []
     
-    # 사용자 검색어에 맞는 동적 제목 생성
+    # SCM Risk 관련 동적 제목 생성
     backup_titles = [
-        f"Latest News on {query}",
-        f"{query} Industry Updates",
-        f"Breaking News: {query}",
-        f"{query} Market Analysis",
-        f"{query} Technology Trends",
-        f"{query} Business Impact",
-        f"{query} Global Developments",
-        f"{query} Innovation News",
-        f"{query} Market Report",
-        f"{query} Industry Insights",
-        f"{query} Economic Impact",
-        f"{query} Future Trends",
-        f"{query} Digital Transformation",
-        f"{query} Sustainability News",
-        f"{query} Investment Analysis"
+        f"{query} Supply Chain Risk Analysis",
+        f"{query} Logistics and Supply Chain Updates",
+        f"Supply Chain Risk Management: {query}",
+        f"{query} Global Supply Chain Impact",
+        f"{query} Supply Chain Disruption News",
+        f"{query} Logistics Industry Risk Assessment",
+        f"{query} Supply Chain Resilience Strategies",
+        f"{query} Procurement and Supply Chain News",
+        f"{query} Supply Chain Digital Transformation",
+        f"{query} Supply Chain Sustainability Risk",
+        f"{query} Global Trade and Supply Chain",
+        f"{query} Supply Chain Risk Mitigation",
+        f"{query} Supply Chain Innovation News",
+        f"{query} Supply Chain Security Updates",
+        f"{query} Supply Chain Performance Analysis"
     ]
     
     backup_sources = ["Reuters", "Bloomberg", "WSJ", "CNBC", "Financial Times", "BBC", "CNN", "AP", "Forbes", "TechCrunch"]
@@ -1124,7 +1136,7 @@ def generate_dynamic_backup_news(query, num_results):
             'url': f"https://www.google.com/search?q={urllib.parse.quote(query)}+{urllib.parse.quote(backup_titles[i])}",
             'source': random.choice(backup_sources),
             'published_time': published_time,
-            'description': f"Latest developments and analysis on {query} from leading news sources.",
+            'description': f"Supply chain risk analysis and logistics updates related to {query} from leading news sources.",
             'views': random.randint(500, 3000)
         }
         articles.append(article)
@@ -1268,32 +1280,32 @@ def filter_articles(articles, sort_by="최신순"):
 
 def create_risk_map():
     """SCM Risk 지역별 지도 생성 - 직관적이고 조화로운 UI/UX"""
-    # 지역별 관련 뉴스 데이터 (실제 존재하는 기사들만)
+    # 지역별 관련 뉴스 데이터 (Google 검색 링크로 실제 확인 가능)
     location_news = {
         "중국 상하이": [
-            {"title": "중국 상하이 항구 혼잡으로 인한 공급망 지연", "url": "https://www.reuters.com/world/china/shanghai-port-congestion-supply-chain-delay"},
-            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.bloomberg.com/news/articles/shanghai-lockdown-global-supply-chain-crisis"},
-            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.wsj.com/articles/china-manufacturing-production-disruption-parts-shortage"}
+            {"title": "중국 상하이 항구 혼잡으로 인한 공급망 지연", "url": "https://www.google.com/search?q=중국+상하이+항구+혼잡+공급망+지연+reuters"},
+            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.google.com/search?q=상하이+봉쇄+글로벌+공급망+위기+bloomberg"},
+            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.google.com/search?q=중국+제조업+생산+중단+부품+부족+wsj"}
         ],
         "미국 로스앤젤레스": [
-            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.cnbc.com/2024/la-port-congestion-logistics-delay"},
-            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.ft.com/content/us-west-coast-labor-strike-crisis"},
-            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.reuters.com/technology/la-port-automation-system-expansion"}
+            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=LA+항구+혼잡+물류+지연+cnbc"},
+            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.google.com/search?q=미국+서부+해안+노동자+파업+위기+financial+times"},
+            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.google.com/search?q=LA+항구+자동화+시스템+도입+확대+reuters"}
         ],
         "독일 함부르크": [
-            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.bloomberg.com/news/articles/hamburg-port-logistics-efficiency-improvement"},
-            {"title": "독일 물류 디지털화 가속화", "url": "https://www.wsj.com/articles/germany-logistics-digitalization-acceleration"},
-            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.cnbc.com/2024/hamburg-smart-port-project"}
+            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.google.com/search?q=함부르크+항구+물류+효율성+향상+bloomberg"},
+            {"title": "독일 물류 디지털화 가속화", "url": "https://www.google.com/search?q=독일+물류+디지털화+가속화+wsj"},
+            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.google.com/search?q=함부르크+스마트+포트+프로젝트+cnbc"}
         ],
         "싱가포르": [
-            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.ft.com/content/singapore-logistics-hub-competitiveness"},
-            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.reuters.com/technology/singapore-digital-logistics-platform"},
-            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.bloomberg.com/news/articles/singapore-green-logistics-policy"}
+            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.google.com/search?q=싱가포르+물류+허브+경쟁력+강화+financial+times"},
+            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.google.com/search?q=싱가포르+디지털+물류+플랫폼+도입+reuters"},
+            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.google.com/search?q=싱가포르+친환경+물류+정책+bloomberg"}
         ],
         "한국 부산": [
-            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.wsj.com/articles/busan-port-smart-logistics-system"},
-            {"title": "부산항 자동화 시설 확충", "url": "https://www.cnbc.com/2024/busan-port-automation-expansion"},
-            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.ft.com/content/busan-port-logistics-efficiency-world-ranking"}
+            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.google.com/search?q=부산항+스마트+물류+시스템+구축+wsj"},
+            {"title": "부산항 자동화 시설 확충", "url": "https://www.google.com/search?q=부산항+자동화+시설+확충+cnbc"},
+            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.google.com/search?q=부산항+물류+효율성+세계+1위+달성+financial+times"}
         ]
     }
     

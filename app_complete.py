@@ -555,18 +555,18 @@ st.markdown("""
          }
      }
      
-     /* 환율 정보 카드 - 2025 트렌드 + Motion */
-     .exchange-rate-card {
-         background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-         border: 1px solid #e2e8f0;
-         border-radius: 20px;
-         padding: 1.5rem;
-         margin-bottom: 1rem;
-         box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-         animation: slideInUp 0.8s ease-out, exchangePulse 6s ease-in-out infinite;
-         position: relative;
-         overflow: hidden;
-     }
+           /* 환율 정보 카드 - 2025 트렌드 + Motion (작은 크기) */
+      .exchange-rate-card {
+          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 1rem;
+          margin-bottom: 0.8rem;
+          box-shadow: 0 3px 15px rgba(30, 64, 175, 0.08);
+          animation: slideInUp 0.8s ease-out, exchangePulse 6s ease-in-out infinite;
+          position: relative;
+          overflow: hidden;
+      }
      
      @keyframes exchangePulse {
          0%, 100% {
@@ -588,19 +588,19 @@ st.markdown("""
          animation: slideInLeft 1s ease-out;
      }
      
-     /* 금속 가격 카드 - 2025 트렌드 + Motion */
-     .metal-price-card {
-         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-         border: 1px solid #e2e8f0;
-         border-radius: 16px;
-         padding: 1rem;
-         margin-bottom: 0.5rem;
-         box-shadow: 0 2px 10px rgba(30, 64, 175, 0.08);
-         transition: all 0.3s ease;
-         animation: metalSlideIn 0.6s ease-out, metalFloat 8s ease-in-out infinite;
-         position: relative;
-         overflow: hidden;
-     }
+           /* 금속 가격 카드 - 2025 트렌드 + Motion (작은 크기) */
+      .metal-price-card {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 0.75rem;
+          margin-bottom: 0.4rem;
+          box-shadow: 0 2px 8px rgba(30, 64, 175, 0.06);
+          transition: all 0.3s ease;
+          animation: metalSlideIn 0.6s ease-out, metalFloat 8s ease-in-out infinite;
+          position: relative;
+          overflow: hidden;
+      }
      
      @keyframes metalSlideIn {
          from {
@@ -639,17 +639,17 @@ st.markdown("""
          animation: slideInUp 0.8s ease-out;
      }
      
-     /* 가격 변화 표시 */
-     .price-change {
-         display: inline-flex;
-         align-items: center;
-         gap: 0.25rem;
-         padding: 0.25rem 0.5rem;
-         border-radius: 6px;
-         font-size: 0.8rem;
-         font-weight: 600;
-         animation: priceGlow 4s ease-in-out infinite;
-     }
+           /* 가격 변화 표시 (작은 크기) */
+      .price-change {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.2rem;
+          padding: 0.2rem 0.4rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 600;
+          animation: priceGlow 4s ease-in-out infinite;
+      }
      
      .price-change.up {
          background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
@@ -678,20 +678,20 @@ st.markdown("""
          }
      }
      
-     /* 금속 아이콘 */
-     .metal-icon {
-         display: inline-flex;
-         align-items: center;
-         justify-content: center;
-         width: 24px;
-         height: 24px;
-         border-radius: 50%;
-         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-         color: white;
-         font-size: 0.8rem;
-         margin-right: 0.5rem;
-         animation: iconRotate 10s linear infinite;
-     }
+           /* 금속 아이콘 (작은 크기) */
+      .metal-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+          color: white;
+          font-size: 0.7rem;
+          margin-right: 0.4rem;
+          animation: iconRotate 10s linear infinite;
+      }
      
      @keyframes iconRotate {
          0% {
@@ -1267,7 +1267,7 @@ def filter_articles(articles, sort_by="최신순"):
     return filtered_articles
 
 def create_risk_map():
-    """SCM Risk 지역별 지도 생성"""
+    """SCM Risk 지역별 지도 생성 - 직관적이고 조화로운 UI/UX"""
     # 지역별 관련 뉴스 데이터 (실제 존재하는 기사들만)
     location_news = {
         "중국 상하이": [
@@ -1298,45 +1298,74 @@ def create_risk_map():
     }
     
     risk_locations = [
-        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "description": "공급망 중단 위험", "color": "red", "news": location_news["중국 상하이"]},
-        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "description": "항구 혼잡", "color": "orange", "news": location_news["미국 로스앤젤레스"]},
-        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "description": "물류 지연", "color": "green", "news": location_news["독일 함부르크"]},
-        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "description": "운송 비용 증가", "color": "orange", "news": location_news["싱가포르"]},
-        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "description": "정상 운영", "color": "green", "news": location_news["한국 부산"]}
+        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "description": "공급망 중단 위험", "color": "red", "icon": "🚨", "news": location_news["중국 상하이"]},
+        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "description": "항구 혼잡", "color": "orange", "icon": "⚠️", "news": location_news["미국 로스앤젤레스"]},
+        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "description": "물류 지연", "color": "green", "icon": "✅", "news": location_news["독일 함부르크"]},
+        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "description": "운송 비용 증가", "color": "orange", "icon": "⚠️", "news": location_news["싱가포르"]},
+        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "description": "정상 운영", "color": "green", "icon": "✅", "news": location_news["한국 부산"]}
     ]
     
+    # 더 직관적인 지도 스타일
     m = folium.Map(
         location=[20, 0],
         zoom_start=2,
-        tiles='OpenStreetMap'
+        tiles='CartoDB positron',  # 더 깔끔한 지도 스타일
+        control_scale=True
     )
     
+    # 위험도별 색상 매핑
+    risk_colors = {
+        "높음": "#dc2626",
+        "중간": "#f59e0b", 
+        "낮음": "#10b981"
+    }
+    
     for location in risk_locations:
-        # 관련 뉴스 링크 HTML 생성
+        # 관련 뉴스 링크 HTML 생성 (더 깔끔한 스타일)
         news_links_html = ""
         for i, news in enumerate(location['news'], 1):
             news_links_html += f"""
-            <a href="{news['url']}" target="_blank" class="map-news-link">
-                {i}. {news['title']}
-            </a>
+            <div style="margin: 8px 0; padding: 8px; background: #f8fafc; border-radius: 6px; border-left: 3px solid #3b82f6;">
+                <a href="{news['url']}" target="_blank" style="color: #1e40af; text-decoration: none; font-size: 12px; font-weight: 500;">
+                    {i}. {news['title']}
+                </a>
+            </div>
             """
         
+        # 더 직관적인 팝업 디자인
         popup_html = f"""
-        <div style="width: 300px;">
-            <h4 style="color: {location['color']}; margin: 0 0 10px 0;">{location['name']}</h4>
-            <p style="margin: 5px 0;"><strong>Risk Level:</strong> <span style="color: {location['color']}; font-weight: bold;">{location['risk']}</span></p>
-            <p style="margin: 5px 0; font-size: 12px;">{location['description']}</p>
-            <hr style="margin: 10px 0; border-color: #e2e8f0;">
-            <h5 style="margin: 10px 0 5px 0; color: #1e40af;">📰 관련 뉴스</h5>
-            {news_links_html}
+        <div style="width: 320px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid {risk_colors[location['risk']]};">
+                <span style="font-size: 24px; margin-right: 8px;">{location['icon']}</span>
+                <div>
+                    <h4 style="margin: 0; color: #1e293b; font-size: 16px; font-weight: 700;">{location['name']}</h4>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                        <span style="background: {risk_colors[location['risk']]}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">
+                            {location['risk']} 위험
+                        </span>
+                        <span style="color: #64748b; font-size: 11px;">{location['description']}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 12px;">
+                <h5 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">📰 관련 뉴스</h5>
+                {news_links_html}
+            </div>
         </div>
         """
+        
+        # 커스텀 아이콘 생성 (위험도에 따른 크기와 색상)
+        icon_size = 25 if location['risk'] == '높음' else 20 if location['risk'] == '중간' else 15
         
         folium.Marker(
             location=[location["lat"], location["lng"]],
             popup=folium.Popup(popup_html, max_width=350),
-            icon=folium.Icon(color=location["color"], icon='info-sign'),
-            tooltip=f"{location['name']} - {location['risk']} 위험"
+            icon=folium.Icon(
+                color=location["color"], 
+                icon='info-sign',
+                prefix='fa'
+            ),
+            tooltip=f"{location['icon']} {location['name']} - {location['risk']} 위험"
         ).add_to(m)
     
     return m, risk_locations
@@ -1536,7 +1565,7 @@ def main():
         except Exception as e:
             st.error(f"지도 로딩 오류: {e}")
         
-        # 환율 정보 섹션
+        # 환율 정보 섹션 (작은 크기)
         st.markdown("### 💱 실시간 원/달러 환율")
         
         try:
@@ -1548,21 +1577,21 @@ def main():
             
             st.markdown(f"""
             <div class="exchange-rate-card">
-                <h4 style="color: #1e293b; margin-bottom: 1rem;">🇰🇷 USD/KRW 실시간 환율</h4>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-                    <div style="font-size: 2rem; font-weight: 900; color: #1e40af;">
+                <h4 style="color: #1e293b; margin-bottom: 0.8rem; font-size: 1rem;">🇰🇷 USD/KRW 실시간 환율</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="font-size: 1.5rem; font-weight: 900; color: #1e40af;">
                         ₩{exchange_data["rate"]:,}
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 1.2rem; font-weight: 700; color: #64748b;">
+                        <div style="font-size: 1rem; font-weight: 700; color: #64748b;">
                             {change_icon} {change_sign}{exchange_data["change"]:+.2f}
                         </div>
-                        <div style="font-size: 0.9rem; color: #64748b;">
+                        <div style="font-size: 0.8rem; color: #64748b;">
                             ({change_sign}{exchange_data["change_percent"]:+.2f}%)
                         </div>
                     </div>
                 </div>
-                <div style="font-size: 0.8rem; color: #64748b; text-align: center;">
+                <div style="font-size: 0.7rem; color: #64748b; text-align: center;">
                     🕒 업데이트: {datetime.now().strftime('%H:%M:%S')}
                 </div>
             </div>
@@ -1571,7 +1600,7 @@ def main():
         except Exception as e:
             st.error(f"환율 정보 로딩 오류: {e}")
         
-        # 금속 가격 정보 섹션
+        # 금속 가격 정보 섹션 (작은 크기)
         st.markdown("### 🏭 LME 주요 금속 가격")
         
         try:
@@ -1598,10 +1627,10 @@ def main():
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center;">
                             <span class="metal-icon">{metal_icons.get(metal_name, "🏭")}</span>
-                            <span style="font-weight: 700; color: #1e293b;">{metal_name}</span>
+                            <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{metal_name}</span>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 1.1rem; font-weight: 700; color: #1e40af;">
+                            <div style="font-size: 1rem; font-weight: 700; color: #1e40af;">
                                 ${data["price"]:,}
                             </div>
                             <div class="price-change {data['status']}">
@@ -1613,7 +1642,7 @@ def main():
                 """, unsafe_allow_html=True)
             
             st.markdown(f"""
-            <div style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #64748b;">
+            <div style="text-align: center; margin-top: 0.8rem; font-size: 0.7rem; color: #64748b;">
                 🏭 런던금속거래소(LME) 기준 | 🕒 업데이트: {datetime.now().strftime('%H:%M:%S')}
             </div>
             """, unsafe_allow_html=True)

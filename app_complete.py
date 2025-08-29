@@ -44,31 +44,31 @@ st.markdown("""
         min-height: 100vh;
     }
     
-    /* 메인 헤더 - 2025 트렌드 + Motion */
+    /* 메인 헤더 - Compact하고 세련된 디자인 */
     .main-header {
-        font-size: 3.5rem;
-        font-weight: 900;
+        font-size: 2.8rem;
+        font-weight: 800;
         text-align: center;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         letter-spacing: -0.02em;
         position: relative;
-        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite, headerFloat 8s ease-in-out infinite;
+        animation: fadeInDown 1s ease-out, headerGlow 4s ease-in-out infinite;
     }
     
     /* 서브 헤더 - 작은 폰트 + 화려한 Motion */
     .sub-header {
-        font-size: 1.2rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        font-weight: 500;
         text-align: center;
         background: linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 3rem;
+        margin-bottom: 2.5rem;
         letter-spacing: 0.02em;
         position: relative;
         animation: fadeInUp 1.2s ease-out, subHeaderGlow 6s ease-in-out infinite, gentlePulse 10s ease-in-out infinite;
@@ -77,11 +77,11 @@ st.markdown("""
     .sub-header::before {
         content: '';
         position: absolute;
-        top: -10px;
+        top: -8px;
         left: 50%;
         transform: translateX(-50%);
-        width: 60px;
-        height: 3px;
+        width: 50px;
+        height: 2px;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
         border-radius: 2px;
         animation: expandWidth 2s ease-out, glowPulse 4s ease-in-out infinite;
@@ -89,7 +89,7 @@ st.markdown("""
     
     @keyframes expandWidth {
         from { width: 0px; }
-        to { width: 60px; }
+        to { width: 50px; }
     }
     
     @keyframes glowPulse {
@@ -160,49 +160,7 @@ st.markdown("""
         50% { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); }
     }
     
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .main-header::after {
-        content: '';
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0px;
-        height: 0px;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        border-radius: 2px;
-        animation: none;
-    }
-    
-    @keyframes slideIn {
-        from {
-            width: 0;
-        }
-        to {
-            width: 100px;
-        }
-    }
-    
-    @keyframes headerGlow {
-        0%, 100% {
-            filter: brightness(1);
-        }
-        50% {
-            filter: brightness(1.1);
-        }
-    }
-    
-    /* 뉴스 카드 - 2025 트렌드 + 화려한 Motion */
+    /* 뉴스 카드 - Motion 제거하고 깔끔하게 */
     .news-card {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border: 1px solid #e2e8f0;
@@ -213,74 +171,16 @@ st.markdown("""
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        animation: slideInLeft 0.6s ease-out, continuousFloat 8s ease-in-out infinite, breathingEffect 12s ease-in-out infinite;
+        animation: slideInLeft 0.6s ease-out;
     }
     
-    .news-card::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
-        animation: shimmerEffect 3s ease-in-out infinite;
-    }
-    
-    @keyframes slideInLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    .news-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        animation: slideInUp 0.8s ease-out;
-    }
-    
-    @keyframes slideInUp {
-        from {
-            height: 0;
-        }
-        to {
-            height: 100%;
-        }
-    }
-    
-    @keyframes gentleFloat {
-        0%, 100% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-2px);
-        }
-    }
-    
-    .news-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(30, 64, 175, 0.12);
-        border-color: #3b82f6;
-    }
-    
-    /* 뉴스 제목 - 화려한 Motion */
+    /* 뉴스 제목 - Motion 제거 */
     .news-title {
         font-size: 1.4rem;
         font-weight: 700;
         color: #1e293b;
         margin-bottom: 1rem;
         line-height: 1.4;
-        animation: titleGlow 5s ease-in-out infinite, gentlePulse 8s ease-in-out infinite;
         position: relative;
     }
     
@@ -301,561 +201,318 @@ st.markdown("""
         to { height: 80%; }
     }
     
-    /* 뉴스 메타 정보 */
-    .news-meta {
-        font-size: 0.9rem;
-        color: #64748b;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        animation: metaFade 6s ease-in-out infinite;
-    }
-    
-    /* 뉴스 설명 */
-    .news-description {
-        font-size: 1rem;
-        color: #475569;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-        animation: descriptionPulse 7s ease-in-out infinite;
-    }
-    
-    /* 뉴스 링크 버튼 - 2025 트렌드 + 화려한 Motion */
+    /* 뉴스 링크 버튼 - Motion 제거 */
     .news-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
         color: white !important;
-        animation: buttonGlow 4s ease-in-out infinite, gentleFloat 6s ease-in-out infinite;
         position: relative;
         overflow: hidden;
     }
     
-    .news-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-        animation: shimmerEffect 2s ease-in-out infinite;
+    /* 실시간 정보 - 낮/밤 테마 */
+    .weather-info.day {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+        border: 2px solid #3b82f6;
     }
     
-    @keyframes buttonGlow {
-        0%, 100% { 
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
-        }
-        50% { 
-            box-shadow: 0 4px 25px rgba(30, 64, 175, 0.6);
-        }
+    .weather-info.night {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: #e2e8f0;
+        border: 2px solid #475569;
     }
-        padding: 0.75rem 1.5rem;
+    
+    .weather-info.rainy {
+        background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+        animation: rainEffect 2s ease-in-out infinite;
+    }
+    
+    .weather-info.snowy {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        animation: snowEffect 3s ease-in-out infinite;
+    }
+    
+    @keyframes rainEffect {
+        0%, 100% { background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%); }
+        50% { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); }
+    }
+    
+    @keyframes snowEffect {
+        0%, 100% { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); }
+        50% { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); }
+    }
+    
+    /* 환율 및 금속 가격 카드 - 작은 사이즈 */
+    .exchange-rate-card {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 1px solid #0ea5e9;
         border-radius: 12px;
-        text-decoration: none;
-        font-weight: 600;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+        animation: slideInUp 0.6s ease-out, exchangePulse 4s ease-in-out infinite;
         font-size: 0.9rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        position: relative;
-        overflow: hidden;
-        animation: pulse 2s infinite, float 3s ease-in-out infinite;
     }
     
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        }
-        50% {
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.4);
-        }
-        100% {
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        }
-    }
-    
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-3px);
-        }
-    }
-    
-    .news-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .news-link:hover::before {
-        left: 100%;
-    }
-    
-    .news-link:hover {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3);
-        color: white !important;
-        text-decoration: none;
-    }
-    
-    /* Streamlit 버튼 - 2025 트렌드 + Motion */
-    .stButton > button {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        color: white;
+    .metal-price-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #f59e0b;
         border-radius: 12px;
-        padding: 0.75rem 2rem;
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+        animation: slideInUp 0.6s ease-out, metalSlideIn 0.8s ease-out, metalFloat 6s ease-in-out infinite;
+        font-size: 0.9rem;
+    }
+    
+    .price-change {
+        font-size: 0.8rem;
         font-weight: 600;
-        border: none;
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        transition: all 0.3s ease;
-        animation: bounceIn 0.8s ease-out, buttonPulse 3s ease-in-out infinite;
+        padding: 0.2rem 0.4rem;
+        border-radius: 6px;
+        margin-left: 0.5rem;
     }
     
-    @keyframes bounceIn {
-        0% {
-            opacity: 0;
-            transform: scale(0.3);
-        }
-        50% {
-            opacity: 1;
-            transform: scale(1.05);
-        }
-        70% {
-            transform: scale(0.9);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1);
-        }
+    .metal-icon {
+        font-size: 1rem;
+        margin-right: 0.3rem;
+        animation: iconRotate 8s linear infinite;
     }
     
-    @keyframes buttonPulse {
-        0%, 100% {
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2);
-        }
-        50% {
-            box-shadow: 0 6px 18px rgba(30, 64, 175, 0.3);
-        }
-    }
-    
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3);
-    }
-    
-    /* 검색 통계 카드 */
-    .search-stats {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-        animation: fadeIn 1s ease-out, softPulse 5s ease-in-out infinite;
-    }
-    
-    @keyframes fadeIn {
+    @keyframes slideInUp {
         from {
             opacity: 0;
+            transform: translateY(20px);
         }
         to {
             opacity: 1;
+            transform: translateY(0);
         }
     }
     
-    @keyframes softPulse {
-        0%, 100% {
-            box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
+    @keyframes exchangePulse {
+        0%, 100% { 
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
         }
-        50% {
-            box-shadow: 0 6px 25px rgba(30, 64, 175, 0.15);
+        50% { 
+            box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
         }
     }
     
-    /* 위험 지표 */
-    .risk-indicator {
+    @keyframes metalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes metalFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-2px); }
+    }
+    
+    @keyframes priceGlow {
+        0%, 100% { 
+            box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+        }
+        50% { 
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+        }
+    }
+    
+    @keyframes iconRotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* 기존 애니메이션들 */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes headerGlow {
+        0%, 100% { 
+            filter: brightness(1) drop-shadow(0 0 10px rgba(30, 64, 175, 0.3));
+        }
+        50% { 
+            filter: brightness(1.1) drop-shadow(0 0 20px rgba(30, 64, 175, 0.6));
+        }
+    }
+    
+    /* 뉴스 소스 표시 - 빨간색 박스 */
+    .news-source {
+        display: inline-block;
         background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
         color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 25px;
-        font-weight: 700;
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* AI 전략 버튼 */
+    .ai-strategy-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        animation: shake 2s infinite, glow 1.5s ease-in-out infinite alternate;
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        color: white !important;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-left: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
     }
     
-    @keyframes shake {
-        0%, 100% {
-            transform: translateX(0);
-        }
-        10%, 30%, 50%, 70%, 90% {
-            transform: translateX(-2px);
-        }
-        20%, 40%, 60%, 80% {
-            transform: translateX(2px);
-        }
-    }
-    
-    @keyframes glow {
-        from {
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-        to {
-            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.6), 0 0 30px rgba(220, 38, 38, 0.4);
-        }
+    .ai-strategy-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.5);
+        color: white !important;
     }
     
     /* 챗봇 컨테이너 */
     .chatbot-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 2rem;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+    }
+    
+    /* 검색 통계 */
+    .search-stats {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 1px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-        animation: slideInRight 0.8s ease-out, gentleWave 7s ease-in-out infinite;
+        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
     }
     
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    @keyframes gentleWave {
-        0%, 100% {
-            transform: translateX(0px);
-        }
-        25% {
-            transform: translateX(1px);
-        }
-        75% {
-            transform: translateX(-1px);
-        }
-    }
-    
-         /* 날씨 정보 - 시간대별 테마 */
-     .weather-info {
-         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-         color: white;
-         border-radius: 16px;
-         padding: 1.5rem;
-         margin-bottom: 1rem;
-         box-shadow: 0 4px 20px rgba(30, 64, 175, 0.2);
-         animation: rotateIn 1s ease-out, breathe 4s ease-in-out infinite;
-         position: relative;
-         overflow: hidden;
-     }
-     
-     /* 낮/밤 테마 */
-     .weather-info.day {
-         background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-         box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-     }
-     
-     .weather-info.night {
-         background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-         box-shadow: 0 4px 20px rgba(30, 58, 138, 0.4);
-     }
-     
-     /* 비 오는 날씨 배경 */
-     .weather-info.rainy::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         bottom: 0;
-         background: 
-             radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 1px),
-             radial-gradient(circle at 40% 40%, rgba(255,255,255,0.1) 1px, transparent 1px),
-             radial-gradient(circle at 60% 60%, rgba(255,255,255,0.1) 1px, transparent 1px),
-             radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 1px);
-         background-size: 50px 50px, 30px 30px, 40px 40px, 60px 60px;
-         animation: rain 1s linear infinite;
-         pointer-events: none;
-     }
-     
-     @keyframes rain {
-         0% {
-             transform: translateY(-100px);
-         }
-         100% {
-             transform: translateY(100px);
-         }
-     }
-     
-     /* 눈 오는 날씨 배경 */
-     .weather-info.snowy::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         right: 0;
-         bottom: 0;
-         background: 
-             radial-gradient(circle at 15% 15%, rgba(255,255,255,0.8) 2px, transparent 2px),
-             radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6) 1.5px, transparent 1.5px),
-             radial-gradient(circle at 55% 55%, rgba(255,255,255,0.9) 1px, transparent 1px),
-             radial-gradient(circle at 75% 75%, rgba(255,255,255,0.7) 2.5px, transparent 2.5px);
-         background-size: 60px 60px, 40px 40px, 50px 50px, 70px 70px;
-         animation: snow 3s linear infinite;
-         pointer-events: none;
-     }
-     
-     @keyframes snow {
-         0% {
-             transform: translateY(-100px) rotate(0deg);
-         }
-         100% {
-             transform: translateY(100px) rotate(360deg);
-         }
-     }
-    
-    @keyframes rotateIn {
-        from {
-            opacity: 0;
-            transform: rotate(-180deg) scale(0.3);
-        }
-        to {
-            opacity: 1;
-            transform: rotate(0) scale(1);
-        }
-    }
-    
-    @keyframes breathe {
-        0%, 100% {
-            transform: scale(1);
-        }
-        50% {
-            transform: scale(1.02);
-        }
-    }
-    
-    /* 지도 관련 뉴스 링크 */
-    .map-news-link {
-        display: block;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        color: white !important;
+    /* 필터 버튼 */
+    .filter-btn {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        border: none;
         padding: 0.5rem 1rem;
-        margin: 0.25rem 0;
         border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.8rem;
+        font-weight: 600;
+        margin: 0.5rem;
+        cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
-        animation: mapLinkGlow 4s ease-in-out infinite;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
     }
     
-    .map-news-link:hover {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        transform: translateX(5px);
-        color: white !important;
-        text-decoration: none;
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
     }
     
-    @keyframes mapLinkGlow {
-        0%, 100% {
-            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
-        }
-        50% {
-            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
-        }
+    .filter-btn.active {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        box-shadow: 0 4px 16px rgba(30, 64, 175, 0.5);
     }
     
-    @keyframes titleGlow {
-        0%, 100% {
-            color: #1e293b;
-        }
-        50% {
-            color: #1e40af;
-        }
+    /* 지도 범례 */
+    .map-legend {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
     }
     
-    @keyframes metaFade {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.8;
-        }
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
     }
     
-         @keyframes descriptionPulse {
-         0%, 100% {
-             transform: scale(1);
-         }
-         50% {
-             transform: scale(1.01);
-         }
-     }
-     
-           /* 환율 정보 카드 - 2025 트렌드 + Motion (작은 크기) */
-      .exchange-rate-card {
-          background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-          border: 1px solid #e2e8f0;
-          border-radius: 16px;
-          padding: 1rem;
-          margin-bottom: 0.8rem;
-          box-shadow: 0 3px 15px rgba(30, 64, 175, 0.08);
-          animation: slideInUp 0.8s ease-out, exchangePulse 6s ease-in-out infinite;
-          position: relative;
-          overflow: hidden;
-      }
-     
-     @keyframes exchangePulse {
-         0%, 100% {
-             box-shadow: 0 4px 20px rgba(30, 64, 175, 0.1);
-         }
-         50% {
-             box-shadow: 0 6px 25px rgba(30, 64, 175, 0.15);
-         }
-     }
-     
-     .exchange-rate-card::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         width: 100%;
-         height: 4px;
-         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-         animation: slideInLeft 1s ease-out;
-     }
-     
-           /* 금속 가격 카드 - 2025 트렌드 + Motion (작은 크기) */
-      .metal-price-card {
-          background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 0.75rem;
-          margin-bottom: 0.4rem;
-          box-shadow: 0 2px 8px rgba(30, 64, 175, 0.06);
-          transition: all 0.3s ease;
-          animation: metalSlideIn 0.6s ease-out, metalFloat 8s ease-in-out infinite;
-          position: relative;
-          overflow: hidden;
-      }
-     
-     @keyframes metalSlideIn {
-         from {
-             opacity: 0;
-             transform: translateY(20px);
-         }
-         to {
-             opacity: 1;
-             transform: translateY(0);
-         }
-     }
-     
-     @keyframes metalFloat {
-         0%, 100% {
-             transform: translateY(0px);
-         }
-         50% {
-             transform: translateY(-1px);
-         }
-     }
-     
-     .metal-price-card:hover {
-         transform: translateY(-2px);
-         box-shadow: 0 4px 15px rgba(30, 64, 175, 0.12);
-         border-color: #3b82f6;
-     }
-     
-     .metal-price-card::before {
-         content: '';
-         position: absolute;
-         top: 0;
-         left: 0;
-         width: 3px;
-         height: 100%;
-         background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-         animation: slideInUp 0.8s ease-out;
-     }
-     
-           /* 가격 변화 표시 (작은 크기) */
-      .price-change {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.2rem;
-          padding: 0.2rem 0.4rem;
-          border-radius: 4px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          animation: priceGlow 4s ease-in-out infinite;
-      }
-     
-     .price-change.up {
-         background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-         color: white;
-         box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
-     }
-     
-     .price-change.down {
-         background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-         color: white;
-         box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
-     }
-     
-     .price-change.stable {
-         background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
-         color: white;
-         box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
-     }
-     
-     @keyframes priceGlow {
-         0%, 100% {
-             filter: brightness(1);
-         }
-         50% {
-             filter: brightness(1.1);
-         }
-     }
-     
-           /* 금속 아이콘 (작은 크기) */
-      .metal-icon {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-          color: white;
-          font-size: 0.7rem;
-          margin-right: 0.4rem;
-          animation: iconRotate 10s linear infinite;
-      }
-     
-     @keyframes iconRotate {
-         0% {
-             transform: rotate(0deg);
-         }
-         100% {
-             transform: rotate(360deg);
-         }
-     }
- </style>
+    .legend-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+    
+    /* 전쟁/자연재해 현황 */
+    .status-section {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 1px solid #fecaca;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    }
+    
+    .status-item {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .status-title {
+        font-weight: 700;
+        color: #dc2626;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-details {
+        font-size: 0.9rem;
+        color: #6b7280;
+        line-height: 1.4;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 def get_korean_time():
@@ -1135,13 +792,251 @@ def get_metal_prices():
         
         return metal_prices
 
+def translate_title_to_korean(title):
+    """간단한 제목 번역 함수 (실제로는 더 정교한 번역 API 사용 권장)"""
+    # 기본적인 번역 매핑
+    translation_dict = {
+        'supply chain': '공급망',
+        'SCM': '공급망 관리',
+        'logistics': '물류',
+        'procurement': '구매',
+        'inventory': '재고',
+        'warehouse': '창고',
+        'shipping': '운송',
+        'freight': '화물',
+        'transportation': '운송',
+        'distribution': '유통',
+        'supplier': '공급업체',
+        'risk': '위험',
+        'disruption': '중단',
+        'shortage': '부족',
+        'delay': '지연',
+        'port': '항구',
+        'trade': '무역',
+        'manufacturing': '제조',
+        'production': '생산',
+        'semiconductor': '반도체',
+        'chip': '칩',
+        'electronics': '전자',
+        'automotive': '자동차',
+        'steel': '철강',
+        'commodity': '상품',
+        'raw material': '원자재',
+        'export': '수출',
+        'import': '수입',
+        'tariff': '관세',
+        'sanction': '제재',
+        'blockade': '봉쇄',
+        'embargo': '금수',
+        'crisis': '위기',
+        'shortfall': '부족',
+        'supply': '공급',
+        'demand': '수요',
+        'bottleneck': '병목',
+        'congestion': '혼잡',
+        'backlog': '지연',
+        'factory': '공장',
+        'plant': '플랜트',
+        'facility': '시설',
+        'industrial': '산업',
+        'component': '부품',
+        'part': '부품',
+        'material': '소재',
+        'resource': '자원',
+        'duty': '세금',
+        'customs': '세관',
+        'border': '국경',
+        'regulation': '규제',
+        'policy': '정책',
+        'restriction': '제한',
+        'ban': '금지',
+        'prohibition': '금지',
+        'tension': '긴장',
+        'conflict': '갈등',
+        'dispute': '분쟁',
+        'war': '전쟁',
+        'military': '군사',
+        'defense': '국방',
+        'security': '보안',
+        'geopolitical': '지정학',
+        'political': '정치',
+        'diplomatic': '외교',
+        'relationship': '관계',
+        'alliance': '동맹',
+        'partnership': '파트너십',
+        'agreement': '협정',
+        'treaty': '조약',
+        'negotiation': '협상',
+        'talks': '회담',
+        'meeting': '회의',
+        'summit': '정상회담',
+        'conference': '회의',
+        'forum': '포럼',
+        'organization': '기구',
+        'institution': '기관',
+        'agency': '청',
+        'authority': '당국',
+        'government': '정부',
+        'administration': '행정부',
+        'ministry': '부처',
+        'department': '부',
+        'bureau': '국',
+        'office': '과',
+        'commission': '위원회',
+        'committee': '위원회',
+        'council': '이사회',
+        'board': '이사회',
+        'panel': '패널',
+        'task force': '특별팀',
+        'working group': '작업그룹',
+        'team': '팀',
+        'unit': '단위',
+        'division': '부서',
+        'section': '과',
+        'branch': '지점',
+        'subsidiary': '자회사',
+        'affiliate': '계열사',
+        'partner': '파트너',
+        'associate': '협력사',
+        'collaborator': '협력사',
+        'contractor': '계약업체',
+        'vendor': '벤더',
+        'provider': '공급자',
+        'distributor': '유통업체',
+        'wholesaler': '도매업체',
+        'retailer': '소매업체',
+        'dealer': '딜러',
+        'agent': '에이전트',
+        'broker': '브로커',
+        'intermediary': '중개업자',
+        'middleman': '중개업자',
+        'trader': '무역업자',
+        'merchant': '상인',
+        'business': '비즈니스',
+        'company': '회사',
+        'corporation': '법인',
+        'enterprise': '기업',
+        'firm': '회사',
+        'establishment': '기관',
+        'operation': '운영',
+        'workshop': '작업장',
+        'laboratory': '연구소',
+        'research': '연구',
+        'development': '개발',
+        'innovation': '혁신',
+        'technology': '기술',
+        'engineering': '공학',
+        'design': '설계',
+        'planning': '계획',
+        'strategy': '전략',
+        'management': '관리',
+        'coordination': '조정',
+        'integration': '통합',
+        'optimization': '최적화',
+        'efficiency': '효율성',
+        'productivity': '생산성',
+        'performance': '성과',
+        'quality': '품질',
+        'standard': '표준',
+        'specification': '규격',
+        'requirement': '요구사항',
+        'compliance': '준수',
+        'procedure': '절차',
+        'protocol': '프로토콜',
+        'guideline': '가이드라인',
+        'framework': '프레임워크',
+        'system': '시스템',
+        'platform': '플랫폼',
+        'infrastructure': '인프라',
+        'network': '네트워크',
+        'connection': '연결',
+        'link': '링크',
+        'bridge': '브리지',
+        'gateway': '게이트웨이',
+        'hub': '허브',
+        'center': '센터',
+        'node': '노드',
+        'point': '포인트',
+        'location': '위치',
+        'site': '사이트',
+        'area': '지역',
+        'region': '구역',
+        'zone': '영역',
+        'territory': '지구',
+        'district': '섹터',
+        'sector': '산업',
+        'industry': '시장',
+        'market': '경제',
+        'economy': '상업',
+        'commerce': '무역',
+        'exchange': '거래',
+        'transaction': '거래',
+        'deal': '계약',
+        'contract': '협정',
+        'arrangement': '합의',
+        'settlement': '결제',
+        'payment': '지불',
+        'finance': '금융',
+        'investment': '투자',
+        'funding': '자금',
+        'capital': '자본',
+        'money': '돈',
+        'currency': '통화',
+        'dollar': '달러',
+        'yen': '엔',
+        'euro': '유로',
+        'yuan': '위안',
+        'peso': '페소',
+        'rupee': '루피',
+        'ruble': '루블',
+        'lira': '리라',
+        'franc': '프랑',
+        'mark': '마르크',
+        'pound': '파운드',
+        'sterling': '스털링',
+        'crown': '크라운',
+        'krona': '크로나',
+        'krone': '크로네',
+        'forint': '포린트',
+        'zloty': '즐로티',
+        'koruna': '코루나',
+        'lev': '레프',
+        'lei': '레이',
+        'dinar': '디나르',
+        'dirham': '디르함',
+        'riyal': '리얄',
+        'ringgit': '링깃',
+        'baht': '바트',
+        'dong': '동',
+        'rupiah': '루피아',
+        'real': '레알',
+        'rand': '랜드',
+        'naira': '나이라',
+        'cedi': '세디',
+        'shilling': '실링'
+    }
+    
+    # 제목을 소문자로 변환하여 매칭
+    title_lower = title.lower()
+    translated_title = title
+    
+    # 번역 매핑 적용
+    for english, korean in translation_dict.items():
+        if english in title_lower:
+            translated_title = translated_title.replace(english, korean)
+            translated_title = translated_title.replace(english.title(), korean)
+            translated_title = translated_title.replace(english.upper(), korean)
+    
+    return translated_title
+
 def crawl_google_news(query, num_results=20):
-    """Google News RSS API를 사용한 실제 뉴스 크롤링"""
+    """Google News RSS API를 사용한 실제 뉴스 크롤링 - 글로벌 뉴스 우선"""
     try:
-        # Google News RSS 피드 URL 구성 - 사용자 입력 키워드 그대로 사용
+        # Google News RSS 피드 URL 구성 - 글로벌 뉴스 우선, 한국 뉴스 제외
         search_query = query
         encoded_query = urllib.parse.quote(search_query)
-        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
+        # 글로벌 뉴스 우선으로 설정 (한국 뉴스 제외)
+        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
         
         # 실제 뉴스 크롤링
         headers = {
@@ -1156,6 +1051,29 @@ def crawl_google_news(query, num_results=20):
         items = soup.find_all('item')
         
         articles = []
+        
+        # 글로벌 뉴스 우선, 한국 뉴스 제외 필터링
+        global_news_sources = [
+            'reuters', 'bloomberg', 'wsj', 'cnbc', 'financial times', 'bbc', 'cnn', 'ap',
+            'forbes', 'techcrunch', 'wall street journal', 'new york times', 'washington post',
+            'the economist', 'ft', 'business insider', 'marketwatch', 'yahoo finance',
+            'cnn business', 'fox business', 'msnbc', 'npr', 'pbs', 'abc news', 'cbs news',
+            'nbc news', 'usa today', 'los angeles times', 'chicago tribune', 'boston globe',
+            'the atlantic', 'wired', 'ars technica', 'venturebeat', 'techradar', 'engadget',
+            'the verge', 'gizmodo', 'mashable', 'recode', 'techcrunch', 'readwrite',
+            'zdnet', 'cnet', 'techspot', 'tomshardware', 'anandtech', 'arstechnica'
+        ]
+        
+        # 한국 뉴스 제외 키워드
+        korean_exclude_keywords = [
+            'korea', 'korean', 'seoul', 'busan', 'incheon', 'daegu', 'daejeon', 'gwangju',
+            'suwon', 'ulsan', 'sejong', 'jeju', 'jeonju', 'changwon', 'bucheon', 'ansan',
+            'anyang', 'pohang', 'jeonbuk', 'jeonnam', 'gyeongbuk', 'gyeongnam', 'chungbuk',
+            'chungnam', 'gangwon', 'gyeonggi', 'korean won', 'krw', 'kospi', 'kosdaq',
+            '한국', '한국어', '서울', '부산', '인천', '대구', '대전', '광주', '수원', '울산',
+            '세종', '제주', '전주', '창원', '부천', '안산', '안양', '포항', '전북', '전남',
+            '경북', '경남', '충북', '충남', '강원', '경기', '원화', '코스피', '코스닥'
+        ]
         
         # SCM Risk 관련 키워드 필터링 (더욱 강화된 필터링)
         scm_keywords = [
@@ -1199,39 +1117,7 @@ def crawl_google_news(query, num_results=20):
             'rupee', 'ruble', 'lira', 'franc', 'mark', 'pound', 'sterling', 'crown',
             'krona', 'krone', 'forint', 'zloty', 'koruna', 'lev', 'lei', 'dinar',
             'dirham', 'riyal', 'ringgit', 'baht', 'dong', 'rupiah', 'peso', 'real',
-            'rand', 'naira', 'cedi', 'shilling', 'franc', 'pound', 'dollar',
-            
-            # 한국어 SCM 키워드
-            '공급망', '물류', '구매', '재고', '창고', '운송', '배송', '공급업체',
-            '위험', '중단', '부족', '지연', '항구', '무역', '제조', '생산',
-            '반도체', '칩', '전자', '자동차', '철강', '원자재', '수출', '수입',
-            '관세', '제재', '봉쇄', '금수', '부족', '위기', '중단', '부족',
-            '공급', '수요', '병목', '혼잡', '지연', '공장', '플랜트', '시설',
-            '산업', '제조', '생산', '부품', '소재', '자원', '상품', '무역',
-            '수출', '수입', '관세', '세금', '세관', '국경', '규제', '정책',
-            '제한', '금지', '금수', '제재', '긴장', '갈등', '분쟁', '전쟁',
-            '군사', '국방', '보안', '지정학', '정치', '외교', '관계', '동맹',
-            '파트너십', '협정', '조약', '협상', '회담', '회의', '정상회담',
-            '회의', '포럼', '기구', '기관', '청', '정부', '행정부', '부처',
-            '부', '국', '과', '팀', '단위', '부서', '본부', '지사', '지점',
-            '협력사', '계약업체', '벤더', '공급업체', '공급자', '유통업체',
-            '도매업체', '소매업체', '딜러', '에이전트', '브로커', '중개업자',
-            '무역업자', '상인', '기업', '회사', '법인', '기업', '회사', '조직',
-            '기관', '시설', '공장', '플랜트', '공장', '작업장', '연구소',
-            '연구', '개발', '혁신', '기술', '공학', '설계', '계획', '전략',
-            '관리', '행정', '조정', '통합', '최적화', '효율성', '생산성',
-            '성과', '품질', '표준', '규격', '요구사항', '준수', '규제', '정책',
-            '절차', '프로토콜', '가이드라인', '프레임워크', '시스템', '플랫폼',
-            '인프라', '네트워크', '연결', '링크', '브리지', '게이트웨이', '허브',
-            '센터', '노드', '포인트', '위치', '사이트', '지역', '구역', '영역',
-            '지구', '섹터', '산업', '시장', '경제', '상업', '무역', '거래',
-            '교환', '거래', '거래', '계약', '협정', '합의', '결제', '지불',
-            '금융', '투자', '자금', '자본', '돈', '통화', '달러', '엔', '유로',
-            '위안', '원', '페소', '루피', '루블', '리라', '프랑', '마르크',
-            '파운드', '스털링', '크라운', '크로나', '크로네', '포린트', '즐로티',
-            '코루나', '레프', '레이', '디나르', '디르함', '리얄', '링깃', '바트',
-            '동', '루피아', '페소', '레알', '랜드', '나이라', '세디', '실링',
-            '프랑', '파운드', '달러'
+            'rand', 'naira', 'cedi', 'shilling', 'franc', 'pound', 'dollar'
         ]
         
         for item in items[:num_results * 3]:  # 더 많은 아이템을 가져와서 필터링
@@ -1240,10 +1126,20 @@ def crawl_google_news(query, num_results=20):
             pub_date = item.find('pubDate').text if item.find('pubDate') else ""
             source = item.find('source').text if item.find('source') else ""
             
-            # 제목이 비어있지 않고 SCM Risk 관련 키워드가 포함된 경우에만 처리
+            # 제목이 비어있지 않은 경우에만 처리
             if title.strip():
                 title_lower = title.lower()
                 source_lower = source.lower() if source else ""
+                
+                # 한국 뉴스 제외 확인
+                has_korean_keyword = any(keyword.lower() in title_lower or keyword.lower() in source_lower 
+                                       for keyword in korean_exclude_keywords)
+                
+                if has_korean_keyword:
+                    continue  # 한국 관련 뉴스는 건너뛰기
+                
+                # 글로벌 뉴스 소스 우선 확인
+                is_global_source = any(global_source.lower() in source_lower for global_source in global_news_sources)
                 
                 # 제목에서 SCM Risk 관련 키워드 확인
                 title_has_scm = any(keyword.lower() in title_lower for keyword in scm_keywords)
@@ -1251,8 +1147,7 @@ def crawl_google_news(query, num_results=20):
                 # 출처에서도 SCM 관련 키워드 확인 (추가 필터링)
                 source_has_scm = any(keyword.lower() in source_lower for keyword in [
                     'reuters', 'bloomberg', 'wsj', 'cnbc', 'financial times', 'bbc', 'cnn', 'ap',
-                    'business', 'economy', 'trade', 'industry', 'manufacturing', 'logistics',
-                    '경제', '무역', '산업', '제조', '물류', '비즈니스'
+                    'business', 'economy', 'trade', 'industry', 'manufacturing', 'logistics'
                 ])
                 
                 # 제외할 키워드들 (스포츠, 엔터테인먼트 등)
@@ -1265,22 +1160,14 @@ def crawl_google_news(query, num_results=20):
                     'tv', 'television', 'show', 'program', 'series', 'drama', 'comedy',
                     'fashion', 'style', 'beauty', 'cosmetic', 'makeup', 'clothing', 'designer',
                     'food', 'restaurant', 'cooking', 'recipe', 'chef', 'cuisine', 'dining',
-                    'travel', 'tourism', 'vacation', 'holiday', 'trip', 'destination', 'hotel',
-                    '스포츠', '축구', '야구', '농구', '테니스', '골프', '올림픽', '챔피언십',
-                    '리그', '토너먼트', '경기', '게임', '선수', '팀', '코치', '운동선수',
-                    '피트니스', '운동', '체육관', '영화', '배우', '연예인', '스타', '엔터테인먼트',
-                    '음악', '가수', '밴드', '콘서트', '앨범', '노래', '공연', 'TV', '텔레비전',
-                    '쇼', '프로그램', '시리즈', '드라마', '코미디', '패션', '스타일', '뷰티',
-                    '화장품', '메이크업', '의류', '디자이너', '음식', '레스토랑', '요리',
-                    '레시피', '셰프', '요리', '식사', '여행', '관광', '휴가', '휴일',
-                    '여행', '목적지', '호텔'
+                    'travel', 'tourism', 'vacation', 'holiday', 'trip', 'destination', 'hotel'
                 ]
                 
                 # 제외 키워드가 제목에 포함되어 있는지 확인
                 has_exclude_keyword = any(keyword.lower() in title_lower for keyword in exclude_keywords)
                 
-                # 제목에 SCM 키워드가 있고, 제외 키워드가 없는 경우에만 처리
-                if (title_has_scm or source_has_scm) and not has_exclude_keyword:
+                # 글로벌 뉴스 소스이거나 SCM 키워드가 있고, 제외 키워드가 없는 경우에만 처리
+                if (is_global_source or title_has_scm or source_has_scm) and not has_exclude_keyword:
                     # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
                     if link.startswith('https://news.google.com'):
                         try:
@@ -1310,12 +1197,16 @@ def crawl_google_news(query, num_results=20):
                     except:
                         formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
                     
+                    # 간단한 번역 (실제로는 더 정교한 번역 API 사용 권장)
+                    translated_title = translate_title_to_korean(title)
+                    
                     article = {
-                        'title': title,
+                        'title': translated_title,
+                        'original_title': title,  # 원본 제목 보존
                         'url': actual_url,
-                        'source': source,
+                        'source': source,  # 출처는 영어 그대로 유지
                         'published_time': formatted_date,
-                        'description': f"{title} - {source}에서 제공하는 {query} 관련 뉴스입니다.",
+                        'description': f"{translated_title} - {source}에서 제공하는 {query} 관련 글로벌 뉴스입니다.",
                         'views': random.randint(500, 5000)  # 조회수는 시뮬레이션
                     }
                     articles.append(article)
@@ -2148,8 +2039,8 @@ def main():
         except Exception as e:
             st.error(f"지도 로딩 오류: {e}")
         
-        # 환율 정보 섹션 (작은 크기)
-        st.markdown("### 💱 실시간 원/달러 환율")
+        # 환율 정보 섹션 (더 작은 크기)
+        st.markdown("### 💱 원/달러 환율")
         
         try:
             exchange_data = get_exchange_rate()
@@ -2160,22 +2051,22 @@ def main():
             
             st.markdown(f"""
             <div class="exchange-rate-card">
-                <h4 style="color: #1e293b; margin-bottom: 0.8rem; font-size: 1rem;">🇰🇷 USD/KRW 실시간 환율</h4>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
-                    <div style="font-size: 1.5rem; font-weight: 900; color: #1e40af;">
+                <h4 style="color: #1e293b; margin-bottom: 0.5rem; font-size: 0.9rem;">🇰🇷 USD/KRW</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <div style="font-size: 1.2rem; font-weight: 900; color: #1e40af;">
                         ₩{exchange_data["rate"]:,}
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 1rem; font-weight: 700; color: #64748b;">
+                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">
                             {change_icon} {change_sign}{exchange_data["change"]:+.2f}
                         </div>
-                        <div style="font-size: 0.8rem; color: #64748b;">
+                        <div style="font-size: 0.7rem; color: #64748b;">
                             ({change_sign}{exchange_data["change_percent"]:+.2f}%)
                         </div>
                     </div>
                 </div>
-                <div style="font-size: 0.7rem; color: #64748b; text-align: center;">
-                    🕒 업데이트: {datetime.now().strftime('%H:%M:%S')}
+                <div style="font-size: 0.6rem; color: #64748b; text-align: center;">
+                    🕒 {datetime.now().strftime('%H:%M:%S')}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -2183,8 +2074,8 @@ def main():
         except Exception as e:
             st.error(f"환율 정보 로딩 오류: {e}")
         
-        # 금속 가격 정보 섹션 (작은 크기)
-        st.markdown("### 🏭 LME 주요 금속 가격")
+        # 금속 가격 정보 섹션 (더 작은 크기)
+        st.markdown("### 🏭 LME 주요 금속")
         
         try:
             metal_data = get_metal_prices()
@@ -2210,13 +2101,13 @@ def main():
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center;">
                             <span class="metal-icon">{metal_icons.get(metal_name, "🏭")}</span>
-                            <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{metal_name}</span>
+                            <span style="font-weight: 700; color: #1e293b; font-size: 0.8rem;">{metal_name}</span>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 1rem; font-weight: 700; color: #1e40af;">
+                            <div style="font-size: 0.9rem; font-weight: 700; color: #1e40af;">
                                 ${data["price"]:,}
                             </div>
-                            <div class="price-change {data['status']}">
+                            <div class="price-change {data['status']}" style="font-size: 0.7rem;">
                                 {change_icon} {change_sign}{data["change"]:+.2f} ({change_sign}{data["change_percent"]:+.2f}%)
                             </div>
                         </div>
@@ -2225,8 +2116,8 @@ def main():
                 """, unsafe_allow_html=True)
             
             st.markdown(f"""
-            <div style="text-align: center; margin-top: 0.8rem; font-size: 0.7rem; color: #64748b;">
-                🏭 런던금속거래소(LME) 기준 | 🕒 업데이트: {datetime.now().strftime('%H:%M:%S')}
+            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.6rem; color: #64748b;">
+                🏭 LME 기준 | 🕒 {datetime.now().strftime('%H:%M:%S')}
             </div>
             """, unsafe_allow_html=True)
             

@@ -849,6 +849,8 @@ def get_metal_prices():
     if not YFINANCE_AVAILABLE:
         metal_prices = {}
         base_prices = {
+            "금": random.uniform(1800, 2200),
+            "은": random.uniform(20, 30),
             "구리": random.uniform(8000, 10000),
             "알루미늄": random.uniform(2000, 3000),
             "니켈": random.uniform(15000, 25000),
@@ -871,14 +873,16 @@ def get_metal_prices():
         return metal_prices
     
     try:
-        # 주요 금속 티커들
+        # 주요 금속 티커들 (금, 은 우선, 그 다음 주요 광물)
         metal_tickers = {
-            "구리": "HG=F",  # Copper
+            "금": "GC=F",      # Gold
+            "은": "SI=F",      # Silver
+            "구리": "HG=F",    # Copper
             "알루미늄": "ALI=F",  # Aluminum
-            "니켈": "NID=F",  # Nickel
-            "아연": "ZNC=F",  # Zinc
-            "납": "LED=F",  # Lead
-            "주석": "SN=F"   # Tin
+            "니켈": "NID=F",   # Nickel
+            "아연": "ZNC=F",   # Zinc
+            "납": "LED=F",     # Lead
+            "주석": "SN=F"     # Tin
         }
         
         metal_prices = {}
@@ -903,6 +907,8 @@ def get_metal_prices():
                 else:
                     # 시뮬레이션 데이터
                     base_prices = {
+                        "금": random.uniform(1800, 2200),
+                        "은": random.uniform(20, 30),
                         "구리": random.uniform(8000, 10000),
                         "알루미늄": random.uniform(2000, 3000),
                         "니켈": random.uniform(15000, 25000),
@@ -925,6 +931,8 @@ def get_metal_prices():
             except Exception as e:
                 # 개별 금속 오류 시 시뮬레이션 데이터
                 base_prices = {
+                    "금": random.uniform(1800, 2200),
+                    "은": random.uniform(20, 30),
                     "구리": random.uniform(8000, 10000),
                     "알루미늄": random.uniform(2000, 3000),
                     "니켈": random.uniform(15000, 25000),
@@ -950,6 +958,8 @@ def get_metal_prices():
         # 전체 오류 시 시뮬레이션 데이터 반환
         metal_prices = {}
         base_prices = {
+            "금": random.uniform(1800, 2200),
+            "은": random.uniform(20, 30),
             "구리": random.uniform(8000, 10000),
             "알루미늄": random.uniform(2000, 3000),
             "니켈": random.uniform(15000, 25000),
@@ -1555,6 +1565,8 @@ def main():
             
             # 금속별 아이콘
             metal_icons = {
+                "금": "🥇",
+                "은": "🥈",
                 "구리": "🥉",
                 "알루미늄": "🔧",
                 "니켈": "⚙️",

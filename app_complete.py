@@ -24,8 +24,15 @@ except ImportError:
     st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
 
 # Gemini API 설정
-genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
-model = genai.GenerativeModel('gemini-1.5-pro')
+try:
+    genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
+    model = genai.GenerativeModel('gemini-1.5-pro')
+    # API 키 테스트
+    test_response = model.generate_content("Hello")
+    API_KEY_WORKING = True
+except Exception as e:
+    st.error(f"Gemini API 키 설정 오류: {e}")
+    API_KEY_WORKING = False
 
 # 페이지 설정
 st.set_page_config(
@@ -322,11 +329,11 @@ st.markdown("""
     .exchange-rate-card {
         background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
         border: 2px solid #0ea5e9;
-        border-radius: 16px;
-        padding: 1.2rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
-        font-size: 0.9rem;
+        border-radius: 12px;
+        padding: 0.8rem;
+        margin: 0.3rem 0;
+        box-shadow: 0 2px 12px rgba(14, 165, 233, 0.08);
+        font-size: 1rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
@@ -352,11 +359,11 @@ st.markdown("""
     .metal-price-card {
         background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
         border: 2px solid #f59e0b;
-        border-radius: 16px;
-        padding: 1.2rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
-        font-size: 0.9rem;
+        border-radius: 12px;
+        padding: 0.8rem;
+        margin: 0.3rem 0;
+        box-shadow: 0 2px 12px rgba(245, 158, 11, 0.08);
+        font-size: 1rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
@@ -1213,7 +1220,7 @@ def crawl_google_news(query, num_results=20):
             'rand', 'naira', 'cedi', 'shilling', 'franc', 'pound', 'dollar'
         ]
         
-        for item in items[:num_results * 3]:  # 더 많은 아이템을 가져와서 필터링
+        for item in items[:num_results * 5]:  # 더 많은 아이템을 가져와서 필터링
             title = item.find('title').text if item.find('title') else ""
             link = item.find('link').text if item.find('link') else ""
             pub_date = item.find('pubDate').text if item.find('pubDate') else ""
@@ -1267,8 +1274,26 @@ def crawl_google_news(query, num_results=20):
                             news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
                             actual_url = news_response.url
                             # Google 검색 결과가 아닌 실제 뉴스 사이트인지 확인
-                            if 'google.com/search' in actual_url:
-                                continue  # Google 검색 결과는 건너뛰기
+                            if 'google.com/search' in actual_url or 'google.com' in actual_url:
+                                # Google 링크인 경우 실제 뉴스 사이트로 대체
+                                if 'reuters' in source_lower:
+                                    actual_url = "https://www.reuters.com"
+                                elif 'bloomberg' in source_lower:
+                                    actual_url = "https://www.bloomberg.com"
+                                elif 'wsj' in source_lower or 'wall street journal' in source_lower:
+                                    actual_url = "https://www.wsj.com"
+                                elif 'cnbc' in source_lower:
+                                    actual_url = "https://www.cnbc.com"
+                                elif 'financial times' in source_lower or 'ft' in source_lower:
+                                    actual_url = "https://www.ft.com"
+                                elif 'bbc' in source_lower:
+                                    actual_url = "https://www.bbc.com"
+                                elif 'cnn' in source_lower:
+                                    actual_url = "https://www.cnn.com"
+                                elif 'ap' in source_lower:
+                                    actual_url = "https://apnews.com"
+                                else:
+                                    continue  # 알 수 없는 소스는 건너뛰기
                         except:
                             continue  # 링크 접근 실패 시 건너뛰기
                     else:
@@ -1624,23 +1649,23 @@ def create_risk_map():
         ]
     }
     
+    # 현재 진행 중인 Risk만 필터링하여 표시
     risk_locations = [
-        # 전쟁/분쟁 위험
-        {"name": "우크라이나", "lat": 48.3794, "lng": 31.1656, "risk": "높음", "risk_type": "전쟁", "description": "러시아-우크라이나 전쟁", "color": "red", "icon": "⚔️", "news": location_news["우크라이나"]},
-        {"name": "대만", "lat": 23.6978, "lng": 121.1354, "risk": "높음", "risk_type": "전쟁", "description": "중국-대만 긴장", "color": "red", "icon": "⚔️", "news": location_news["대만"]},
-        {"name": "홍해", "lat": 15.5527, "lng": 42.4497, "risk": "높음", "risk_type": "전쟁", "description": "호세이드 해적 활동", "color": "red", "icon": "⚔️", "news": location_news["홍해"]},
+        # 전쟁/분쟁 위험 (현재 진행 중)
+        {"name": "우크라이나", "lat": 48.3794, "lng": 31.1656, "risk": "높음", "risk_type": "전쟁", "description": "러시아-우크라이나 전쟁 (진행 중)", "color": "red", "icon": "⚔️", "news": location_news["우크라이나"], "active": True},
+        {"name": "홍해", "lat": 15.5527, "lng": 42.4497, "risk": "높음", "risk_type": "전쟁", "description": "호세이드 해적 활동 (진행 중)", "color": "red", "icon": "⚔️", "news": location_news["홍해"], "active": True},
         
-        # 자연재해 위험
-        {"name": "일본 후쿠시마", "lat": 37.7603, "lng": 140.4733, "risk": "중간", "risk_type": "자연재해", "description": "원전 사고 영향", "color": "orange", "icon": "🌊", "news": location_news["일본 후쿠시마"]},
-        {"name": "미국 텍사스", "lat": 31.9686, "lng": -99.9018, "risk": "중간", "risk_type": "자연재해", "description": "극한 기후 영향", "color": "orange", "icon": "🌊", "news": location_news["미국 텍사스"]},
+        # 자연재해 위험 (현재 진행 중)
+        {"name": "일본 후쿠시마", "lat": 37.7603, "lng": 140.4733, "risk": "중간", "risk_type": "자연재해", "description": "원전 오염수 방류 영향 (진행 중)", "color": "orange", "icon": "🌊", "news": location_news["일본 후쿠시마"], "active": True},
         
-        # 기타 위험
-        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "risk_type": "기타", "description": "공급망 중단 위험", "color": "red", "icon": "🚨", "news": location_news["중국 상하이"]},
-        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "risk_type": "기타", "description": "항구 혼잡", "color": "orange", "icon": "⚠️", "news": location_news["미국 로스앤젤레스"]},
-        {"name": "독일 함부르크", "lat": 53.5511, "lng": 9.9937, "risk": "낮음", "risk_type": "기타", "description": "물류 지연", "color": "green", "icon": "✅", "news": location_news["독일 함부르크"]},
-        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "risk_type": "기타", "description": "운송 비용 증가", "color": "orange", "icon": "⚠️", "news": location_news["싱가포르"]},
-        {"name": "한국 부산", "lat": 35.1796, "lng": 129.0756, "risk": "낮음", "risk_type": "기타", "description": "정상 운영", "color": "green", "icon": "✅", "news": location_news["한국 부산"]}
+        # 기타 위험 (현재 진행 중)
+        {"name": "중국 상하이", "lat": 31.2304, "lng": 121.4737, "risk": "높음", "risk_type": "기타", "description": "공급망 중단 위험 (지속적)", "color": "red", "icon": "🚨", "news": location_news["중국 상하이"], "active": True},
+        {"name": "미국 로스앤젤레스", "lat": 34.0522, "lng": -118.2437, "risk": "중간", "risk_type": "기타", "description": "항구 혼잡 (지속적)", "color": "orange", "icon": "⚠️", "news": location_news["미국 로스앤젤레스"], "active": True},
+        {"name": "싱가포르", "lat": 1.3521, "lng": 103.8198, "risk": "중간", "risk_type": "기타", "description": "운송 비용 증가 (지속적)", "color": "orange", "icon": "⚠️", "news": location_news["싱가포르"], "active": True}
     ]
+    
+    # 현재 진행 중인 Risk만 필터링
+    active_risk_locations = [location for location in risk_locations if location.get("active", False)]
     
     # 더 직관적인 지도 스타일
     m = folium.Map(
@@ -1664,7 +1689,7 @@ def create_risk_map():
         "기타": "#3b82f6"
     }
     
-    for location in risk_locations:
+    for location in active_risk_locations:
         # 관련 뉴스 링크 HTML 생성 (더 깔끔한 스타일)
         news_links_html = ""
         for i, news in enumerate(location['news'], 1):
@@ -1909,6 +1934,25 @@ def generate_ai_strategy(article_title, article_description):
 
 def gemini_chatbot_response(user_input):
     """Gemini API를 사용한 챗봇 응답 (오류 처리 개선)"""
+    if not API_KEY_WORKING:
+        return """🤖 **AI 챗봇 API 키 오류**
+
+현재 Gemini API 키에 문제가 있습니다.
+
+**해결 방법:**
+1. **API 키 확인** - 올바른 API 키가 설정되었는지 확인
+2. **API 키 활성화** - Google AI Studio에서 API 키가 활성화되었는지 확인
+3. **할당량 확인** - API 사용 할당량이 남아있는지 확인
+
+**임시 답변:**
+SCM Risk 관리는 공급망의 불확실성을 식별하고 관리하는 과정입니다. 주요 요소로는:
+- 공급업체 위험 관리
+- 수요 예측 및 재고 관리  
+- 물류 및 운송 위험
+- 자연재해 및 정치적 위험
+
+API 키 문제가 해결되면 더 자세한 답변을 제공할 수 있습니다! 🙏"""
+    
     try:
         prompt = f"""
         당신은 SCM(공급망관리) Risk 관리 전문가입니다. 
@@ -1969,17 +2013,17 @@ def main():
         weather_classes = f"weather-info {time_class} {weather_class}".strip()
         
         st.markdown(f"""
-        <div class="{weather_classes}">
-            <h4 style="margin: 0 0 10px 0;">🇰🇷 한국 시간</h4>
-            <p style="margin: 5px 0; font-size: 1.1rem;"><strong>{date_str}</strong></p>
-            <p style="margin: 5px 0; font-size: 1.2rem;"><strong>{time_str}</strong></p>
+        <div class="{weather_classes}" style="text-align: center;">
+            <h4 style="margin: 0 0 10px 0; text-align: center;">🇰🇷 한국 시간</h4>
+            <p style="margin: 5px 0; font-size: 1.1rem; text-align: center;"><strong>{date_str}</strong></p>
+            <p style="margin: 5px 0; font-size: 1.2rem; text-align: center;"><strong>{time_str}</strong></p>
             <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
-            <h4 style="margin: 0 0 10px 0;">🌤️ 서울 실시간 날씨</h4>
-            <p style="margin: 5px 0;">☁️ {weather_info['condition']}</p>
-            <p style="margin: 5px 0;">🌡️ {weather_info['temperature']}°C (체감 {weather_info['feels_like']}°C)</p>
-            <p style="margin: 5px 0;">💧 습도 {weather_info['humidity']}%</p>
-            <p style="margin: 5px 0;">💨 풍속 {weather_info['wind_speed']}m/s</p>
-            <p style="margin: 5px 0;">📊 기압 {weather_info['pressure']}hPa</p>
+            <h4 style="margin: 0 0 10px 0; text-align: center;">🌤️ 서울 실시간 날씨</h4>
+            <p style="margin: 5px 0; text-align: center;">☁️ {weather_info['condition']}</p>
+            <p style="margin: 5px 0; text-align: center;">🌡️ {weather_info['temperature']}°C (체감 {weather_info['feels_like']}°C)</p>
+            <p style="margin: 5px 0; text-align: center;">💧 습도 {weather_info['humidity']}%</p>
+            <p style="margin: 5px 0; text-align: center;">💨 풍속 {weather_info['wind_speed']}m/s</p>
+            <p style="margin: 5px 0; text-align: center;">📊 기압 {weather_info['pressure']}hPa</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -2131,13 +2175,16 @@ def main():
             st.markdown("### ⚔️ 전쟁/분쟁 현황")
             
             war_countries = [
-                {"name": "🇺🇦 우크라이나", "status": "러시아와 전쟁 중", "start_date": "2022년 2월", "impact": "곡물 수출 중단, 에너지 공급 위기"},
-                {"name": "🇮🇱 이스라엘", "status": "하마스와 분쟁", "start_date": "2023년 10월", "impact": "중동 지역 불안정, 에너지 가격 상승"},
-                {"name": "🇸🇩 수단", "status": "내전 진행 중", "start_date": "2023년 4월", "impact": "농산물 수출 중단, 인도적 위기"},
-                {"name": "🇾🇪 예멘", "status": "후티 반군과 분쟁", "start_date": "2014년", "impact": "홍해 해상 운송 위협"}
+                {"name": "🇺🇦 우크라이나", "status": "러시아와 전쟁 중", "start_date": "2022년 2월", "impact": "곡물 수출 중단, 에너지 공급 위기", "active": True},
+                {"name": "🇮🇱 이스라엘", "status": "하마스와 분쟁", "start_date": "2023년 10월", "impact": "중동 지역 불안정, 에너지 가격 상승", "active": True},
+                {"name": "🇸🇩 수단", "status": "내전 진행 중", "start_date": "2023년 4월", "impact": "농산물 수출 중단, 인도적 위기", "active": True},
+                {"name": "🇾🇪 예멘", "status": "후티 반군과 분쟁", "start_date": "2014년", "impact": "홍해 해상 운송 위협", "active": True}
             ]
             
-            for country in war_countries:
+            # 현재 진행 중인 전쟁/분쟁만 필터링
+            active_wars = [country for country in war_countries if country.get("active", False)]
+            
+            for country in active_wars:
                 st.markdown(f"""
                 <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626; padding: 12px; margin: 8px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -2156,12 +2203,15 @@ def main():
             st.markdown("### 🌊 자연재해 현황")
             
             disaster_countries = [
-                {"name": "🇯🇵 일본", "disaster": "지진 및 쓰나미", "date": "2024년 1월", "location": "이시카와현", "impact": "반도체 공장 가동 중단, 물류 지연"},
-                {"name": "🇹🇷 터키", "disaster": "대형 지진", "date": "2023년 2월", "location": "가지안테프", "impact": "건설 자재 공급 중단, 인프라 손상"},
-                {"name": "🇺🇸 미국", "disaster": "허리케인", "date": "2023년 8월", "location": "플로리다", "impact": "항구 폐쇄, 운송비 상승"}
+                {"name": "🇯🇵 일본", "disaster": "지진 및 쓰나미", "date": "2024년 1월", "location": "이시카와현", "impact": "반도체 공장 가동 중단, 물류 지연", "active": True},
+                {"name": "🇹🇷 터키", "disaster": "대형 지진", "date": "2023년 2월", "location": "가지안테프", "impact": "건설 자재 공급 중단, 인프라 손상", "active": False},
+                {"name": "🇺🇸 미국", "disaster": "허리케인", "date": "2023년 8월", "location": "플로리다", "impact": "항구 폐쇄, 운송비 상승", "active": False}
             ]
             
-            for country in disaster_countries:
+            # 현재 진행 중인 자연재해만 필터링
+            active_disasters = [country for country in disaster_countries if country.get("active", False)]
+            
+            for country in active_disasters:
                 st.markdown(f"""
                 <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 12px; margin: 8px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">

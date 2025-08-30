@@ -11,9 +11,270 @@ import plotly.graph_objects as go
 import numpy as np
 import folium
 from streamlit_folium import st_folium
-from google import genai
-from google.genai import types
-import os
+import google.generativeai as genai
+import json
+import pytz
+from google.generativeai import types
+
+# yfinance 임포트 시도 (없으면 시뮬레이션 모드)
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+    st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
+
+# Gemini API 설정 (2025년 8월 30일 업데이트 기준)
+try:
+    genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
+    # 최신 모델 사용: gemini-2.5-flash
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    # API 키 테스트
+    test_response = model.generate_content("Hello")
+    API_KEY_WORKING = True
+except Exception as e:
+    st.error(f"Gemini API 키 설정 오류: {e}")
+    API_KEY_WORKING = False
+
+# 페이지 설정
+st.set_page_config(
+    page_title="SCM Risk Management AI",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + 좌우 Motion만 적용
+st.markdown("""
+<style>
+    /* 전체 배경 - 완전한 흰색으로 설정 */
+    .stApp {
+        background: #ffffff !important;
+        min-height: 100vh;
+    }
+    
+    /* Streamlit 기본 배경색 강제 변경 */
+    .stApp > header {
+        background-color: #ffffff !important;
+    }
+    
+    .stApp > div[data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+    }
+    
+    /* Streamlit 모든 기본 배경색 강제 변경 */
+    .stApp > div {
+        background-color: #ffffff !important;
+    }
+    
+    .stApp > div > div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 사이드바 내부 요소들도 흰색으로 */
+    .stApp > div[data-testid="stSidebar"] > div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 메인 컨텐츠 영역도 흰색으로 */
+    .stApp > div[data-testid="stSidebar"] + div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 모든 섹션 배경을 흰색으로 */
+    section {
+        background-color: #ffffff !important;
+    }
+    
+    /* 메인 헤더 - 푸른색 그라데이션 효과 */
+    .main-header {
+        font-size: 2.8rem;
+        font-weight: 800;
+        text-align: center;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+        position: relative;
+        animation: slideInFromLeft 1s ease-out;
+    }
+    
+    /* 서브 헤더 - 푸른색 계열, 우측에서 부드러운 Motion */
+    .sub-header {
+        font-size: 1.1rem;
+        font-weight: 500;
+        text-align: center;
+        color: #3b82f6;
+        margin-bottom: 2.5rem;
+        letter-spacing: 0.02em;
+        position: relative;
+        animation: slideInFromRight 1.2s ease-out;
+    }
+    
+    .sub-header::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 2px;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        border-radius: 2px;
+        animation: expandWidth 2s ease-out;
+    }
+    
+    @keyframes expandWidth {
+        from { width: 0px; }
+        to { width: 50px; }
+    }
+    
+    /* 좌측에서 부드러운 Motion */
+    @keyframes slideInFromLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* 우측에서 부드러운 Motion */
+    @keyframes slideInFromRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* 뉴스 카드 - 2025년 트렌드 반영한 현대적 디자인 */
+    .news-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-left: 4px solid #3b82f6;
+        border-radius: 16px;
+        padding: 1.8rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .news-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .news-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    
+    .news-card:hover::before {
+        width: 6px;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
+    }
+    
+    /* 뉴스 제목 - 푸른색 계열 */
+    .news-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e40af;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        position: relative;
+    }
+    
+    /* 뉴스 링크 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
+    .news-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        color: white !important;
+        padding: 0.7rem 1.2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .news-link:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+        color: white !important;
+    }
+    
+    .news-link:hover::before {
+        left: 100%;
+    }
+    
+    /* 실시간 정보 - 2025년 트렌드 반영한 현대적 디자인 */
+    .weather-info.day {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        color: #1e40af;
+        border: 2px solid #3b82f6;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .weather-info.day::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+import streamlit as st
+import requests
+from bs4 import BeautifulSoup
+import urllib.parse
+import time
+import random
+from datetime import datetime, timedelta
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+import folium
+from streamlit_folium import st_folium
+import google.generativeai as genai
 import json
 import pytz
 
@@ -1748,35 +2009,8 @@ def create_risk_map():
     return m, risk_locations
 
 def generate_ai_strategy(article_title, article_description):
-    """뉴스 기사에 대한 AI 대응전략 생성 (2025년 8월 30일 업데이트 기준)"""
+    """뉴스 기사에 대한 AI 대응전략 생성"""
     try:
-        # 최신 Gemini API 문서에 따른 설정
-        generation_config = {
-            "temperature": 0.6,
-            "top_p": 0.8,
-            "top_k": 40,
-            "max_output_tokens": 3072,
-        }
-        
-        safety_settings = [
-            {
-                "category": "HARM_CATEGORY_HARASSMENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_HATE_SPEECH",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-            }
-        ]
-        
         # 기사 내용을 분석하여 맞춤형 대응전략 생성
         strategy_prompt = f"""
         당신은 SCM(공급망관리) Risk 관리 전문가입니다. 
@@ -1816,18 +2050,8 @@ def generate_ai_strategy(article_title, article_description):
         답변은 한국어로 작성해주세요.
         """
         
-        # 최신 메서드 사용
-        response = model.generate_content(
-            strategy_prompt,
-            generation_config=generation_config,
-            safety_settings=safety_settings
-        )
-        
-        # 응답 검증
-        if response and hasattr(response, 'text'):
-            return response.text
-        else:
-            return "죄송합니다. AI 전략을 생성할 수 없습니다. 다시 시도해주세요."
+        response = model.generate_content(strategy_prompt)
+        return response.text
         
     except Exception as e:
         # 오류 발생 시 기사 내용을 분석한 기본 전략 반환

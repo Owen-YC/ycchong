@@ -11,7 +11,9 @@ import plotly.graph_objects as go
 import numpy as np
 import folium
 from streamlit_folium import st_folium
-import google.generativeai as genai
+from google import genai
+from google.genai import types
+import os
 import json
 import pytz
 

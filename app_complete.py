@@ -23,10 +23,11 @@ except ImportError:
     YFINANCE_AVAILABLE = False
     st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
 
-# Gemini API 설정
+# Gemini API 설정 (2025년 8월 30일 업데이트 기준)
 try:
     genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
-    model = genai.GenerativeModel('gemini-1.5-pro')
+    # 최신 모델 사용: gemini-2.5-flash
+    model = genai.GenerativeModel('gemini-2.5-flash')
     # API 키 테스트
     test_response = model.generate_content("Hello")
     API_KEY_WORKING = True
@@ -1745,8 +1746,35 @@ def create_risk_map():
     return m, risk_locations
 
 def generate_ai_strategy(article_title, article_description):
-    """뉴스 기사에 대한 AI 대응전략 생성"""
+    """뉴스 기사에 대한 AI 대응전략 생성 (2025년 8월 30일 업데이트 기준)"""
     try:
+        # 최신 Gemini API 문서에 따른 설정
+        generation_config = {
+            "temperature": 0.6,
+            "top_p": 0.8,
+            "top_k": 40,
+            "max_output_tokens": 3072,
+        }
+        
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            }
+        ]
+        
         # 기사 내용을 분석하여 맞춤형 대응전략 생성
         strategy_prompt = f"""
         당신은 SCM(공급망관리) Risk 관리 전문가입니다. 
@@ -1786,8 +1814,18 @@ def generate_ai_strategy(article_title, article_description):
         답변은 한국어로 작성해주세요.
         """
         
-        response = model.generate_content(strategy_prompt)
-        return response.text
+        # 최신 메서드 사용
+        response = model.generate_content(
+            strategy_prompt,
+            generation_config=generation_config,
+            safety_settings=safety_settings
+        )
+        
+        # 응답 검증
+        if response and hasattr(response, 'text'):
+            return response.text
+        else:
+            return "죄송합니다. AI 전략을 생성할 수 없습니다. 다시 시도해주세요."
         
     except Exception as e:
         # 오류 발생 시 기사 내용을 분석한 기본 전략 반환

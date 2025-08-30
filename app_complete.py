@@ -28,9 +28,9 @@ except ImportError:
 # Gemini API 설정 (최신 google-genai 패키지 사용)
 try:
     # 권장: Streamlit secrets 또는 환경변수 사용 (하드코딩 금지)
-    API_KEY = st.secrets.get("GEMINI_API_KEY")
+    API_KEY = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not API_KEY:
-        raise RuntimeError("GEMINI_API_KEY가 설정되어 있지 않습니다. Streamlit secrets 또는 환경변수로 설정하세요.")
+        raise RuntimeError("GOOGLE_API_KEY가 설정되어 있지 않습니다. Streamlit secrets 또는 환경변수로 설정하세요.")
 
     client = genai.Client(api_key=API_KEY)
     test_response = client.models.generate_content(
@@ -1772,7 +1772,7 @@ def generate_ai_strategy(article_title, article_description):
         한국어로 간결하게.
         """
 
-        resp = model.generate_content(
+        resp = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=strategy_prompt,
             config=types.GenerateContentConfig(
@@ -1799,7 +1799,7 @@ def gemini_chatbot_response(user_input):
         한국어로, 실행 가능한 조언 위주로 답하세요.
         """
 
-        resp = model.generate_content(
+        resp = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(

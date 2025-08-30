@@ -11,10 +11,11 @@ import plotly.graph_objects as go
 import numpy as np
 import folium
 from streamlit_folium import st_folium
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import json
 import pytz
-from google.generativeai import types
+import os
 
 # yfinance 임포트 시도 (없으면 시뮬레이션 모드)
 try:
@@ -24,278 +25,21 @@ except ImportError:
     YFINANCE_AVAILABLE = False
     st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
 
-# Gemini API 설정 (2025년 8월 30일 업데이트 기준)
+# Gemini API 설정 (최신 google-genai 패키지 사용)
 try:
-    genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
-    # 최신 모델 사용: gemini-2.5-flash
-    model = genai.GenerativeModel('gemini-2.5-flash')
-    # API 키 테스트
-    test_response = model.generate_content("Hello")
+    # 권장: Streamlit secrets 또는 환경변수 사용 (하드코딩 금지)
+    API_KEY = st.secrets.get("GEMINI_API_KEY")
+    if not API_KEY:
+        raise RuntimeError("GEMINI_API_KEY가 설정되어 있지 않습니다. Streamlit secrets 또는 환경변수로 설정하세요.")
+
+    client = genai.Client(api_key=API_KEY)
+    test_response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents="Hello"
+    )
     API_KEY_WORKING = True
 except Exception as e:
-    st.error(f"Gemini API 키 설정 오류: {e}")
-    API_KEY_WORKING = False
-
-# 페이지 설정
-st.set_page_config(
-    page_title="SCM Risk Management AI",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + 좌우 Motion만 적용
-st.markdown("""
-<style>
-    /* 전체 배경 - 완전한 흰색으로 설정 */
-    .stApp {
-        background: #ffffff !important;
-        min-height: 100vh;
-    }
-    
-    /* Streamlit 기본 배경색 강제 변경 */
-    .stApp > header {
-        background-color: #ffffff !important;
-    }
-    
-    .stApp > div[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
-    }
-    
-    /* Streamlit 모든 기본 배경색 강제 변경 */
-    .stApp > div {
-        background-color: #ffffff !important;
-    }
-    
-    .stApp > div > div {
-        background-color: #ffffff !important;
-    }
-    
-    /* 사이드바 내부 요소들도 흰색으로 */
-    .stApp > div[data-testid="stSidebar"] > div {
-        background-color: #ffffff !important;
-    }
-    
-    /* 메인 컨텐츠 영역도 흰색으로 */
-    .stApp > div[data-testid="stSidebar"] + div {
-        background-color: #ffffff !important;
-    }
-    
-    /* 모든 섹션 배경을 흰색으로 */
-    section {
-        background-color: #ffffff !important;
-    }
-    
-    /* 메인 헤더 - 푸른색 그라데이션 효과 */
-    .main-header {
-        font-size: 2.8rem;
-        font-weight: 800;
-        text-align: center;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 1.5rem;
-        letter-spacing: -0.02em;
-        position: relative;
-        animation: slideInFromLeft 1s ease-out;
-    }
-    
-    /* 서브 헤더 - 푸른색 계열, 우측에서 부드러운 Motion */
-    .sub-header {
-        font-size: 1.1rem;
-        font-weight: 500;
-        text-align: center;
-        color: #3b82f6;
-        margin-bottom: 2.5rem;
-        letter-spacing: 0.02em;
-        position: relative;
-        animation: slideInFromRight 1.2s ease-out;
-    }
-    
-    .sub-header::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 50px;
-        height: 2px;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        border-radius: 2px;
-        animation: expandWidth 2s ease-out;
-    }
-    
-    @keyframes expandWidth {
-        from { width: 0px; }
-        to { width: 50px; }
-    }
-    
-    /* 좌측에서 부드러운 Motion */
-    @keyframes slideInFromLeft {
-        from {
-            opacity: 0;
-            transform: translateX(-30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    /* 우측에서 부드러운 Motion */
-    @keyframes slideInFromRight {
-        from {
-            opacity: 0;
-            transform: translateX(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-    
-    /* 뉴스 카드 - 2025년 트렌드 반영한 현대적 디자인 */
-    .news-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 2px solid #e2e8f0;
-        border-left: 4px solid #3b82f6;
-        border-radius: 16px;
-        padding: 1.8rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-    }
-    
-    .news-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-        transition: all 0.3s ease;
-    }
-    
-    .news-card:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
-        border-color: #3b82f6;
-    }
-    
-    .news-card:hover::before {
-        width: 6px;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
-    }
-    
-    /* 뉴스 제목 - 푸른색 계열 */
-    .news-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1e40af;
-        margin-bottom: 1rem;
-        line-height: 1.4;
-        position: relative;
-    }
-    
-    /* 뉴스 링크 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
-    .news-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-        color: white !important;
-        padding: 0.7rem 1.2rem;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .news-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .news-link:hover {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
-        color: white !important;
-    }
-    
-    .news-link:hover::before {
-        left: 100%;
-    }
-    
-    /* 실시간 정보 - 2025년 트렌드 반영한 현대적 디자인 */
-    .weather-info.day {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        color: #1e40af;
-        border: 2px solid #3b82f6;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
-        backdrop-filter: blur(10px);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .weather-info.day::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-import streamlit as st
-import requests
-from bs4 import BeautifulSoup
-import urllib.parse
-import time
-import random
-from datetime import datetime, timedelta
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import numpy as np
-import folium
-from streamlit_folium import st_folium
-import google.generativeai as genai
-import json
-import pytz
-
-# yfinance 임포트 시도 (없으면 시뮬레이션 모드)
-try:
-    import yfinance as yf
-    YFINANCE_AVAILABLE = True
-except ImportError:
-    YFINANCE_AVAILABLE = False
-    st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
-
-# Gemini API 설정 (2025년 8월 30일 업데이트 기준)
-try:
-    genai.configure(api_key="AIzaSyCJ1F-HMS4NkQ64f1tDRqJV_N9db0MmKpI")
-    # 최신 모델 사용: gemini-2.5-flash
-    model = genai.GenerativeModel('gemini-2.5-flash')
-    # API 키 테스트
-    test_response = model.generate_content("Hello")
-    API_KEY_WORKING = True
-except Exception as e:
-    st.error(f"Gemini API 키 설정 오류: {e}")
+    st.error(f"Gemini API 설정 오류: {e}")
     API_KEY_WORKING = False
 
 # 페이지 설정
@@ -2009,248 +1753,68 @@ def create_risk_map():
     return m, risk_locations
 
 def generate_ai_strategy(article_title, article_description):
-    """뉴스 기사에 대한 AI 대응전략 생성"""
+    if not API_KEY_WORKING:
+        return "AI 키가 설정되지 않았습니다. GOOGLE_API_KEY를 설정한 뒤 다시 시도하세요."
+
     try:
-        # 기사 내용을 분석하여 맞춤형 대응전략 생성
         strategy_prompt = f"""
-        당신은 SCM(공급망관리) Risk 관리 전문가입니다. 
-        다음 뉴스 기사를 분석하여 해당 상황에 특화된 구체적이고 실용적인 대응전략을 제시해주세요.
-        
-        **뉴스 기사 정보:**
-        제목: {article_title}
+        당신은 SCM 리스크 관리 전문가입니다.
+        다음 뉴스에 맞춘 실무형 대응전략을 제시하세요.
+
+        뉴스 제목: {article_title}
         설명: {article_description}
-        
-        **분석 요구사항:**
-        1. 기사의 핵심 위험 요소를 파악하세요 (전쟁, 자연재해, 경제제재, 기술문제, 노동문제 등)
-        2. 해당 위험이 공급망에 미치는 구체적인 영향을 분석하세요
-        3. 기사 내용에 특화된 맞춤형 전략을 제시하세요
-        
-        **답변 형식:**
-        
-        🎯 **즉시 대응 방안 (1-2주 내)**
-        - 현재 상황에 특화된 긴급 조치 3-4개
-        
-        📊 **중기 전략 (1-3개월)**
-        - 공급망 다변화 및 대안 확보 방안
-        - 해당 위험에 특화된 대응책
-        
-        🔮 **장기 대응 (3-6개월)**
-        - 근본적인 리스크 관리 체계 구축
-        - 향후 유사 위험 방지 대책
-        
-        💡 **AI/디지털 솔루션**
-        - 해당 위험 유형에 특화된 기술적 대응 방안
-        - 모니터링 및 예측 시스템
-        
-        **중요:** 
-        - 일반적인 답변이 아닌, 이 특정 기사 내용에 맞는 구체적인 전략을 제시하세요
-        - 기사에서 언급된 지역, 산업, 위험 유형을 반영한 맞춤형 조치를 포함하세요
-        - 실무적으로 실행 가능한 구체적인 단계를 제시하세요
-        
-        답변은 한국어로 작성해주세요.
+
+        출력 형식:
+        즉시 대응(1-2주)
+        중기 전략(1-3개월)
+        장기 대응(3-6개월)
+        AI/디지털 솔루션
+        한국어로 간결하게.
         """
-        
-        response = model.generate_content(strategy_prompt)
-        return response.text
-        
+
+        resp = model.generate_content(
+            model="gemini-2.5-flash",
+            contents=strategy_prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.6,
+                top_p=0.8,
+                top_k=40,
+                max_output_tokens=3072,
+                # 필요 시 thinking 비활성화:
+                # thinking_config=types.ThinkingConfig(thinking_budget=0)
+            ),
+        )
+        return getattr(resp, "text", "응답이 비어 있습니다.")
     except Exception as e:
-        # 오류 발생 시 기사 내용을 분석한 기본 전략 반환
-        title_lower = article_title.lower()
-        desc_lower = article_description.lower()
-        
-        # 기사 내용에 따른 맞춤형 기본 전략 생성
-        if any(keyword in title_lower or keyword in desc_lower for keyword in ['전쟁', '분쟁', '러시아', '우크라이나', '이스라엘', '하마스']):
-            return f"""🤖 **AI 대응전략 - 전쟁/분쟁 위험**
-
-🎯 **즉시 대응 방안 (1-2주 내)**
-- 해당 지역 공급업체와의 긴급 연락망 확인 및 대안 공급업체 발굴
-- 전쟁 지역 물품의 재고 상황 점검 및 긴급 조달 계획 수립
-- 운송 경로 변경 및 대체 항구/공항 활용 방안 검토
-- 전쟁 보험 및 리스크 헤징 상품 가입 검토
-
-📊 **중기 전략 (1-3개월)**
-- 전쟁 지역 의존도가 높은 공급업체 다변화 (다른 국가로 이전)
-- 전쟁 지역 물품의 안전재고량 2-3배 증가
-- 대체 운송 경로 확보 및 물류 파트너 다변화
-- 전쟁 지역 관련 계약 조건 재검토 및 위험 분담 조항 추가
-
-🔮 **장기 대응 (3-6개월)**
-- 전쟁 지역 완전 이탈 및 안정적인 지역으로 공급망 재구성
-- 지리적 리스크 분산을 위한 글로벌 공급망 네트워크 구축
-- 전쟁 위험 모니터링 시스템 및 조기 경보 체계 구축
-- 전쟁 위험 대응 매뉴얼 및 비상 계획 수립
-
-💡 **AI/디지털 솔루션**
-- 실시간 전쟁 상황 모니터링 및 공급망 영향 분석 시스템
-- 전쟁 위험 지역 공급업체 자동 알림 및 대안 제시 시스템
-- 전쟁 위험에 따른 물류 경로 최적화 알고리즘
-- 전쟁 위험 점수화 및 자동 리스크 평가 시스템"""
-
-        elif any(keyword in title_lower or keyword in desc_lower for keyword in ['지진', '쓰나미', '홍수', '허리케인', '태풍', '산사태', '화산']):
-            return f"""🤖 **AI 대응전략 - 자연재해 위험**
-
-🎯 **즉시 대응 방안 (1-2주 내)**
-- 재해 지역 공급업체 생산 시설 피해 상황 확인
-- 재해 지역 물품의 긴급 조달 및 대체 공급업체 발굴
-- 운송 경로 변경 및 대체 물류 인프라 활용
-- 재해 지역 물품의 안전재고량 긴급 확보
-
-📊 **중기 전략 (1-3개월)**
-- 재해 지역 공급업체 복구 지원 및 대안 공급업체 확보
-- 재해 위험 지역의 공급업체 다변화 및 지역 분산
-- 재해 대응 물류 파트너십 구축 및 비상 운송 계약 체결
-- 재해 위험 지역 물품의 안전재고량 1.5-2배 증가
-
-🔮 **장기 대응 (3-6개월)**
-- 재해 위험 지역 공급업체의 지리적 분산 및 이중화
-- 재해 대응 공급망 복원력 강화 및 백업 시스템 구축
-- 재해 위험 지역 모니터링 및 조기 경보 체계 구축
-- 재해 대응 매뉴얼 및 비상 계획 수립
-
-💡 **AI/디지털 솔루션**
-- 실시간 자연재해 모니터링 및 공급망 영향 예측 시스템
-- 재해 위험 지역 공급업체 자동 알림 및 대안 제시
-- 재해 상황에 따른 물류 경로 실시간 최적화
-- 재해 위험 점수화 및 자동 리스크 평가 시스템"""
-
-        elif any(keyword in title_lower or keyword in desc_lower for keyword in ['반도체', '칩', 'tsmc', '삼성', 'sk하이닉스']):
-            return f"""🤖 **AI 대응전략 - 반도체 공급망 위험**
-
-🎯 **즉시 대응 방안 (1-2주 내)**
-- 반도체 재고 상황 긴급 점검 및 수요 예측 재검토
-- 주요 반도체 공급업체와의 긴급 연락 및 납기 확인
-- 대체 반도체 공급업체 발굴 및 견적 요청
-- 반도체 의존도가 높은 제품의 생산 계획 조정
-
-📊 **중기 전략 (1-3개월)**
-- 반도체 공급업체 다변화 및 지역 분산 (한국, 일본, 미국 등)
-- 반도체 안전재고량 증가 및 장기 공급 계약 체결
-- 반도체 대체 기술 검토 및 설계 변경 가능성 검토
-- 반도체 공급망 투명성 확보 및 실시간 모니터링
-
-🔮 **장기 대응 (3-6개월)**
-- 반도체 자체 생산 능력 확보 및 파트너십 강화
-- 반도체 공급망 지역화 및 근접 생산 전략 수립
-- 반도체 기술 자립도 향상 및 R&D 투자 확대
-- 반도체 공급망 리스크 관리 체계 구축
-
-💡 **AI/디지털 솔루션**
-- 반도체 수급 실시간 모니터링 및 예측 시스템
-- 반도체 공급업체 성능 평가 및 리스크 분석 시스템
-- 반도체 수요 예측 및 재고 최적화 알고리즘
-- 반도체 공급망 디지털 트윈 및 시뮬레이션 시스템"""
-
-        elif any(keyword in title_lower or keyword in desc_lower for keyword in ['항구', '물류', '운송', '컨테이너', '선박', '항공']):
-            return f"""🤖 **AI 대응전략 - 물류/운송 위험**
-
-🎯 **즉시 대응 방안 (1-2주 내)**
-- 현재 운송 중인 물품의 위치 및 상태 확인
-- 대체 운송 경로 및 운송 수단 발굴
-- 운송비 상승에 따른 비용 영향 분석
-- 긴급 물품의 우선 운송 계획 수립
-
-📊 **중기 전략 (1-3개월)**
-- 물류 파트너 다변화 및 대체 운송 경로 확보
-- 운송비 상승에 대비한 가격 정책 조정
-- 물류 인프라 투자 및 자체 물류 능력 강화
-- 운송 위험에 대한 보험 및 헤징 상품 가입
-
-🔮 **장기 대응 (3-6개월)**
-- 물류 네트워크 최적화 및 지역 분산 전략
-- 물류 디지털화 및 스마트 물류 시스템 구축
-- 물류 파트너십 강화 및 전략적 제휴
-- 물류 리스크 관리 체계 및 비상 계획 수립
-
-💡 **AI/디지털 솔루션**
-- 실시간 물류 추적 및 예측 시스템
-- 물류 경로 최적화 및 비용 분석 알고리즘
-- 물류 위험 모니터링 및 조기 경보 시스템
-- 물류 디지털 트윈 및 시뮬레이션 시스템"""
-
-        else:
-            return f"""🤖 **AI 대응전략 - 일반적 SCM Risk**
-
-🎯 **즉시 대응 방안 (1-2주 내)**
-- 현재 재고 상황 점검 및 긴급 조달 계획 수립
-- 주요 공급업체와의 긴급 연락망 확인
-- 위험 요소별 영향도 분석 및 우선순위 설정
-- 비상 대응팀 구성 및 역할 분담
-
-📊 **중기 전략 (1-3개월)**
-- 공급업체 다변화 및 대안 공급업체 발굴
-- 재고 안전재고량 조정 및 물류 경로 최적화
-- 위험 요소별 대응 매뉴얼 수립
-- 공급업체 성능 평가 및 리스크 점수화
-
-🔮 **장기 대응 (3-6개월)**
-- 디지털 공급망 관리 시스템 구축
-- 리스크 모니터링 대시보드 운영
-- 공급망 복원력 강화 및 백업 시스템 구축
-- 지속적인 리스크 관리 체계 정착
-
-💡 **AI/디지털 솔루션**
-- 실시간 공급망 모니터링 시스템 도입
-- 예측 분석을 통한 리스크 사전 감지
-- 공급업체 성능 분석 및 리스크 평가 시스템
-- 공급망 디지털 트윈 및 시나리오 분석
-
-*상세한 전략은 AI 챗봇에 문의하세요.*"""
+        return f"전략 생성 중 오류: {e}"
 
 def gemini_chatbot_response(user_input):
-    """Gemini API를 사용한 챗봇 응답 (오류 처리 개선)"""
     if not API_KEY_WORKING:
-        return """🤖 **AI 챗봇 API 키 오류**
+        return "AI 키가 설정되지 않았습니다. GOOGLE_API_KEY를 설정한 뒤 다시 시도하세요."
 
-현재 Gemini API 키에 문제가 있습니다.
-
-**해결 방법:**
-1. **API 키 확인** - 올바른 API 키가 설정되었는지 확인
-2. **API 키 활성화** - Google AI Studio에서 API 키가 활성화되었는지 확인
-3. **할당량 확인** - API 사용 할당량이 남아있는지 확인
-
-**임시 답변:**
-SCM Risk 관리는 공급망의 불확실성을 식별하고 관리하는 과정입니다. 주요 요소로는:
-- 공급업체 위험 관리
-- 수요 예측 및 재고 관리  
-- 물류 및 운송 위험
-- 자연재해 및 정치적 위험
-
-API 키 문제가 해결되면 더 자세한 답변을 제공할 수 있습니다! 🙏"""
-    
     try:
         prompt = f"""
-        당신은 SCM(공급망관리) Risk 관리 전문가입니다. 
-        다음 질문에 대해 전문적이고 실용적인 답변을 제공해주세요:
-        
+        당신은 SCM 리스크 관리 전문가입니다.
         질문: {user_input}
-        
-        답변은 한국어로 작성하고, SCM Risk 관리 관점에서 구체적이고 실용적인 조언을 포함해주세요.
+        한국어로, 실행 가능한 조언 위주로 답하세요.
         """
-        
-        response = model.generate_content(prompt)
-        return response.text
+
+        resp = model.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.6,
+                top_p=0.8,
+                top_k=40,
+                max_output_tokens=2048,
+            ),
+        )
+        return getattr(resp, "text", "응답이 비어 있습니다.")
     except Exception as e:
-        error_msg = str(e)
-        if "429" in error_msg and "quota" in error_msg.lower():
-            return """🤖 **AI 챗봇 일시적 제한 안내**
-
-현재 Gemini API 사용량이 일일 한도를 초과했습니다. 
-
-**해결 방법:**
-1. **잠시 후 다시 시도** (약 1시간 후)
-2. **다른 질문으로 시도**
-3. **API 키 확인 및 업그레이드**
-
-**임시 답변 예시:**
-SCM Risk 관리는 공급망의 불확실성을 식별하고 관리하는 과정입니다. 주요 요소로는:
-- 공급업체 위험 관리
-- 수요 예측 및 재고 관리  
-- 물류 및 운송 위험
-- 자연재해 및 정치적 위험
-
-더 자세한 답변을 원하시면 잠시 후 다시 질문해 주세요! 🙏"""
-        else:
-            return f"죄송합니다. AI 응답 생성 중 오류가 발생했습니다: {error_msg}"
+        msg = str(e)
+        if "429" in msg or "quota" in msg.lower():
+            return "현재 API 사용량 제한에 도달했습니다. 잠시 후 다시 시도하세요."
+        return f"AI 응답 생성 오류: {msg}"
 
 def main():
     # 헤더

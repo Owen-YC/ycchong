@@ -38,18 +38,54 @@ st.set_page_config(
 # 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + 좌우 Motion만 적용
 st.markdown("""
 <style>
-    /* 전체 배경 - 깔끔한 흰색 (Motion 제거) */
+    /* 전체 배경 - 완전한 흰색으로 설정 */
     .stApp {
-        background: #ffffff;
+        background: #ffffff !important;
         min-height: 100vh;
     }
     
-    /* 메인 헤더 - 푸른색 계열, 좌측에서 부드러운 Motion */
+    /* Streamlit 기본 배경색 강제 변경 */
+    .stApp > header {
+        background-color: #ffffff !important;
+    }
+    
+    .stApp > div[data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+    }
+    
+    /* Streamlit 모든 기본 배경색 강제 변경 */
+    .stApp > div {
+        background-color: #ffffff !important;
+    }
+    
+    .stApp > div > div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 사이드바 내부 요소들도 흰색으로 */
+    .stApp > div[data-testid="stSidebar"] > div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 메인 컨텐츠 영역도 흰색으로 */
+    .stApp > div[data-testid="stSidebar"] + div {
+        background-color: #ffffff !important;
+    }
+    
+    /* 모든 섹션 배경을 흰색으로 */
+    section {
+        background-color: #ffffff !important;
+    }
+    
+    /* 메인 헤더 - 푸른색 그라데이션 효과 */
     .main-header {
         font-size: 2.8rem;
         font-weight: 800;
         text-align: center;
-        color: #1e40af;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 1.5rem;
         letter-spacing: -0.02em;
         position: relative;
@@ -110,23 +146,41 @@ st.markdown("""
         }
     }
     
-    /* 뉴스 카드 - 깔끔한 흰색 배경, 푸른색 테두리 */
+    /* 뉴스 카드 - 2025년 트렌드 반영한 현대적 디자인 */
     .news-card {
-        background: #ffffff;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border: 2px solid #e2e8f0;
         border-left: 4px solid #3b82f6;
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 16px;
+        padding: 1.8rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .news-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        transition: all 0.3s ease;
     }
     
     .news-card:hover {
-        border-left-color: #1e40af;
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
-        transform: translateY(-2px);
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    
+    .news-card:hover::before {
+        width: 6px;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
     }
     
     /* 뉴스 제목 - 푸른색 계열 */
@@ -139,82 +193,190 @@ st.markdown("""
         position: relative;
     }
     
-    /* 뉴스 링크 버튼 - 푸른색 계열 */
+    /* 뉴스 링크 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
     .news-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
         color: white !important;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.7rem 1.2rem;
+        border-radius: 12px;
         text-decoration: none;
         font-weight: 600;
-        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
     }
     
     .news-link:hover {
-        background: #1e40af;
-        transform: translateY(-1px);
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
         color: white !important;
     }
     
-    /* 실시간 정보 - 푸른색 계열 테마 */
+    .news-link:hover::before {
+        left: 100%;
+    }
+    
+    /* 실시간 정보 - 2025년 트렌드 반영한 현대적 디자인 */
     .weather-info.day {
-        background: #f0f9ff;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         color: #1e40af;
         border: 2px solid #3b82f6;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .weather-info.day::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
     }
     
     .weather-info.night {
-        background: #1e293b;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         color: #e2e8f0;
         border: 2px solid #475569;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(30, 41, 59, 0.3);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .weather-info.night::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #475569 0%, #64748b 50%, #94a3b8 100%);
     }
     
     .weather-info.rainy {
-        background: #e0f2fe;
+        background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
         color: #0c4a6e;
         border: 2px solid #0ea5e9;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.1);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .weather-info.rainy::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
     }
     
     .weather-info.snowy {
-        background: #f8fafc;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         color: #334155;
         border: 2px solid #64748b;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(100, 116, 139, 0.1);
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
     }
     
-    /* 환율 및 금속 가격 카드 - 깔끔한 디자인 */
+    .weather-info.snowy::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
+    }
+    
+    /* 환율 및 금속 가격 카드 - 2025년 트렌드 반영한 현대적 디자인 */
     .exchange-rate-card {
-        background: #f0f9ff;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
         border: 2px solid #0ea5e9;
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 16px;
+        padding: 1.2rem;
         margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
         font-size: 0.9rem;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .exchange-rate-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
     }
     
     .exchange-rate-card:hover {
-        box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2);
-        transform: translateY(-1px);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 32px rgba(14, 165, 233, 0.15);
+        border-color: #38bdf8;
     }
     
     .metal-price-card {
-        background: #fef3c7;
+        background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
         border: 2px solid #f59e0b;
-        border-radius: 12px;
-        padding: 1rem;
+        border-radius: 16px;
+        padding: 1.2rem;
         margin: 0.5rem 0;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+        box-shadow: 0 4px 20px rgba(245, 158, 11, 0.08);
         font-size: 0.9rem;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .metal-price-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%);
     }
     
     .metal-price-card:hover {
-        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
-        transform: translateY(-1px);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15);
+        border-color: #fbbf24;
     }
     
     .price-change {
@@ -254,73 +416,134 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
     
-    /* AI 전략 버튼 */
+    /* AI 전략 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
     .ai-strategy-btn {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: #1e40af;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
         color: white !important;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.7rem 1.2rem;
+        border-radius: 12px;
         text-decoration: none;
         font-weight: 600;
         font-size: 0.9rem;
         margin-left: 1rem;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ai-strategy-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
     }
     
     .ai-strategy-btn:hover {
-        background: #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
         color: white !important;
     }
     
-    /* 챗봇 컨테이너 */
+    .ai-strategy-btn:hover::before {
+        left: 100%;
+    }
+    
+    /* 챗봇 컨테이너 - 2025년 트렌드 반영한 현대적 디자인 */
     .chatbot-container {
-        background: #f8fafc;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         border: 2px solid #e2e8f0;
         border-left: 4px solid #3b82f6;
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 16px;
+        padding: 1.8rem;
         margin-top: 1rem;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
     }
     
-    /* 검색 통계 */
+    .chatbot-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    }
+    
+    /* 검색 통계 - 2025년 트렌드 반영한 현대적 디자인 */
     .search-stats {
-        background: #f0f9ff;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
         border: 2px solid #0ea5e9;
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 16px;
+        padding: 1.8rem;
         margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.08);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
     }
     
-    /* 필터 버튼 */
+    .search-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
+    }
+    
+    /* 필터 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
     .filter-btn {
-        background: #3b82f6;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.7rem 1.2rem;
+        border-radius: 12px;
         font-weight: 600;
+        font-size: 0.9rem;
         margin: 0.5rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
     }
     
     .filter-btn:hover {
-        background: #1e40af;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(30, 64, 175, 0.5);
     }
     
+    .filter-btn:hover::before {
+        left: 100%;
+    }
+    
     .filter-btn.active {
-        background: #1e40af;
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
         box-shadow: 0 4px 16px rgba(30, 64, 175, 0.5);
     }
     
@@ -1086,6 +1309,20 @@ def crawl_google_news(query, num_results=20):
         
         # 실제 뉴스가 부족한 경우에만 백업 뉴스 추가 (SCM Risk 관련)
         if len(articles) < num_results:
+            # 실제 뉴스 사이트 URL 매핑
+            news_site_urls = {
+                "Reuters": "https://www.reuters.com",
+                "Bloomberg": "https://www.bloomberg.com",
+                "WSJ": "https://www.wsj.com",
+                "CNBC": "https://www.cnbc.com",
+                "Financial Times": "https://www.ft.com",
+                "BBC": "https://www.bbc.com",
+                "CNN": "https://www.cnn.com",
+                "AP": "https://apnews.com",
+                "Forbes": "https://www.forbes.com",
+                "TechCrunch": "https://techcrunch.com"
+            }
+            
             # SCM Risk 관련 동적 백업 뉴스 생성
             backup_titles = [
                 f"{query} Supply Chain Risk Analysis",
@@ -1101,11 +1338,14 @@ def crawl_google_news(query, num_results=20):
             backup_sources = ["Reuters", "Bloomberg", "WSJ", "CNBC", "Financial Times", "BBC", "CNN", "AP"]
             
             for i in range(min(num_results - len(articles), len(backup_titles))):
+                source = random.choice(backup_sources)
+                base_url = news_site_urls.get(source, "https://www.reuters.com")
+                
                 backup_article = {
                     "title": backup_titles[i],
-                    "source": random.choice(backup_sources),
+                    "source": source,
                     "description": f"Supply chain risk analysis and logistics updates related to {query} from leading news sources.",
-                    "url": f"https://www.google.com/search?q={urllib.parse.quote(query)}+{urllib.parse.quote(backup_titles[i])}",
+                    "url": base_url,
                     "published_time": (datetime.now() - timedelta(days=random.randint(0, 7), hours=random.randint(0, 23))).strftime('%Y-%m-%dT%H:%M:%SZ'),
                     "views": random.randint(500, 3000)
                 }
@@ -1121,6 +1361,20 @@ def crawl_google_news(query, num_results=20):
 def generate_dynamic_backup_news(query, num_results):
     """사용자 검색어에 맞는 동적 백업 뉴스 생성 (SCM Risk 관련)"""
     articles = []
+    
+    # 실제 뉴스 사이트 URL 매핑
+    news_site_urls = {
+        "Reuters": "https://www.reuters.com",
+        "Bloomberg": "https://www.bloomberg.com",
+        "WSJ": "https://www.wsj.com",
+        "CNBC": "https://www.cnbc.com",
+        "Financial Times": "https://www.ft.com",
+        "BBC": "https://www.bbc.com",
+        "CNN": "https://www.cnn.com",
+        "AP": "https://apnews.com",
+        "Forbes": "https://www.forbes.com",
+        "TechCrunch": "https://techcrunch.com"
+    }
     
     # SCM Risk 관련 동적 제목 생성
     backup_titles = [
@@ -1150,10 +1404,13 @@ def generate_dynamic_backup_news(query, num_results):
         random_minutes = random.randint(0, 59)
         published_time = (datetime.now() - timedelta(days=random_days, hours=random_hours, minutes=random_minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
         
+        source = random.choice(backup_sources)
+        base_url = news_site_urls.get(source, "https://www.reuters.com")
+        
         article = {
             'title': backup_titles[i],
-            'url': f"https://www.google.com/search?q={urllib.parse.quote(query)}+{urllib.parse.quote(backup_titles[i])}",
-            'source': random.choice(backup_sources),
+            'url': base_url,
+            'source': source,
             'published_time': published_time,
             'description': f"Supply chain risk analysis and logistics updates related to {query} from leading news sources.",
             'views': random.randint(500, 3000)
@@ -1163,14 +1420,28 @@ def generate_dynamic_backup_news(query, num_results):
     return articles[:num_results]
 
 def generate_scm_risk_news(query, num_results):
-    """SCM Risk 관련 뉴스 생성 (백업용) - 실제 존재하는 기사들만"""
-    # Google 검색 결과로 실제 존재하는 뉴스 기사들 검색
+    """SCM Risk 관련 뉴스 생성 (백업용) - 실제 뉴스 사이트로 연결"""
+    # 실제 뉴스 사이트 URL 매핑
+    news_site_urls = {
+        "Reuters": "https://www.reuters.com",
+        "Bloomberg": "https://www.bloomberg.com",
+        "WSJ": "https://www.wsj.com",
+        "CNBC": "https://www.cnbc.com",
+        "Financial Times": "https://www.ft.com",
+        "BBC": "https://www.bbc.com",
+        "CNN": "https://www.cnn.com",
+        "AP": "https://apnews.com",
+        "Forbes": "https://www.forbes.com",
+        "TechCrunch": "https://techcrunch.com"
+    }
+    
+    # 실제 뉴스 사이트로 연결되는 뉴스 기사들
     scm_risk_news = [
         {
             "title": "Supply Chain Disruptions Impact Global Trade",
             "source": "Reuters",
             "description": "Global supply chain disruptions continue to impact international trade and business operations worldwide.",
-            "url": "https://www.google.com/search?q=supply+chain+disruptions+global+trade+reuters",
+            "url": "https://www.reuters.com",
             "published_time": "2024-01-15T10:30:00Z",
             "views": random.randint(1000, 5000)
         },
@@ -1178,7 +1449,7 @@ def generate_scm_risk_news(query, num_results):
             "title": "Logistics Industry Digital Transformation",
             "source": "Bloomberg",
             "description": "Major logistics companies are investing in digital transformation to improve efficiency.",
-            "url": "https://www.google.com/search?q=logistics+digital+transformation+bloomberg",
+            "url": "https://www.bloomberg.com",
             "published_time": "2024-01-14T15:45:00Z",
             "views": random.randint(800, 4000)
         },
@@ -1186,7 +1457,7 @@ def generate_scm_risk_news(query, num_results):
             "title": "Supply Chain Risk Management Guide",
             "source": "WSJ",
             "description": "Companies implement new strategies for supply chain risk management.",
-            "url": "https://www.google.com/search?q=supply+chain+risk+management+wsj",
+            "url": "https://www.wsj.com",
             "published_time": "2024-01-13T09:20:00Z",
             "views": random.randint(1200, 6000)
         },
@@ -1194,7 +1465,7 @@ def generate_scm_risk_news(query, num_results):
             "title": "AI Revolution in Supply Chain",
             "source": "CNBC",
             "description": "Artificial intelligence is revolutionizing supply chain management processes.",
-            "url": "https://www.google.com/search?q=AI+supply+chain+management+cnbc",
+            "url": "https://www.cnbc.com",
             "published_time": "2024-01-12T14:15:00Z",
             "views": random.randint(900, 4500)
         },
@@ -1202,7 +1473,7 @@ def generate_scm_risk_news(query, num_results):
             "title": "Sustainable Supply Chain Practices",
             "source": "Financial Times",
             "description": "Companies adopt sustainable practices in supply chain operations.",
-            "url": "https://www.google.com/search?q=sustainable+supply+chain+practices+financial+times",
+            "url": "https://www.ft.com",
             "published_time": "2024-01-11T11:30:00Z",
             "views": random.randint(700, 3500)
         }
@@ -1222,36 +1493,36 @@ def generate_scm_risk_news(query, num_results):
         }
         articles.append(article)
     
-    # Google 검색 결과로 실제 존재하는 뉴스 기사들 검색
+    # 실제 뉴스 사이트로 연결되는 뉴스 기사들
     actual_news_sources = [
         {
             "title": "Supply Chain Disruptions Impact Global Trade",
             "source": "Reuters Business",
-            "url": "https://www.google.com/search?q=supply+chain+disruptions+global+trade+reuters",
+            "url": "https://www.reuters.com",
             "description": "Global supply chain disruptions continue to impact international trade and business operations worldwide."
         },
         {
             "title": "Logistics Industry Digital Transformation",
             "source": "Bloomberg Technology",
-            "url": "https://www.google.com/search?q=logistics+digital+transformation+bloomberg",
+            "url": "https://www.bloomberg.com",
             "description": "Major logistics companies are investing in digital transformation to improve efficiency."
         },
         {
             "title": "Supply Chain Risk Management Guide",
             "source": "WSJ Business",
-            "url": "https://www.google.com/search?q=supply+chain+risk+management+wsj",
+            "url": "https://www.wsj.com",
             "description": "Companies implement new strategies for supply chain risk management."
         },
         {
             "title": "AI Revolution in Supply Chain",
             "source": "CNBC Technology",
-            "url": "https://www.google.com/search?q=AI+supply+chain+management+cnbc",
+            "url": "https://www.cnbc.com",
             "description": "Artificial intelligence is revolutionizing supply chain management processes."
         },
         {
             "title": "Sustainable Supply Chain Practices",
             "source": "Financial Times",
-            "url": "https://www.google.com/search?q=sustainable+supply+chain+practices+financial+times",
+            "url": "https://www.ft.com",
             "description": "Companies adopt sustainable practices in supply chain operations."
         }
     ]
@@ -1299,57 +1570,57 @@ def filter_articles(articles, sort_by="최신순"):
 
 def create_risk_map():
     """SCM Risk 지역별 지도 생성 - 전쟁, 자연재해, 기타 Risk 분류"""
-    # 지역별 관련 뉴스 데이터 (Google 검색 링크로 실제 확인 가능)
+    # 지역별 관련 뉴스 데이터 (실제 뉴스 사이트로 연결)
     location_news = {
         "우크라이나": [
-            {"title": "우크라이나 전쟁으로 인한 곡물 수출 중단", "url": "https://www.google.com/search?q=우크라이나+전쟁+곡물+수출+중단+reuters"},
-            {"title": "러시아-우크라이나 분쟁으로 인한 에너지 공급 위기", "url": "https://www.google.com/search?q=러시아+우크라이나+분쟁+에너지+공급+위기+bloomberg"},
-            {"title": "우크라이나 항구 봉쇄로 인한 글로벌 식량 위기", "url": "https://www.google.com/search?q=우크라이나+항구+봉쇄+글로벌+식량+위기+wsj"}
+            {"title": "우크라이나 전쟁으로 인한 곡물 수출 중단", "url": "https://www.reuters.com"},
+            {"title": "러시아-우크라이나 분쟁으로 인한 에너지 공급 위기", "url": "https://www.bloomberg.com"},
+            {"title": "우크라이나 항구 봉쇄로 인한 글로벌 식량 위기", "url": "https://www.wsj.com"}
         ],
         "대만": [
-            {"title": "대만 해협 긴장으로 인한 반도체 공급망 위기", "url": "https://www.google.com/search?q=대만+해협+긴장+반도체+공급망+위기+cnbc"},
-            {"title": "중국-대만 관계 악화로 인한 전자제품 공급 중단", "url": "https://www.google.com/search?q=중국+대만+관계+악화+전자제품+공급+중단+financial+times"},
-            {"title": "대만 반도체 산업 지리적 위험 증가", "url": "https://www.google.com/search?q=대만+반도체+산업+지리적+위험+증가+reuters"}
+            {"title": "대만 해협 긴장으로 인한 반도체 공급망 위기", "url": "https://www.cnbc.com"},
+            {"title": "중국-대만 관계 악화로 인한 전자제품 공급 중단", "url": "https://www.ft.com"},
+            {"title": "대만 반도체 산업 지리적 위험 증가", "url": "https://www.reuters.com"}
         ],
         "홍해": [
-            {"title": "홍해 호세이드 공격으로 인한 해상 운송 위기", "url": "https://www.google.com/search?q=홍해+호세이드+공격+해상+운송+위기+bloomberg"},
-            {"title": "홍해 봉쇄로 인한 글로벌 물류 혼잡", "url": "https://www.google.com/search?q=홍해+봉쇄+글로벌+물류+혼잡+wsj"},
-            {"title": "홍해 해적 활동 증가로 인한 운송비 상승", "url": "https://www.google.com/search?q=홍해+해적+활동+증가+운송비+상승+cnbc"}
+            {"title": "홍해 호세이드 공격으로 인한 해상 운송 위기", "url": "https://www.bloomberg.com"},
+            {"title": "홍해 봉쇄로 인한 글로벌 물류 혼잡", "url": "https://www.wsj.com"},
+            {"title": "홍해 해적 활동 증가로 인한 운송비 상승", "url": "https://www.cnbc.com"}
         ],
         "일본 후쿠시마": [
-            {"title": "후쿠시마 원전 사고로 인한 수산물 수출 제한", "url": "https://www.google.com/search?q=후쿠시마+원전+사고+수산물+수출+제한+reuters"},
-            {"title": "일본 원전 오염수 방류로 인한 식품 안전 위기", "url": "https://www.google.com/search?q=일본+원전+오염수+방류+식품+안전+위기+bloomberg"},
-            {"title": "후쿠시마 방사능 오염으로 인한 농수산물 교역 중단", "url": "https://www.google.com/search?q=후쿠시마+방사능+오염+농수산물+교역+중단+wsj"}
+            {"title": "후쿠시마 원전 사고로 인한 수산물 수출 제한", "url": "https://www.reuters.com"},
+            {"title": "일본 원전 오염수 방류로 인한 식품 안전 위기", "url": "https://www.bloomberg.com"},
+            {"title": "후쿠시마 방사능 오염으로 인한 농수산물 교역 중단", "url": "https://www.wsj.com"}
         ],
         "미국 텍사스": [
-            {"title": "텍사스 폭설로 인한 반도체 공장 가동 중단", "url": "https://www.google.com/search?q=텍사스+폭설+반도체+공장+가동+중단+cnbc"},
-            {"title": "텍사스 정전으로 인한 석유화학 공급 중단", "url": "https://www.google.com/search?q=텍사스+정전+석유화학+공급+중단+financial+times"},
-            {"title": "텍사스 극한 기후로 인한 에너지 인프라 위기", "url": "https://www.google.com/search?q=텍사스+극한+기후+에너지+인프라+위기+reuters"}
+            {"title": "텍사스 폭설로 인한 반도체 공장 가동 중단", "url": "https://www.cnbc.com"},
+            {"title": "텍사스 정전으로 인한 석유화학 공급 중단", "url": "https://www.ft.com"},
+            {"title": "텍사스 극한 기후로 인한 에너지 인프라 위기", "url": "https://www.reuters.com"}
         ],
         "중국 상하이": [
-            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.google.com/search?q=상하이+봉쇄+글로벌+공급망+위기+bloomberg"},
-            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.google.com/search?q=중국+제조업+생산+중단+부품+부족+wsj"},
-            {"title": "상하이 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=상하이+항구+혼잡+물류+지연+cnbc"}
+            {"title": "상하이 봉쇄로 인한 글로벌 공급망 위기", "url": "https://www.bloomberg.com"},
+            {"title": "중국 제조업 생산 중단으로 인한 부품 부족", "url": "https://www.wsj.com"},
+            {"title": "상하이 항구 혼잡으로 인한 물류 지연", "url": "https://www.cnbc.com"}
         ],
         "미국 로스앤젤레스": [
-            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.google.com/search?q=LA+항구+혼잡+물류+지연+cnbc"},
-            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.google.com/search?q=미국+서부+해안+노동자+파업+위기+financial+times"},
-            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.google.com/search?q=LA+항구+자동화+시스템+도입+확대+reuters"}
+            {"title": "LA 항구 혼잡으로 인한 물류 지연", "url": "https://www.cnbc.com"},
+            {"title": "미국 서부 해안 노동자 파업 위기", "url": "https://www.ft.com"},
+            {"title": "LA 항구 자동화 시스템 도입 확대", "url": "https://www.reuters.com"}
         ],
         "독일 함부르크": [
-            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.google.com/search?q=함부르크+항구+물류+효율성+향상+bloomberg"},
-            {"title": "독일 물류 디지털화 가속화", "url": "https://www.google.com/search?q=독일+물류+디지털화+가속화+wsj"},
-            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.google.com/search?q=함부르크+스마트+포트+프로젝트+cnbc"}
+            {"title": "함부르크 항구 물류 효율성 향상", "url": "https://www.bloomberg.com"},
+            {"title": "독일 물류 디지털화 가속화", "url": "https://www.wsj.com"},
+            {"title": "함부르크 스마트 포트 프로젝트", "url": "https://www.cnbc.com"}
         ],
         "싱가포르": [
-            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.google.com/search?q=싱가포르+물류+허브+경쟁력+강화+financial+times"},
-            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.google.com/search?q=싱가포르+디지털+물류+플랫폼+도입+reuters"},
-            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.google.com/search?q=싱가포르+친환경+물류+정책+bloomberg"}
+            {"title": "싱가포르 물류 허브 경쟁력 강화", "url": "https://www.ft.com"},
+            {"title": "싱가포르 디지털 물류 플랫폼 도입", "url": "https://www.reuters.com"},
+            {"title": "싱가포르 친환경 물류 정책", "url": "https://www.bloomberg.com"}
         ],
         "한국 부산": [
-            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.google.com/search?q=부산항+스마트+물류+시스템+구축+wsj"},
-            {"title": "부산항 자동화 시설 확충", "url": "https://www.google.com/search?q=부산항+자동화+시설+확충+cnbc"},
-            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.google.com/search?q=부산항+물류+효율성+세계+1위+달성+financial+times"}
+            {"title": "부산항 스마트 물류 시스템 구축", "url": "https://www.wsj.com"},
+            {"title": "부산항 자동화 시설 확충", "url": "https://www.cnbc.com"},
+            {"title": "부산항 물류 효율성 세계 1위 달성", "url": "https://www.ft.com"}
         ]
     }
     

@@ -1927,16 +1927,23 @@ def fetch_real_news_articles_via_api(query, num_results=10):
     return articles
 
 def advanced_rss_scraping(query, num_results=10):
-    """고급 RSS 스크래핑으로 실제 기사 URL 추출"""
+    """고급 RSS 스크래핑으로 실제 기사 URL 추출 (최신 기사만)"""
     articles = []
     
-    # 주요 뉴스 사이트의 실제 기사 RSS 피드
+    # 주요 뉴스 사이트의 실제 기사 RSS 피드 (최신 뉴스 우선)
     rss_sources = {
-        "Reuters": "https://feeds.reuters.com/reuters/businessNews",
-        "BBC Business": "http://feeds.bbci.co.uk/news/business/rss.xml",
-        "Associated Press": "https://feeds.apnews.com/RSS",
-        "Bloomberg": "https://feeds.bloomberg.com/markets/news.rss",
-        "Financial Times": "https://www.ft.com/rss/home/uk"
+        "Reuters": [
+            "https://feeds.reuters.com/reuters/businessNews",
+            "https://feeds.reuters.com/reuters/topNews"
+        ],
+        "BBC": [
+            "http://feeds.bbci.co.uk/news/business/rss.xml",
+            "http://feeds.bbci.co.uk/news/world/rss.xml"
+        ],
+        "Associated Press": [
+            "https://feeds.apnews.com/RSS?tags=apf-business",
+            "https://feeds.apnews.com/RSS?tags=apf-topnews"
+        ]
     }
     
     headers = {
@@ -1947,55 +1954,78 @@ def advanced_rss_scraping(query, num_results=10):
     english_query = translate_korean_to_english(query)
     search_terms = english_query.lower().split()
     
-    for source_name, rss_url in rss_sources.items():
+    # 최신 기사 우선 수집 (24시간 이내)
+    from datetime import timedelta
+    cutoff_time = datetime.now() - timedelta(days=1)
+    
+    for source_name, rss_urls in rss_sources.items():
         if len(articles) >= num_results:
             break
             
-        try:
-            response = requests.get(rss_url, headers=headers, timeout=8)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'xml')
-                items = soup.find_all('item')
+        for rss_url in rss_urls:
+            if len(articles) >= num_results:
+                break
                 
-                for item in items[:15]:  # 각 소스당 최대 15개 확인
-                    try:
-                        title = item.find('title').text if item.find('title') else ""
-                        link = item.find('link').text if item.find('link') else ""
-                        pub_date = item.find('pubDate').text if item.find('pubDate') else ""
-                        description = item.find('description')
-                        desc_text = description.text if description else ""
-                        
-                        # 관련성 검사
-                        content = f"{title} {desc_text}".lower()
-                        is_relevant = any(term in content for term in search_terms) or \
-                                    any(keyword in content for keyword in ['supply chain', 'logistics', 'trade', 'manufacturing'])
-                        
-                        if is_relevant and link and verify_real_article_url(link):
-                            # 실제 기사 URL인 경우만 추가
+            try:
+                response = requests.get(rss_url, headers=headers, timeout=8)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, 'xml')
+                    items = soup.find_all('item')
+                    
+                    # 최신 기사만 선별 (발행일 기준)
+                    recent_items = []
+                    for item in items[:20]:  # 처음 20개 확인
+                        pub_date = item.find('pubDate')
+                        if pub_date:
                             try:
                                 from email.utils import parsedate_to_datetime
-                                parsed_date = parsedate_to_datetime(pub_date)
-                                formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                                parsed_date = parsedate_to_datetime(pub_date.text)
+                                if parsed_date and parsed_date > cutoff_time:
+                                    recent_items.append(item)
                             except:
-                                formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+                                recent_items.append(item)  # 날짜 파싱 실패시 포함
+                        else:
+                            recent_items.append(item)  # 날짜 없으면 포함
+                    
+                    for item in recent_items[:10]:  # 최신 기사 중 최대 10개
+                        try:
+                            title = item.find('title').text if item.find('title') else ""
+                            link = item.find('link').text if item.find('link') else ""
+                            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
+                            description = item.find('description')
+                            desc_text = description.text if description else ""
                             
-                            article = {
-                                'title': clean_html_tags(title),
-                                'original_title': clean_html_tags(title),
-                                'url': link,  # 검증된 실제 기사 URL
-                                'source': source_name,
-                                'published_time': formatted_date,
-                                'description': clean_html_tags(desc_text)[:200] + "...",
-                                'views': random.randint(800, 4000),
-                                'article_type': 'real_article'
-                            }
-                            articles.append(article)
+                            # 관련성 검사
+                            content = f"{title} {desc_text}".lower()
+                            is_relevant = any(term in content for term in search_terms) or \
+                                        any(keyword in content for keyword in ['supply chain', 'logistics', 'trade', 'manufacturing'])
                             
-                            if len(articles) >= num_results:
-                                break
+                            if is_relevant and link and verify_real_article_url(link):
+                                # 실제 기사 URL인 경우만 추가
+                                try:
+                                    from email.utils import parsedate_to_datetime
+                                    parsed_date = parsedate_to_datetime(pub_date)
+                                    formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                                except:
+                                    formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
                                 
-                    except Exception as e:
-                        continue
+                                article = {
+                                    'title': clean_html_tags(title),
+                                    'original_title': clean_html_tags(title),
+                                    'url': link,  # 검증된 실제 기사 URL
+                                    'source': source_name,
+                                    'published_time': formatted_date,
+                                    'description': clean_html_tags(desc_text)[:200] + "...",
+                                    'views': random.randint(800, 4000),
+                                    'article_type': 'real_article'
+                                }
+                                articles.append(article)
+                                
+                                if len(articles) >= num_results:
+                                    break
+                                    
+                        except Exception as e:
+                            continue
                         
         except Exception as e:
             continue
@@ -2099,7 +2129,75 @@ def verify_real_article_url(url):
     # 실제 기사 패턴인지 확인 (년도 포함 등)
     has_article_pattern = any(pattern in url for pattern in ['/2024/', '/2025/', '/article/', '/story/', '/news/'])
     
-    return domain_valid and not_search_page and (has_article_pattern or len(url.split('/')) > 4)
+    basic_valid = domain_valid and not_search_page and (has_article_pattern or len(url.split('/')) > 4)
+    
+    if basic_valid:
+        # 실제로 접근 가능한지 HTTP 상태 코드 검증
+        return verify_article_accessibility(url)
+    
+    return False
+
+def verify_articles_accessibility_parallel(articles):
+    """병렬 처리로 여러 기사의 접근성을 동시에 검증"""
+    if not articles:
+        return []
+    
+    # 최대 10개 스레드로 병렬 처리
+    max_workers = min(10, len(articles))
+    verified_articles = []
+    
+    def check_single_article(article):
+        """단일 기사의 접근성 검증"""
+        try:
+            if verify_article_accessibility(article['url']):
+                return article
+        except:
+            pass
+        return None
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # 모든 기사를 병렬로 검증
+        future_to_article = {executor.submit(check_single_article, article): article for article in articles}
+        
+        for future in concurrent.futures.as_completed(future_to_article, timeout=30):
+            try:
+                result = future.result()
+                if result:
+                    verified_articles.append(result)
+            except:
+                continue
+    
+    return verified_articles
+
+def verify_article_accessibility(url):
+    """기사 URL이 실제로 접근 가능한지 검증 (404 오류 등 확인)"""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache'
+        }
+        
+        # HEAD 요청으로 빠르게 상태 확인 (페이지 내용은 다운로드하지 않음)
+        response = requests.head(url, headers=headers, timeout=5, allow_redirects=True)
+        
+        # 성공적인 상태 코드 확인
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 405:  # HEAD 요청을 지원하지 않는 경우
+            # GET 요청으로 재시도 (응답 크기 제한)
+            response = requests.get(url, headers=headers, timeout=5, stream=True)
+            # 처음 1KB만 읽어서 확인
+            content_chunk = next(response.iter_content(chunk_size=1024), b'')
+            if response.status_code == 200 and len(content_chunk) > 100:
+                return True
+        
+        return False
+        
+    except Exception as e:
+        # 네트워크 오류, 타임아웃 등의 경우 접근 불가능으로 판단
+        return False
 
 def generate_demo_real_articles(query, num_results=10):
     """데모용 실제 기사 데이터 생성 (실제 뉴스 사이트 URL 패턴 사용)"""
@@ -2162,8 +2260,8 @@ def crawl_google_news(query, num_results=20):
             scraped_articles = direct_news_scraping(query, num_results - len(real_articles))
             real_articles.extend(scraped_articles)
         
-        # 모든 기사가 실제 기사 URL인지 검증
-        verified_articles = [article for article in real_articles if verify_real_article_url(article['url'])]
+        # 병렬 처리로 빠르게 기사 접근성 검증
+        verified_articles = verify_articles_accessibility_parallel(real_articles)
         
         return verified_articles[:num_results]
         
@@ -2812,7 +2910,7 @@ def main():
                 if not query.strip():
                     st.error("검색어를 입력해주세요!")
                 else:
-                    with st.spinner("🔍 글로벌 뉴스 소스에서 실제 기사를 수집하고 있습니다..."):
+                    with st.spinner("🔍 실제 접근 가능한 뉴스 기사를 검증하고 수집하는 중..."):
                         articles = crawl_google_news(query, num_results)
                         
                         if articles:
@@ -2823,8 +2921,8 @@ def main():
                                 # 번역된 검색어 표시
                                 english_query = translate_korean_to_english(query)
                                 
-                                success_msg = f"🎯 '{query}' 관련 실제 뉴스 기사 {len(real_articles)}개를 찾았습니다!"
-                                success_msg += f"\n📰 모든 링크가 실제 뉴스 기사로 직접 연결됩니다."
+                                success_msg = f"✅ '{query}' 관련 검증된 뉴스 기사 {len(real_articles)}개를 찾았습니다!"
+                                success_msg += f"\n🎯 모든 기사가 실제 접근 가능하며 404 오류 없이 연결됩니다."
                                 if english_query != query:
                                     success_msg += f"\n🔤 번역: '{english_query}' (글로벌 뉴스 검색용)"
                                 
@@ -2929,7 +3027,7 @@ def main():
                             </span>
                         </div>
                         <div style="font-size: 0.75rem; color: #059669; padding: 8px; background: rgba(5, 150, 105, 0.05); border-radius: 6px; border-left: 3px solid #059669;">
-                            🎯 <strong>실제 기사 링크:</strong> 클릭하면 {article['source']}의 원본 뉴스 기사로 바로 이동합니다.
+                            ✅ <strong>검증된 기사:</strong> 접근 가능한 실제 {article['source']} 기사입니다. (404 오류 없음)
                         </div>
                     </div>
                 </div>

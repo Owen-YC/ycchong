@@ -2474,7 +2474,7 @@ def generate_enhanced_backup_news(query, num_results):
         for future in concurrent.futures.as_completed(future_to_article):
             try:
                 article = future.result()
-        articles.append(article)
+                articles.append(article)
                 if len(articles) >= num_results:
                     break
             except Exception as e:

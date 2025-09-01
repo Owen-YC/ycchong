@@ -1756,8 +1756,8 @@ def crawl_real_google_news_rss(query, num_results=10):
 
 def crawl_major_news_rss(query, num_results=10):
     """주요 뉴스 사이트의 RSS에서 실제 기사 수집"""
-        articles = []
-        
+    articles = []
+    
     # 주요 뉴스 사이트의 RSS 피드
     rss_feeds = {
         "Reuters": [

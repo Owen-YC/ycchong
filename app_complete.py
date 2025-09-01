@@ -1984,9 +1984,9 @@ def advanced_rss_scraping(query, num_results=10):
                                 parsed_date = parsedate_to_datetime(pub_date.text)
                                 if parsed_date and parsed_date > cutoff_time:
                                     recent_items.append(item)
-                        except:
+                            except:
                                 recent_items.append(item)  # 날짜 파싱 실패시 포함
-                    else:
+                        else:
                             recent_items.append(item)  # 날짜 없으면 포함
                     
                     for item in recent_items[:10]:  # 최신 기사 중 최대 10개
@@ -2004,27 +2004,27 @@ def advanced_rss_scraping(query, num_results=10):
                             
                             if is_relevant and link and verify_real_article_url(link):
                                 # 실제 기사 URL인 경우만 추가
-                    try:
-                        from email.utils import parsedate_to_datetime
-                        parsed_date = parsedate_to_datetime(pub_date)
-                        formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-                    except:
-                        formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-                    
-                    article = {
+                                try:
+                                    from email.utils import parsedate_to_datetime
+                                    parsed_date = parsedate_to_datetime(pub_date)
+                                    formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                                except:
+                                    formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+                                
+                                article = {
                                     'title': clean_html_tags(title),
                                     'original_title': clean_html_tags(title),
                                     'url': link,  # 검증된 실제 기사 URL
                                     'source': source_name,
-                        'published_time': formatted_date,
+                                    'published_time': formatted_date,
                                     'description': clean_html_tags(desc_text)[:200] + "...",
                                     'views': random.randint(800, 4000),
                                     'article_type': 'real_article'
-                    }
-                    articles.append(article)
-                    
-                    if len(articles) >= num_results:
-                        break
+                                }
+                                articles.append(article)
+                                
+                                if len(articles) >= num_results:
+                                    break
                                     
                         except Exception as e:
                             continue

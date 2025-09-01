@@ -50,130 +50,131 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2025 트렌드에 맞는 CSS 스타일 - 흰색 배경, 푸른색 계열 + 좌우 Motion만 적용
+# 2025년 최신 트렌드 CSS - 미니멀, 글래스모피즘, 부드러운 애니메이션
 st.markdown("""
 <style>
-    /* 전체 배경 - 완전한 흰색으로 설정 */
+    /* 전체 배경 - 고급스러운 그라데이션 */
     .stApp {
-        background: #ffffff !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%) !important;
         min-height: 100vh;
     }
     
-    /* Streamlit 기본 배경색 강제 변경 */
-    .stApp > header {
-        background-color: #ffffff !important;
+    /* 글로벌 폰트 설정 */
+    .stApp {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     }
     
-    .stApp > div[data-testid="stSidebar"] {
-        background-color: #ffffff !important;
+    /* 2025 트렌드 헤더 컨테이너 */
+    .modern-header-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 2rem 3rem;
+        margin: 1rem 0 3rem 0;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+        animation: headerFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    /* Streamlit 모든 기본 배경색 강제 변경 */
-    .stApp > div {
-        background-color: #ffffff !important;
+    .header-content {
+        position: relative;
+        z-index: 2;
     }
     
-    .stApp > div > div {
-        background-color: #ffffff !important;
+    .logo-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
     }
     
-    /* 사이드바 내부 요소들도 흰색으로 */
-    .stApp > div[data-testid="stSidebar"] > div {
-        background-color: #ffffff !important;
+    .logo-icon {
+        font-size: 2.5rem;
+        filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.3));
+        animation: iconFloat 3s ease-in-out infinite;
     }
     
-    /* 메인 컨텐츠 영역도 흰색으로 */
-    .stApp > div[data-testid="stSidebar"] + div {
-        background-color: #ffffff !important;
-    }
-    
-    /* 모든 섹션 배경을 흰색으로 */
-    section {
-        background-color: #ffffff !important;
-    }
-    
-    /* 메인 헤더 - 푸른색 그라데이션 효과 */
-    .main-header {
-        font-size: 2.8rem;
-        font-weight: 800;
-        text-align: center;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    .modern-title {
+        font-size: 2.75rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(135deg, #1e293b 0%, #3b82f6 50%, #6366f1 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1.5rem;
         letter-spacing: -0.02em;
-        position: relative;
-        animation: slideInFromLeft 1s ease-out;
+        line-height: 1.1;
     }
     
-    /* 서브 헤더 - 푸른색 계열, 우측에서 부드러운 Motion */
-    .sub-header {
-        font-size: 1.1rem;
-        font-weight: 500;
+    .modern-subtitle {
+        font-size: 1.125rem;
+        font-weight: 400;
+        color: #64748b;
         text-align: center;
-        color: #3b82f6;
-        margin-bottom: 2.5rem;
-        letter-spacing: 0.02em;
-        position: relative;
-        animation: slideInFromRight 1.2s ease-out;
+        margin: 0;
+        letter-spacing: 0.01em;
+        line-height: 1.5;
+        animation: subtitleSlide 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
     }
     
-    .sub-header::before {
-        content: '';
+    .header-decoration {
         position: absolute;
-        top: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 50px;
-        height: 2px;
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        border-radius: 2px;
-        animation: expandWidth 2s ease-out;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+        border-radius: 24px 24px 0 0;
     }
     
-    @keyframes expandWidth {
-        from { width: 0px; }
-        to { width: 50px; }
-    }
-    
-    /* 좌측에서 부드러운 Motion */
-    @keyframes slideInFromLeft {
+    /* 부드러운 애니메이션들 */
+    @keyframes headerFadeIn {
         from {
             opacity: 0;
-            transform: translateX(-30px);
+            transform: translateY(-20px) scale(0.98);
         }
         to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0) scale(1);
         }
     }
     
-    /* 우측에서 부드러운 Motion */
-    @keyframes slideInFromRight {
+    @keyframes subtitleSlide {
         from {
             opacity: 0;
-            transform: translateX(30px);
+            transform: translateY(10px);
         }
         to {
             opacity: 1;
-            transform: translateX(0);
+            transform: translateY(0);
         }
     }
     
-    /* 뉴스 카드 - 2025년 트렌드 반영한 현대적 디자인 */
+    @keyframes iconFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+    }
+    
+    /* 뉴스 카드 - 2025년 글래스모피즘 & 마이크로인터랙션 */
     .news-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 2px solid #e2e8f0;
-        border-left: 4px solid #3b82f6;
-        border-radius: 16px;
-        padding: 1.8rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.75rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
-        backdrop-filter: blur(10px);
+        animation: cardSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .news-card::before {
@@ -181,49 +182,67 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-        transition: all 0.3s ease;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+        border-radius: 20px 20px 0 0;
+        opacity: 0.8;
     }
     
     .news-card:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
-        border-color: #3b82f6;
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 
+            0 20px 64px rgba(0, 0, 0, 0.12),
+            0 8px 32px rgba(59, 130, 246, 0.08);
+        border-color: rgba(59, 130, 246, 0.3);
     }
     
     .news-card:hover::before {
-        width: 6px;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
+        opacity: 1;
+        height: 4px;
     }
     
-    /* 뉴스 제목 - 푸른색 계열 */
+    @keyframes cardSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* 뉴스 제목 - 현대적 타이포그래피 */
     .news-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #1e40af;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: #1e293b;
         margin-bottom: 1rem;
-        line-height: 1.4;
-        position: relative;
+        line-height: 1.5;
+        letter-spacing: -0.01em;
     }
     
-    /* 뉴스 링크 버튼 - 2025년 트렌드 반영한 현대적 디자인 */
+    /* 뉴스 링크 버튼 - 2025년 미니멀 디자인 */
     .news-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        background: rgba(59, 130, 246, 0.95);
+        backdrop-filter: blur(8px);
         color: white !important;
-        padding: 0.7rem 1.2rem;
-        border-radius: 12px;
+        padding: 0.75rem 1.25rem;
+        border-radius: 16px;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 0.9rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 
+            0 4px 12px rgba(59, 130, 246, 0.25),
+            0 1px 2px rgba(0, 0, 0, 0.08);
         position: relative;
         overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .news-link::before {
@@ -233,34 +252,39 @@ st.markdown("""
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        transition: left 0.6s ease;
     }
     
     .news-link:hover {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+        background: rgba(30, 64, 175, 0.98);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 
+            0 8px 24px rgba(59, 130, 246, 0.35),
+            0 4px 12px rgba(0, 0, 0, 0.1);
         color: white !important;
+        border-color: rgba(255, 255, 255, 0.2);
     }
     
     .news-link:hover::before {
         left: 100%;
     }
     
-    /* 실시간 정보 - 통일된 현대적 디자인 */
+    /* 실시간 정보 - 2025년 글래스모피즘 카드 */
     .realtime-info-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 2px solid #e2e8f0;
-        border-left: 4px solid #3b82f6;
-        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 1.25rem;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.06),
+            0 1px 2px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
-        backdrop-filter: blur(10px);
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .realtime-info-card::before {
@@ -268,21 +292,36 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        width: 4px;
-        height: 100%;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+        border-radius: 20px 20px 0 0;
+        opacity: 0.7;
         transition: all 0.3s ease;
     }
     
     .realtime-info-card:hover {
-        transform: translateY(-2px) scale(1.01);
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
-        border-color: #3b82f6;
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.12),
+            0 8px 24px rgba(59, 130, 246, 0.08);
+        border-color: rgba(59, 130, 246, 0.2);
     }
     
     .realtime-info-card:hover::before {
-        width: 6px;
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
+        opacity: 1;
+        height: 4px;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     /* 날씨별 색상 조정 */
@@ -2080,9 +2119,19 @@ def gemini_chatbot_response(user_input):
         return f"AI 응답 생성 오류: {msg}"
 
 def main():
-    # 헤더
-    st.markdown('<h1 class="main-header">🤖 SCM Risk Management AI</h1>', unsafe_allow_html=True)
-    st.markdown('<h2 class="sub-header">🌍 글로벌 공급망 위험을 실시간으로 모니터링하고 관리하세요</h2>', unsafe_allow_html=True)
+    # 2025년 트렌드 헤더 - 미니멀하고 세련된 디자인
+    st.markdown("""
+    <div class="modern-header-container">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">🤖</div>
+                <h1 class="modern-title">SCM Risk Management AI</h1>
+            </div>
+            <p class="modern-subtitle">Monitor and manage global supply chain risks in real-time</p>
+        </div>
+        <div class="header-decoration"></div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # 사이드바 - 날짜, 시간, 날씨 정보 + 챗봇
     with st.sidebar:

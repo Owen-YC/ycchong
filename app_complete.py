@@ -248,99 +248,84 @@ st.markdown("""
         left: 100%;
     }
     
-    /* 실시간 정보 - 2025년 트렌드 반영한 현대적 디자인 */
-    .weather-info.day {
+    /* 실시간 정보 - 통일된 현대적 디자인 */
+    .realtime-info-card {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        color: #1e40af;
-        border: 2px solid #3b82f6;
+        border: 2px solid #e2e8f0;
+        border-left: 4px solid #3b82f6;
         border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
         box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
-        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(10px);
     }
     
-    .weather-info.day::before {
+    .realtime-info-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        transition: all 0.3s ease;
+    }
+    
+    .realtime-info-card:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    
+    .realtime-info-card:hover::before {
+        width: 6px;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
+    }
+    
+    /* 날씨별 색상 조정 */
+    .weather-info.day {
+        color: #1e40af;
     }
     
     .weather-info.night {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        color: #e2e8f0;
-        border: 2px solid #475569;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(30, 41, 59, 0.3);
-        backdrop-filter: blur(10px);
-        position: relative;
-        overflow: hidden;
+        color: #475569;
+        border-left-color: #475569;
     }
     
     .weather-info.night::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #475569 0%, #64748b 50%, #94a3b8 100%);
+        background: linear-gradient(180deg, #475569 0%, #64748b 50%, #94a3b8 100%);
     }
     
     .weather-info.rainy {
-        background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
         color: #0c4a6e;
-        border: 2px solid #0ea5e9;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(14, 165, 233, 0.1);
-        backdrop-filter: blur(10px);
-        position: relative;
-        overflow: hidden;
+        border-left-color: #0ea5e9;
     }
     
     .weather-info.rainy::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
+        background: linear-gradient(180deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
     }
     
     .weather-info.snowy {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         color: #334155;
-        border: 2px solid #64748b;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(100, 116, 139, 0.1);
-        backdrop-filter: blur(10px);
-        position: relative;
-        overflow: hidden;
+        border-left-color: #64748b;
     }
     
     .weather-info.snowy::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
+        background: linear-gradient(180deg, #64748b 0%, #94a3b8 50%, #cbd5e1 100%);
     }
     
-    /* 환율 및 금속 가격 카드 - 2025년 트렌드 반영한 현대적 디자인 */
+    /* 환율 및 금속 가격 카드 - 통일된 디자인 */
     .exchange-rate-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-        border: 2px solid #0ea5e9;
-        border-radius: 12px;
-        padding: 0.8rem;
-        margin: 0.3rem 0;
-        box-shadow: 0 2px 12px rgba(14, 165, 233, 0.08);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-left: 4px solid #3b82f6;
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
         font-size: 1rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
@@ -353,24 +338,31 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 50%, #7dd3fc 100%);
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        transition: all 0.3s ease;
     }
     
     .exchange-rate-card:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 8px 32px rgba(14, 165, 233, 0.15);
-        border-color: #38bdf8;
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    
+    .exchange-rate-card:hover::before {
+        width: 6px;
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
     }
     
     .metal-price-card {
-        background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
-        border: 2px solid #f59e0b;
-        border-radius: 12px;
-        padding: 0.8rem;
-        margin: 0.3rem 0;
-        box-shadow: 0 2px 12px rgba(245, 158, 11, 0.08);
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 2px solid #e2e8f0;
+        border-left: 4px solid #f59e0b;
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
         font-size: 1rem;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
@@ -383,15 +375,21 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%);
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%);
+        transition: all 0.3s ease;
     }
     
     .metal-price-card:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.15);
-        border-color: #fbbf24;
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+        border-color: #3b82f6;
+    }
+    
+    .metal-price-card:hover::before {
+        width: 6px;
+        background: linear-gradient(180deg, #f59e0b 0%, #fbbf24 100%);
     }
     
     .price-change {
@@ -630,9 +628,58 @@ def get_korean_time():
     return now.strftime('%Y년 %m월 %d일'), now.strftime('%H:%M:%S')
 
 def get_weather_info():
-    """서울 실시간 날씨 정보 (현실적인 시뮬레이션)"""
+    """서울 실시간 날씨 정보 (OpenWeatherMap API + 백업 시뮬레이션)"""
     try:
-        # 현재 시간과 계절에 따른 현실적인 날씨 시뮬레이션
+        # OpenWeatherMap API를 통한 실시간 날씨 정보 조회
+        api_key = "demo_key"  # 실제 사용 시 환경변수나 secrets에서 관리
+        city = "Seoul"
+        
+        # OpenWeatherMap API URL (무료 플랜)
+        url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=kr"
+        
+        # API 요청 시도 (데모용이므로 실패할 것으로 예상)
+        try:
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # API 응답에서 날씨 정보 추출
+                weather_main = data['weather'][0]['main']
+                weather_desc = data['weather'][0]['description']
+                temp = round(data['main']['temp'])
+                feels_like = round(data['main']['feels_like'], 1)
+                humidity = data['main']['humidity']
+                pressure = data['main']['pressure']
+                wind_speed = round(data['wind']['speed'], 1)
+                
+                # 날씨 상태를 한국어로 매핑
+                weather_mapping = {
+                    'Clear': '맑음',
+                    'Clouds': '구름많음',
+                    'Rain': '비',
+                    'Drizzle': '이슬비',
+                    'Thunderstorm': '천둥번개',
+                    'Snow': '눈',
+                    'Mist': '안개',
+                    'Fog': '안개',
+                    'Haze': '연무'
+                }
+                
+                condition = weather_mapping.get(weather_main, weather_desc)
+                
+                return {
+                    "condition": condition,
+                    "temperature": temp,
+                    "humidity": humidity,
+                    "feels_like": feels_like,
+                    "wind_speed": wind_speed,
+                    "pressure": pressure,
+                    "source": "OpenWeatherMap"
+                }
+        except:
+            pass  # API 실패 시 백업 데이터 사용
+        
+        # 백업: 현실적인 시뮬레이션 데이터
         current_hour = datetime.now().hour
         current_month = datetime.now().month
         
@@ -650,7 +697,7 @@ def get_weather_info():
             base_temp = random.randint(8, 25)
             conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
         
-        # 시간대별 온도 조정 (서울의 일교차 반영)
+        # 시간대별 온도 조정
         if 6 <= current_hour <= 12:  # 오전
             temperature = base_temp + random.randint(0, 3)
         elif 12 < current_hour <= 18:  # 오후
@@ -670,7 +717,7 @@ def get_weather_info():
         else:  # 맑음
             humidity = random.randint(30, 65)
         
-        # 체감온도 계산 (습도와 풍속 고려)
+        # 체감온도 계산
         wind_speed = random.randint(0, 12)
         feels_like = temperature
         if wind_speed > 5:
@@ -678,7 +725,7 @@ def get_weather_info():
         if humidity > 80:
             feels_like += random.randint(1, 3)
         
-        # 기압은 계절과 날씨에 따라 조정
+        # 기압 설정
         if condition in ["비", "천둥번개"]:
             pressure = random.randint(1000, 1015)
         else:
@@ -690,18 +737,20 @@ def get_weather_info():
             "humidity": humidity,
             "feels_like": round(feels_like, 1),
             "wind_speed": wind_speed,
-            "pressure": pressure
+            "pressure": pressure,
+            "source": "시뮬레이션"
         }
         
     except Exception as e:
-        # 오류 발생 시 기본 정보 반환
+        # 최종 백업 데이터
         return {
             "condition": "맑음",
             "temperature": 22,
             "humidity": 60,
             "feels_like": 22,
             "wind_speed": 5,
-            "pressure": 1013
+            "pressure": 1013,
+            "source": "기본값"
         }
 
 def get_exchange_rate():
@@ -899,6 +948,106 @@ def get_metal_prices():
             }
         
         return metal_prices
+
+def extract_real_article_url(google_url, source_lower, headers):
+    """Google News URL에서 실제 기사 URL 추출"""
+    try:
+        if not google_url.startswith('https://news.google.com'):
+            return google_url  # 이미 실제 URL인 경우
+        
+        # Google News URL을 실제 기사 URL로 변환
+        # Google News의 /articles/ 링크에서 실제 URL 추출 시도
+        try:
+            response = requests.get(google_url, headers=headers, timeout=10, allow_redirects=True)
+            final_url = response.url
+            
+            # Google 도메인이 아닌 실제 뉴스 사이트로 리다이렉트 되었는지 확인
+            if 'google.com' not in final_url and 'news.google' not in final_url:
+                # 실제 뉴스 사이트 URL 확인
+                try:
+                    # URL 유효성 검증
+                    test_response = requests.head(final_url, headers=headers, timeout=5)
+                    if test_response.status_code == 200:
+                        return final_url
+                except:
+                    pass
+            
+            # 리다이렉트가 실패한 경우, URL에서 실제 링크 파싱 시도
+            if response.status_code == 200:
+                from urllib.parse import unquote, parse_qs, urlparse
+                
+                # Google News URL 파라미터에서 실제 URL 추출
+                parsed_url = urlparse(google_url)
+                if 'url' in parsed_url.query:
+                    query_params = parse_qs(parsed_url.query)
+                    if 'url' in query_params:
+                        extracted_url = unquote(query_params['url'][0])
+                        # URL 유효성 검증
+                        try:
+                            test_response = requests.head(extracted_url, headers=headers, timeout=5)
+                            if test_response.status_code == 200:
+                                return extracted_url
+                        except:
+                            pass
+                
+                # HTML에서 실제 링크 찾기
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # 다양한 방법으로 실제 기사 링크 찾기
+                # 1. canonical URL 찾기
+                canonical = soup.find('link', rel='canonical')
+                if canonical and canonical.get('href'):
+                    canonical_url = canonical['href']
+                    if 'google.com' not in canonical_url:
+                        return canonical_url
+                
+                # 2. meta property="og:url" 찾기
+                og_url = soup.find('meta', property='og:url')
+                if og_url and og_url.get('content'):
+                    og_url_content = og_url['content']
+                    if 'google.com' not in og_url_content:
+                        return og_url_content
+                
+                # 3. 기사 본문으로 가는 링크 찾기
+                article_links = soup.find_all('a', href=True)
+                for link in article_links:
+                    href = link['href']
+                    if href.startswith('http') and 'google.com' not in href:
+                        # 뉴스 사이트 도메인 확인
+                        for news_domain in ['reuters.com', 'bloomberg.com', 'wsj.com', 'cnbc.com', 'ft.com', 'bbc.com', 'cnn.com', 'apnews.com']:
+                            if news_domain in href:
+                                return href
+            
+        except Exception as e:
+            pass
+        
+        # 모든 추출 방법이 실패한 경우, 소스별 기본 URL 반환
+        news_site_mapping = {
+            'reuters': 'https://www.reuters.com/business/',
+            'bloomberg': 'https://www.bloomberg.com/news/',
+            'wsj': 'https://www.wsj.com/news/business',
+            'wall street journal': 'https://www.wsj.com/news/business',
+            'cnbc': 'https://www.cnbc.com/business/',
+            'financial times': 'https://www.ft.com/companies',
+            'ft': 'https://www.ft.com/companies',
+            'bbc': 'https://www.bbc.com/news/business',
+            'cnn': 'https://www.cnn.com/business',
+            'ap': 'https://apnews.com/hub/business',
+            'forbes': 'https://www.forbes.com/business/',
+            'techcrunch': 'https://techcrunch.com/category/startups/'
+        }
+        
+        # 소스명으로 매핑된 URL 찾기
+        for source_key, url in news_site_mapping.items():
+            if source_key in source_lower:
+                return url
+        
+        # 기본값으로 Reuters 비즈니스 섹션 반환
+        return 'https://www.reuters.com/business/'
+        
+    except Exception as e:
+        # 오류 발생 시 기본 뉴스 사이트 반환
+        return 'https://www.reuters.com/business/'
 
 def translate_title_to_korean(title):
     """간단한 제목 번역 함수 (실제로는 더 정교한 번역 API 사용 권장)"""
@@ -1276,44 +1425,12 @@ def crawl_google_news(query, num_results=20):
                 
                 # 글로벌 뉴스 소스이거나 SCM 키워드가 있고, 제외 키워드가 없는 경우에만 처리
                 if (is_global_source or title_has_scm or source_has_scm) and not has_exclude_keyword:
-                    # 실제 뉴스 링크로 리다이렉트 및 유효성 검증
-                    if link.startswith('https://news.google.com'):
-                        try:
-                            news_response = requests.get(link, headers=headers, timeout=5, allow_redirects=True)
-                            actual_url = news_response.url
-                            # Google 검색 결과가 아닌 실제 뉴스 사이트인지 확인
-                            if 'google.com/search' in actual_url or 'google.com' in actual_url:
-                                # Google 링크인 경우 실제 뉴스 사이트로 대체
-                                if 'reuters' in source_lower:
-                                    actual_url = "https://www.reuters.com"
-                                elif 'bloomberg' in source_lower:
-                                    actual_url = "https://www.bloomberg.com"
-                                elif 'wsj' in source_lower or 'wall street journal' in source_lower:
-                                    actual_url = "https://www.wsj.com"
-                                elif 'cnbc' in source_lower:
-                                    actual_url = "https://www.cnbc.com"
-                                elif 'financial times' in source_lower or 'ft' in source_lower:
-                                    actual_url = "https://www.ft.com"
-                                elif 'bbc' in source_lower:
-                                    actual_url = "https://www.bbc.com"
-                                elif 'cnn' in source_lower:
-                                    actual_url = "https://www.cnn.com"
-                                elif 'ap' in source_lower:
-                                    actual_url = "https://apnews.com"
-                                else:
-                                    continue  # 알 수 없는 소스는 건너뛰기
-                        except:
-                            continue  # 링크 접근 실패 시 건너뛰기
-                    else:
-                        actual_url = link
-                
-                    # 링크 유효성 검증 (실제 기사가 존재하는지 확인)
-                    try:
-                        article_response = requests.head(actual_url, headers=headers, timeout=5)
-                        if article_response.status_code != 200:
-                            continue  # 기사가 존재하지 않으면 건너뛰기
-                    except:
-                        continue  # 링크 접근 실패 시 건너뛰기
+                    # 실제 뉴스 링크 추출
+                    actual_url = extract_real_article_url(link, source_lower, headers)
+                    
+                    # URL이 추출되지 않으면 건너뛰기
+                    if not actual_url:
+                        continue
                     
                     # 발행 시간 파싱
                     try:
@@ -1838,20 +1955,24 @@ def main():
         elif "눈" in weather_info['condition']:
             weather_class = "snowy"
         
-        weather_classes = f"weather-info {time_class} {weather_class}".strip()
+        weather_classes = f"realtime-info-card weather-info {time_class} {weather_class}".strip()
         
         st.markdown(f"""
-        <div class="{weather_classes}" style="text-align: center;">
-            <h4 style="margin: 0 0 10px 0; text-align: center;">🇰🇷 한국 시간</h4>
-            <p style="margin: 5px 0; font-size: 1.1rem; text-align: center;"><strong>{date_str}</strong></p>
-            <p style="margin: 5px 0; font-size: 1.2rem; text-align: center;"><strong>{time_str}</strong></p>
-            <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.3);">
-            <h4 style="margin: 0 0 10px 0; text-align: center;">🌤️ 서울 실시간 날씨</h4>
-            <p style="margin: 5px 0; text-align: center;">☁️ {weather_info['condition']}</p>
-            <p style="margin: 5px 0; text-align: center;">🌡️ {weather_info['temperature']}°C (체감 {weather_info['feels_like']}°C)</p>
-            <p style="margin: 5px 0; text-align: center;">💧 습도 {weather_info['humidity']}%</p>
-            <p style="margin: 5px 0; text-align: center;">💨 풍속 {weather_info['wind_speed']}m/s</p>
-            <p style="margin: 5px 0; text-align: center;">📊 기압 {weather_info['pressure']}hPa</p>
+        <div class="{weather_classes}">
+            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700;">🇰🇷 한국 시간</h4>
+            <div style="text-align: center; margin-bottom: 20px; padding: 10px; background: rgba(59, 130, 246, 0.05); border-radius: 8px;">
+                <p style="margin: 5px 0; font-size: 1.2rem; font-weight: 600;">{date_str}</p>
+                <p style="margin: 5px 0; font-size: 1.4rem; font-weight: 700; color: #1e40af;">{time_str}</p>
+            </div>
+            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700;">🌤️ 서울 실시간 날씨</h4>
+            <div style="text-align: center;">
+                <p style="margin: 8px 0; font-size: 1.1rem; font-weight: 600;">☁️ {weather_info['condition']}</p>
+                <p style="margin: 8px 0; font-size: 1.1rem;">🌡️ {weather_info['temperature']}°C <span style="color: #64748b;">(체감 {weather_info['feels_like']}°C)</span></p>
+                <p style="margin: 8px 0; font-size: 1rem;">💧 습도 {weather_info['humidity']}%</p>
+                <p style="margin: 8px 0; font-size: 1rem;">💨 풍속 {weather_info['wind_speed']}m/s</p>
+                <p style="margin: 8px 0; font-size: 1rem;">📊 기압 {weather_info['pressure']}hPa</p>
+                <p style="margin: 8px 0; font-size: 0.8rem; color: #64748b;">📡 데이터: {weather_info.get('source', '시뮬레이션')}</p>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1957,8 +2078,9 @@ def main():
                     </div>
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <a href="{article['url']}" target="_blank" class="news-link">
-                            🔗 원문 보기
+                            🔗 기사 보기
                         </a>
+                        <span style="font-size: 0.8rem; color: #64748b; align-self: center;">📰 {article['source']} 섹션으로 이동</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)

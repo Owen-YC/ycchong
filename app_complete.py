@@ -1756,8 +1756,8 @@ def crawl_real_google_news_rss(query, num_results=10):
 
 def crawl_major_news_rss(query, num_results=10):
     """주요 뉴스 사이트의 RSS에서 실제 기사 수집"""
-    articles = []
-    
+        articles = []
+        
     # 주요 뉴스 사이트의 RSS 피드
     rss_feeds = {
         "Reuters": [
@@ -1795,9 +1795,9 @@ def crawl_major_news_rss(query, num_results=10):
                     
                     for item in items[:10]:  # 각 피드당 최대 10개
                         try:
-                            title = item.find('title').text if item.find('title') else ""
-                            link = item.find('link').text if item.find('link') else ""
-                            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
+            title = item.find('title').text if item.find('title') else ""
+            link = item.find('link').text if item.find('link') else ""
+            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
                             description = item.find('description')
                             desc_text = description.text if description else ""
                             
@@ -1984,9 +1984,9 @@ def advanced_rss_scraping(query, num_results=10):
                                 parsed_date = parsedate_to_datetime(pub_date.text)
                                 if parsed_date and parsed_date > cutoff_time:
                                     recent_items.append(item)
-                            except:
+                        except:
                                 recent_items.append(item)  # 날짜 파싱 실패시 포함
-                        else:
+                    else:
                             recent_items.append(item)  # 날짜 없으면 포함
                     
                     for item in recent_items[:10]:  # 최신 기사 중 최대 10개
@@ -2004,27 +2004,27 @@ def advanced_rss_scraping(query, num_results=10):
                             
                             if is_relevant and link and verify_real_article_url(link):
                                 # 실제 기사 URL인 경우만 추가
-                                try:
-                                    from email.utils import parsedate_to_datetime
-                                    parsed_date = parsedate_to_datetime(pub_date)
-                                    formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
-                                except:
-                                    formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-                                
-                                article = {
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        parsed_date = parsedate_to_datetime(pub_date)
+                        formatted_date = parsed_date.strftime('%Y-%m-%dT%H:%M:%SZ')
+                    except:
+                        formatted_date = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+                    
+                    article = {
                                     'title': clean_html_tags(title),
                                     'original_title': clean_html_tags(title),
                                     'url': link,  # 검증된 실제 기사 URL
                                     'source': source_name,
-                                    'published_time': formatted_date,
+                        'published_time': formatted_date,
                                     'description': clean_html_tags(desc_text)[:200] + "...",
                                     'views': random.randint(800, 4000),
                                     'article_type': 'real_article'
-                                }
-                                articles.append(article)
-                                
-                                if len(articles) >= num_results:
-                                    break
+                    }
+                    articles.append(article)
+                    
+                    if len(articles) >= num_results:
+                        break
                                     
                         except Exception as e:
                             continue
@@ -2474,7 +2474,7 @@ def generate_enhanced_backup_news(query, num_results):
         for future in concurrent.futures.as_completed(future_to_article):
             try:
                 article = future.result()
-                articles.append(article)
+        articles.append(article)
                 if len(articles) >= num_results:
                     break
             except Exception as e:
@@ -2917,7 +2917,7 @@ def main():
                         
                         if articles:
                             # 실제 기사만 필터링 (검색 결과 완전 제거)
-                            real_articles = [a for a in articles if a.get('article_type') == ㅁ'real_article']
+                            real_articles = [a for a in articles if a.get('article_type') == 'real_article']
                             
                             if real_articles:
                                 # 번역된 검색어 표시
@@ -2930,8 +2930,8 @@ def main():
                                 
                                 st.success(success_msg)
                                 st.session_state.articles = real_articles  # 실제 기사만 저장
-                                st.session_state.query = query
-                                st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            st.session_state.query = query
+                            st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             else:
                                 st.warning(f"'{query}' 키워드로 실제 뉴스 기사를 찾을 수 없습니다. 다른 키워드로 시도해보세요.")
                                 st.session_state.articles = []
@@ -3021,7 +3021,7 @@ def main():
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
                         <div style="display: flex; gap: 1rem; align-items: center;">
-                            <a href="{article['url']}" target="_blank" class="news-link">
+                        <a href="{article['url']}" target="_blank" class="news-link">
                                 📰 원문 기사 읽기
                             </a>
                             <span style="font-size: 0.8rem; color: #64748b;">

@@ -950,81 +950,138 @@ def get_metal_prices():
         return metal_prices
 
 def extract_real_article_url(google_url, source_lower, headers):
-    """Google News URL에서 실제 기사 URL 추출"""
+    """Google News URL에서 실제 기사 URL 추출 (개선된 버전)"""
     try:
         if not google_url.startswith('https://news.google.com'):
             return google_url  # 이미 실제 URL인 경우
         
-        # Google News URL을 실제 기사 URL로 변환
-        # Google News의 /articles/ 링크에서 실제 URL 추출 시도
+        # 방법 1: Google News URL의 파라미터에서 실제 URL 추출
         try:
-            response = requests.get(google_url, headers=headers, timeout=10, allow_redirects=True)
-            final_url = response.url
+            from urllib.parse import unquote, parse_qs, urlparse
             
-            # Google 도메인이 아닌 실제 뉴스 사이트로 리다이렉트 되었는지 확인
-            if 'google.com' not in final_url and 'news.google' not in final_url:
-                # 실제 뉴스 사이트 URL 확인
-                try:
-                    # URL 유효성 검증
-                    test_response = requests.head(final_url, headers=headers, timeout=5)
-                    if test_response.status_code == 200:
-                        return final_url
-                except:
-                    pass
+            # Google News URL 구조 분석
+            # https://news.google.com/articles/[encoded-url]?...
+            # 또는 https://news.google.com/rss/articles/[encoded-url]?...
             
-            # 리다이렉트가 실패한 경우, URL에서 실제 링크 파싱 시도
-            if response.status_code == 200:
-                from urllib.parse import unquote, parse_qs, urlparse
-                
-                # Google News URL 파라미터에서 실제 URL 추출
-                parsed_url = urlparse(google_url)
-                if 'url' in parsed_url.query:
-                    query_params = parse_qs(parsed_url.query)
-                    if 'url' in query_params:
-                        extracted_url = unquote(query_params['url'][0])
-                        # URL 유효성 검증
+            if '/articles/' in google_url:
+                # URL에서 base64로 인코딩된 부분 추출 시도
+                url_parts = google_url.split('/articles/')
+                if len(url_parts) > 1:
+                    encoded_part = url_parts[1].split('?')[0]  # 파라미터 제거
+                    
+                    # Base64 디코딩 시도 (Google News는 때때로 base64 인코딩 사용)
+                    try:
+                        import base64
+                        decoded_bytes = base64.b64decode(encoded_part + '==')  # 패딩 추가
+                        decoded_url = decoded_bytes.decode('utf-8')
+                        
+                        # 디코딩된 URL이 유효한지 확인
+                        if decoded_url.startswith('http') and 'google.com' not in decoded_url:
+                            # URL 유효성 검증
+                            test_response = requests.head(decoded_url, headers=headers, timeout=5)
+                            if test_response.status_code == 200:
+                                return decoded_url
+                    except:
+                        pass
+            
+            # URL 파라미터에서 실제 URL 찾기
+            parsed_url = urlparse(google_url)
+            query_params = parse_qs(parsed_url.query)
+            
+            # 다양한 파라미터에서 URL 찾기
+            for param_name in ['url', 'link', 'article', 'source']:
+                if param_name in query_params:
+                    extracted_url = unquote(query_params[param_name][0])
+                    if extracted_url.startswith('http') and 'google.com' not in extracted_url:
                         try:
                             test_response = requests.head(extracted_url, headers=headers, timeout=5)
                             if test_response.status_code == 200:
                                 return extracted_url
                         except:
-                            pass
-                
-                # HTML에서 실제 링크 찾기
-                soup = BeautifulSoup(response.content, 'html.parser')
-                
-                # 다양한 방법으로 실제 기사 링크 찾기
-                # 1. canonical URL 찾기
-                canonical = soup.find('link', rel='canonical')
-                if canonical and canonical.get('href'):
-                    canonical_url = canonical['href']
-                    if 'google.com' not in canonical_url:
-                        return canonical_url
-                
-                # 2. meta property="og:url" 찾기
-                og_url = soup.find('meta', property='og:url')
-                if og_url and og_url.get('content'):
-                    og_url_content = og_url['content']
-                    if 'google.com' not in og_url_content:
-                        return og_url_content
-                
-                # 3. 기사 본문으로 가는 링크 찾기
-                article_links = soup.find_all('a', href=True)
-                for link in article_links:
-                    href = link['href']
-                    if href.startswith('http') and 'google.com' not in href:
-                        # 뉴스 사이트 도메인 확인
-                        for news_domain in ['reuters.com', 'bloomberg.com', 'wsj.com', 'cnbc.com', 'ft.com', 'bbc.com', 'cnn.com', 'apnews.com']:
-                            if news_domain in href:
-                                return href
-            
+                            continue
+                            
         except Exception as e:
             pass
         
-        # 모든 추출 방법이 실패한 경우, 소스별 기본 URL 반환
+        # 방법 2: Google News 페이지에 직접 접속하여 리다이렉트 추적
+        try:
+            # 더 자세한 헤더 설정으로 봇 차단 우회
+            enhanced_headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Cache-Control': 'max-age=0'
+            }
+            
+            # 세션 사용으로 쿠키 유지
+            session = requests.Session()
+            session.headers.update(enhanced_headers)
+            
+            response = session.get(google_url, timeout=10, allow_redirects=True)
+            final_url = response.url
+            
+            # Google 도메인이 아닌 실제 뉴스 사이트로 리다이렉트 확인
+            if 'google.com' not in final_url and 'news.google' not in final_url:
+                # 유효한 뉴스 사이트 도메인 확인
+                valid_domains = ['reuters.com', 'bloomberg.com', 'wsj.com', 'cnbc.com', 'ft.com', 
+                               'bbc.com', 'cnn.com', 'apnews.com', 'forbes.com', 'techcrunch.com',
+                               'nytimes.com', 'washingtonpost.com', 'economist.com']
+                
+                for domain in valid_domains:
+                    if domain in final_url:
+                        return final_url
+            
+            # HTML에서 실제 링크 추출
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # 1. JavaScript에서 리다이렉트 URL 찾기
+                scripts = soup.find_all('script')
+                for script in scripts:
+                    if script.string:
+                        script_content = script.string
+                        # window.location이나 location.href 찾기
+                        if 'window.location' in script_content or 'location.href' in script_content:
+                            import re
+                            # URL 패턴 매칭
+                            url_pattern = r'https?://[^\s"\'<>]+'
+                            urls = re.findall(url_pattern, script_content)
+                            for url in urls:
+                                if 'google.com' not in url and any(domain in url for domain in valid_domains):
+                                    return url.rstrip('";')
+                
+                # 2. Meta refresh 태그 확인
+                meta_refresh = soup.find('meta', attrs={'http-equiv': 'refresh'})
+                if meta_refresh and meta_refresh.get('content'):
+                    content = meta_refresh['content']
+                    if 'url=' in content:
+                        refresh_url = content.split('url=')[1].strip()
+                        if 'google.com' not in refresh_url:
+                            return refresh_url
+                
+                # 3. 폼의 action URL 확인
+                forms = soup.find_all('form')
+                for form in forms:
+                    action = form.get('action')
+                    if action and action.startswith('http') and 'google.com' not in action:
+                        return action
+                        
+        except Exception as e:
+            pass
+        
+        # 방법 3: 실제 뉴스 사이트에서 최신 기사 검색 (제목 기반)
+        # 이 방법은 복잡하므로 소스별 섹션 페이지로 연결
+        
+        # 소스별 구체적인 섹션 URL 매핑 (비즈니스/경제 섹션)
         news_site_mapping = {
             'reuters': 'https://www.reuters.com/business/',
-            'bloomberg': 'https://www.bloomberg.com/news/',
+            'bloomberg': 'https://www.bloomberg.com/businessweek',
             'wsj': 'https://www.wsj.com/news/business',
             'wall street journal': 'https://www.wsj.com/news/business',
             'cnbc': 'https://www.cnbc.com/business/',
@@ -1033,21 +1090,28 @@ def extract_real_article_url(google_url, source_lower, headers):
             'bbc': 'https://www.bbc.com/news/business',
             'cnn': 'https://www.cnn.com/business',
             'ap': 'https://apnews.com/hub/business',
+            'associated press': 'https://apnews.com/hub/business',
             'forbes': 'https://www.forbes.com/business/',
-            'techcrunch': 'https://techcrunch.com/category/startups/'
+            'techcrunch': 'https://techcrunch.com/category/startups/',
+            'new york times': 'https://www.nytimes.com/section/business',
+            'nytimes': 'https://www.nytimes.com/section/business',
+            'washington post': 'https://www.washingtonpost.com/business/',
+            'economist': 'https://www.economist.com/business'
         }
         
-        # 소스명으로 매핑된 URL 찾기
+        # 소스명 매칭 (더 정확한 매칭)
+        source_lower_clean = source_lower.replace('.com', '').replace('www.', '')
+        
         for source_key, url in news_site_mapping.items():
-            if source_key in source_lower:
+            if source_key in source_lower_clean or source_lower_clean in source_key:
                 return url
         
-        # 기본값으로 Reuters 비즈니스 섹션 반환
+        # 기본값: Reuters 비즈니스 섹션
         return 'https://www.reuters.com/business/'
         
     except Exception as e:
-        # 오류 발생 시 기본 뉴스 사이트 반환
-        return 'https://www.reuters.com/business/'
+        # 최종 백업: Reuters 메인 페이지
+        return 'https://www.reuters.com/'
 
 def translate_title_to_korean(title):
     """간단한 제목 번역 함수 (실제로는 더 정교한 번역 API 사용 권장)"""
@@ -1425,8 +1489,19 @@ def crawl_google_news(query, num_results=20):
                 
                 # 글로벌 뉴스 소스이거나 SCM 키워드가 있고, 제외 키워드가 없는 경우에만 처리
                 if (is_global_source or title_has_scm or source_has_scm) and not has_exclude_keyword:
-                    # 실제 뉴스 링크 추출
-                    actual_url = extract_real_article_url(link, source_lower, headers)
+                    # 실제 뉴스 링크 추출 - 더 정확한 방법
+                    actual_url = None
+                    
+                    # RSS 피드에서 guid나 link 태그의 실제 URL 찾기
+                    item_guid = item.find('guid')
+                    if item_guid and item_guid.text:
+                        guid_url = item_guid.text
+                        if guid_url.startswith('http') and 'google.com' not in guid_url:
+                            actual_url = guid_url
+                    
+                    # guid에서 실제 URL을 못 찾으면 링크에서 추출 시도
+                    if not actual_url:
+                        actual_url = extract_real_article_url(link, source_lower, headers)
                     
                     # URL이 추출되지 않으면 건너뛰기
                     if not actual_url:
@@ -1959,19 +2034,19 @@ def main():
         
         st.markdown(f"""
         <div class="{weather_classes}">
-            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700;">🇰🇷 한국 시간</h4>
+            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700; font-size: 1.1rem;">🇰🇷 한국 시간</h4>
             <div style="text-align: center; margin-bottom: 20px; padding: 10px; background: rgba(59, 130, 246, 0.05); border-radius: 8px;">
-                <p style="margin: 5px 0; font-size: 1.2rem; font-weight: 600;">{date_str}</p>
-                <p style="margin: 5px 0; font-size: 1.4rem; font-weight: 700; color: #1e40af;">{time_str}</p>
+                <p style="margin: 5px 0; font-size: 1rem; font-weight: 600;">{date_str}</p>
+                <p style="margin: 5px 0; font-size: 1.2rem; font-weight: 700; color: #1e40af;">{time_str}</p>
             </div>
-            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700;">🌤️ 서울 실시간 날씨</h4>
+            <h4 style="margin: 0 0 15px 0; text-align: center; color: #1e40af; font-weight: 700; font-size: 1.1rem;">🌤️ 서울 실시간 날씨</h4>
             <div style="text-align: center;">
-                <p style="margin: 8px 0; font-size: 1.1rem; font-weight: 600;">☁️ {weather_info['condition']}</p>
-                <p style="margin: 8px 0; font-size: 1.1rem;">🌡️ {weather_info['temperature']}°C <span style="color: #64748b;">(체감 {weather_info['feels_like']}°C)</span></p>
-                <p style="margin: 8px 0; font-size: 1rem;">💧 습도 {weather_info['humidity']}%</p>
-                <p style="margin: 8px 0; font-size: 1rem;">💨 풍속 {weather_info['wind_speed']}m/s</p>
-                <p style="margin: 8px 0; font-size: 1rem;">📊 기압 {weather_info['pressure']}hPa</p>
-                <p style="margin: 8px 0; font-size: 0.8rem; color: #64748b;">📡 데이터: {weather_info.get('source', '시뮬레이션')}</p>
+                <p style="margin: 6px 0; font-size: 1rem; font-weight: 600;">☁️ {weather_info['condition']}</p>
+                <p style="margin: 6px 0; font-size: 1rem;">🌡️ {weather_info['temperature']}°C <span style="color: #64748b; font-size: 0.9rem;">(체감 {weather_info['feels_like']}°C)</span></p>
+                <p style="margin: 6px 0; font-size: 0.9rem;">💧 습도 {weather_info['humidity']}%</p>
+                <p style="margin: 6px 0; font-size: 0.9rem;">💨 풍속 {weather_info['wind_speed']}m/s</p>
+                <p style="margin: 6px 0; font-size: 0.9rem;">📊 기압 {weather_info['pressure']}hPa</p>
+                <p style="margin: 6px 0; font-size: 0.8rem; color: #64748b;">📡 데이터: {weather_info.get('source', '시뮬레이션')}</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -2076,11 +2151,16 @@ def main():
                     <div class="news-description">
                         {article['description']}
                     </div>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <a href="{article['url']}" target="_blank" class="news-link">
-                            🔗 기사 보기
-                        </a>
-                        <span style="font-size: 0.8rem; color: #64748b; align-self: center;">📰 {article['source']} 섹션으로 이동</span>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <a href="{article['url']}" target="_blank" class="news-link">
+                                🔗 {article['source']} 바로가기
+                            </a>
+                            <span style="font-size: 0.8rem; color: #64748b;">관련 섹션으로 이동</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #64748b; padding: 8px; background: rgba(59, 130, 246, 0.05); border-radius: 6px;">
+                            💡 <strong>원문 찾기:</strong> <a href="https://www.google.com/search?q=site:{article['source'].lower().replace(' ', '')}.com+{article.get('original_title', article['title']).replace(' ', '+')}" target="_blank" style="color: #3b82f6; text-decoration: none;">🔍 Google에서 원문 검색</a> 또는 {article['source']} 사이트에서 직접 검색
+                        </div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -2192,21 +2272,21 @@ def main():
             
             st.markdown(f"""
             <div class="exchange-rate-card">
-                <h4 style="color: #1e293b; margin-bottom: 0.5rem; font-size: 0.9rem;">🇰🇷 USD/KRW</h4>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <div style="font-size: 1.2rem; font-weight: 900; color: #1e40af;">
+                <h4 style="color: #1e293b; margin-bottom: 0.8rem; font-size: 1.1rem; text-align: center; font-weight: 700;">🇰🇷 USD/KRW</h4>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #1e40af;">
                         ₩{exchange_data["rate"]:,}
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 0.8rem; font-weight: 700; color: #64748b;">
+                        <div style="font-size: 0.9rem; font-weight: 600; color: #64748b;">
                             {change_icon} {change_sign}{exchange_data["change"]:+.2f}
                         </div>
-                        <div style="font-size: 0.7rem; color: #64748b;">
+                        <div style="font-size: 0.8rem; color: #64748b;">
                             ({change_sign}{exchange_data["change_percent"]:+.2f}%)
                         </div>
                     </div>
                 </div>
-                <div style="font-size: 0.6rem; color: #64748b; text-align: center;">
+                <div style="font-size: 0.8rem; color: #64748b; text-align: center;">
                     🕒 {datetime.now().strftime('%H:%M:%S')}
                 </div>
             </div>
@@ -2241,14 +2321,14 @@ def main():
                 <div class="metal-price-card">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center;">
-                            <span class="metal-icon">{metal_icons.get(metal_name, "🏭")}</span>
-                            <span style="font-weight: 700; color: #1e293b; font-size: 0.8rem;">{metal_name}</span>
+                            <span class="metal-icon" style="font-size: 1rem; margin-right: 0.5rem;">{metal_icons.get(metal_name, "🏭")}</span>
+                            <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{metal_name}</span>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.9rem; font-weight: 700; color: #1e40af;">
                                 ${data["price"]:,}
                             </div>
-                            <div class="price-change {data['status']}" style="font-size: 0.7rem;">
+                            <div class="price-change {data['status']}" style="font-size: 0.8rem; color: #64748b;">
                                 {change_icon} {change_sign}{data["change"]:+.2f} ({change_sign}{data["change_percent"]:+.2f}%)
                             </div>
                         </div>

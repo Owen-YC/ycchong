@@ -1795,9 +1795,9 @@ def crawl_major_news_rss(query, num_results=10):
                     
                     for item in items[:10]:  # 각 피드당 최대 10개
                         try:
-            title = item.find('title').text if item.find('title') else ""
-            link = item.find('link').text if item.find('link') else ""
-            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
+                            title = item.find('title').text if item.find('title') else ""
+                            link = item.find('link').text if item.find('link') else ""
+                            pub_date = item.find('pubDate').text if item.find('pubDate') else ""
                             description = item.find('description')
                             desc_text = description.text if description else ""
                             

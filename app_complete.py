@@ -16,6 +16,8 @@ from google.genai import types
 import json
 import pytz
 import os
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 # yfinance 임포트 시도 (없으면 시뮬레이션 모드)
 try:
@@ -2026,9 +2028,9 @@ def advanced_rss_scraping(query, num_results=10):
                                     
                         except Exception as e:
                             continue
-                        
-        except Exception as e:
-            continue
+                            
+            except Exception as e:
+                continue
     
     return articles[:num_results]
 
@@ -2915,7 +2917,7 @@ def main():
                         
                         if articles:
                             # 실제 기사만 필터링 (검색 결과 완전 제거)
-                            real_articles = [a for a in articles if a.get('article_type') == 'real_article']
+                            real_articles = [a for a in articles if a.get('article_type') == ㅁ'real_article']
                             
                             if real_articles:
                                 # 번역된 검색어 표시

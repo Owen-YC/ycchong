@@ -1,4 +1,13 @@
 import streamlit as st
+
+# 페이지 설정 (가장 먼저 실행되어야 함)
+st.set_page_config(
+    page_title="SCM Risk Management AI",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
@@ -25,32 +34,28 @@ try:
     YFINANCE_AVAILABLE = True
 except ImportError:
     YFINANCE_AVAILABLE = False
-    st.warning("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
+    print("⚠️ yfinance 모듈이 설치되지 않아 시뮬레이션 데이터를 사용합니다.")
 
 # Gemini API 설정 (최신 google-genai 패키지 사용)
 try:
     # 권장: Streamlit secrets 또는 환경변수 사용 (하드코딩 금지)
-    API_KEY = st.secrets.get("GEMINI_API_KEY")
+    API_KEY = st.secrets.get("GEMINI_API_KEY") if hasattr(st, 'secrets') else None
     if not API_KEY:
-        raise RuntimeError("GEMINI_API_KEY가 설정되어 있지 않습니다. Streamlit secrets 또는 환경변수로 설정하세요.")
-
-    client = genai.Client(api_key=API_KEY)
-    test_response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents="Hello"
-    )
-    API_KEY_WORKING = True
+        API_KEY = os.getenv("GEMINI_API_KEY")
+    
+    if API_KEY:
+        client = genai.Client(api_key=API_KEY)
+        test_response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Hello"
+        )
+        API_KEY_WORKING = True
+    else:
+        API_KEY_WORKING = False
+        st.warning("⚠️ GEMINI_API_KEY가 설정되지 않았습니다. AI 기능이 비활성화됩니다.")
 except Exception as e:
     st.error(f"Gemini API 설정 오류: {e}")
     API_KEY_WORKING = False
-
-# 페이지 설정
-st.set_page_config(
-    page_title="SCM Risk Management AI",
-    page_icon="🤖",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # 2025년 최신 트렌드 CSS - 미니멀, 글래스모피즘, 부드러운 애니메이션
 st.markdown("""

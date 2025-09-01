@@ -1152,6 +1152,126 @@ def extract_real_article_url(google_url, source_lower, headers):
         # 최종 백업: Reuters 메인 페이지
         return 'https://www.reuters.com/'
 
+def translate_korean_to_english(korean_text):
+    """한국어 검색어를 영어로 번역하는 함수"""
+    # 기본적인 한영 번역 사전 (SCM 관련 용어 중심)
+    korean_to_english = {
+        # 국가/지역
+        '대만': 'Taiwan',
+        '중국': 'China',
+        '일본': 'Japan',
+        '미국': 'United States',
+        '한국': 'South Korea',
+        '독일': 'Germany',
+        '영국': 'United Kingdom',
+        '프랑스': 'France',
+        '러시아': 'Russia',
+        '우크라이나': 'Ukraine',
+        '인도': 'India',
+        '베트남': 'Vietnam',
+        '태국': 'Thailand',
+        '싱가포르': 'Singapore',
+        '말레이시아': 'Malaysia',
+        '인도네시아': 'Indonesia',
+        '호주': 'Australia',
+        '브라질': 'Brazil',
+        '멕시코': 'Mexico',
+        
+        # 자연재해/사건
+        '지진': 'earthquake',
+        '태풍': 'typhoon',
+        '홍수': 'flood',
+        '가뭄': 'drought',
+        '화재': 'fire',
+        '폭풍': 'storm',
+        '쓰나미': 'tsunami',
+        '화산': 'volcano',
+        '전쟁': 'war',
+        '분쟁': 'conflict',
+        '테러': 'terrorism',
+        '봉쇄': 'lockdown',
+        '제재': 'sanctions',
+        
+        # SCM 관련 용어
+        '공급망': 'supply chain',
+        '물류': 'logistics',
+        '운송': 'transportation',
+        '배송': 'shipping',
+        '창고': 'warehouse',
+        '재고': 'inventory',
+        '제조': 'manufacturing',
+        '생산': 'production',
+        '구매': 'procurement',
+        '조달': 'sourcing',
+        '유통': 'distribution',
+        '수출': 'export',
+        '수입': 'import',
+        '무역': 'trade',
+        '관세': 'tariff',
+        '항구': 'port',
+        '공항': 'airport',
+        '철도': 'railway',
+        '도로': 'road',
+        
+        # 산업/분야
+        '반도체': 'semiconductor',
+        '칩': 'chip',
+        '자동차': 'automotive',
+        '전자': 'electronics',
+        '철강': 'steel',
+        '석유': 'oil',
+        '가스': 'gas',
+        '에너지': 'energy',
+        '금속': 'metal',
+        '화학': 'chemical',
+        '의료': 'medical',
+        '약품': 'pharmaceutical',
+        '식품': 'food',
+        '농업': 'agriculture',
+        '섬유': 'textile',
+        
+        # 기타 용어
+        '위험': 'risk',
+        '위기': 'crisis',
+        '중단': 'disruption',
+        '지연': 'delay',
+        '부족': 'shortage',
+        '과잉': 'surplus',
+        '가격': 'price',
+        '비용': 'cost',
+        '시장': 'market',
+        '경제': 'economy',
+        '산업': 'industry',
+        '회사': 'company',
+        '기업': 'corporation',
+        '정부': 'government',
+        '정책': 'policy',
+        '규제': 'regulation'
+    }
+    
+    # 텍스트를 영어로 번역
+    translated_words = []
+    words = korean_text.split()
+    
+    for word in words:
+        # 정확한 매칭 시도
+        if word in korean_to_english:
+            translated_words.append(korean_to_english[word])
+        else:
+            # 부분 매칭 시도
+            translated = False
+            for korean, english in korean_to_english.items():
+                if korean in word:
+                    translated_words.append(english)
+                    translated = True
+                    break
+            
+            # 번역되지 않은 경우 원문 유지 (영어일 수도 있음)
+            if not translated:
+                translated_words.append(word)
+    
+    return ' '.join(translated_words)
+
 def translate_title_to_korean(title):
     """간단한 제목 번역 함수 (실제로는 더 정교한 번역 API 사용 권장)"""
     # 기본적인 번역 매핑
@@ -1390,8 +1510,14 @@ def translate_title_to_korean(title):
     return translated_title
 
 def get_real_articles_with_direct_links(query, num_results=20):
-    """실제 기사 URL을 직접 생성하는 시스템 - 검증된 접근법"""
+    """최적화된 실제 기사 URL 생성 시스템 - 고속 처리"""
+    import concurrent.futures
+    import threading
+    
     articles = []
+    
+    # 한국어를 영어로 미리 번역 (한 번만 실행)
+    english_query = translate_korean_to_english(query)
     
     # 실제 검증된 뉴스 사이트 구조를 기반으로 한 기사 생성
     news_templates = {
@@ -1482,36 +1608,52 @@ def get_real_articles_with_direct_links(query, num_results=20):
         }
     }
     
-    # 쿼리 관련 실제 기사 생성
+    def create_article(source_name, source_data, title_template, index):
+        """개별 기사 생성 함수 (병렬 처리용)"""
+        # 실제 검색 가능한 URL 생성 (영어로)
+        search_query = f"{english_query} supply chain"
+        search_url = source_data["search_url"] + search_query.replace(" ", "+")
+        
+        # 기본 섹션 URL도 제공 (백업)
+        section_url = source_data["base_urls"][index % len(source_data["base_urls"])]
+        
+        return {
+            'title': f"{title_template} - {query} Focus",
+            'original_title': title_template,
+            'url': search_url,
+            'source': source_name,
+            'published_time': (datetime.now() - timedelta(hours=random.randint(1, 48))).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'description': f"Comprehensive analysis of {query} related supply chain developments and market impacts from {source_name}.",
+            'views': random.randint(800, 5000),
+            'article_type': 'search_results',
+            'backup_url': section_url
+        }
+    
+    # 병렬 처리로 빠른 기사 생성
+    tasks = []
     for source_name, source_data in news_templates.items():
         for i, title_template in enumerate(source_data["titles"]):
-            if len(articles) >= num_results:
+            if len(tasks) >= num_results:
                 break
-                
-            # 쿼리와 관련된 실제적인 제목 생성
-            if query.lower() in title_template.lower() or any(keyword in title_template.lower() for keyword in ['supply', 'chain', 'logistics', 'manufacturing']):
-                # 실제 검색 가능한 URL 생성
-                search_query = f"{query} supply chain"
-                search_url = source_data["search_url"] + search_query.replace(" ", "+")
-                
-                # 기본 섹션 URL도 제공 (백업)
-                section_url = source_data["base_urls"][i % len(source_data["base_urls"])]
-                
-                # 더 나은 사용자 경험을 위해 검색 URL을 우선 사용
-                final_url = search_url
-                
-                article = {
-                    'title': f"{title_template} - {query} Focus",
-                    'original_title': title_template,
-                    'url': final_url,
-                    'source': source_name,
-                    'published_time': (datetime.now() - timedelta(hours=random.randint(1, 48))).strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    'description': f"Comprehensive analysis of {query} related supply chain developments and market impacts from {source_name}.",
-                    'views': random.randint(800, 5000),
-                    'article_type': 'search_results',  # 검색 결과 타입
-                    'backup_url': section_url  # 백업 섹션 URL
-                }
+            # SCM 관련 키워드가 있는 제목만 선별
+            if any(keyword in title_template.lower() for keyword in ['supply', 'chain', 'logistics', 'manufacturing', 'trade', 'business']):
+                tasks.append((source_name, source_data, title_template, i))
+    
+    # 병렬 처리로 기사 생성 (ThreadPoolExecutor 사용)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+        future_to_article = {
+            executor.submit(create_article, source_name, source_data, title_template, index): 
+            (source_name, title_template) for source_name, source_data, title_template, index in tasks
+        }
+        
+        for future in concurrent.futures.as_completed(future_to_article):
+            try:
+                article = future.result()
                 articles.append(article)
+                if len(articles) >= num_results:
+                    break
+            except Exception as e:
+                continue
     
     return articles[:num_results]
 
@@ -1667,8 +1809,13 @@ def crawl_google_news_backup(query, num_results=10):
         return generate_enhanced_backup_news(query, num_results)
 
 def generate_enhanced_backup_news(query, num_results):
-    """향상된 백업 뉴스 시스템 - 실제 검색 가능한 URL 생성"""
+    """최적화된 백업 뉴스 시스템 - 고속 병렬 처리"""
+    import concurrent.futures
+    
     articles = []
+    
+    # 한국어를 영어로 미리 번역
+    english_query = translate_korean_to_english(query)
     
     # 주요 뉴스 사이트의 실제 검색 URL 구조
     search_templates = {
@@ -1728,29 +1875,45 @@ def generate_enhanced_backup_news(query, num_results):
         }
     }
     
+    def create_backup_article(source_name, source_data, title_template):
+        """백업 기사 생성 함수 (병렬 처리용)"""
+        search_query = f"{english_query} supply chain"
+        search_url = source_data["search_url"] + search_query.replace(" ", "+")
+        
+        return {
+            'title': title_template,
+            'original_title': title_template,
+            'url': search_url,
+            'source': source_name,
+            'published_time': (datetime.now() - timedelta(hours=random.randint(1, 72))).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'description': f"Comprehensive {query} analysis and supply chain insights from {source_name}.",
+            'views': random.randint(800, 4000),
+            'article_type': 'search_results'
+        }
+    
+    # 병렬 처리를 위한 작업 목록 생성
+    tasks = []
     for source_name, source_data in search_templates.items():
-        if len(articles) >= num_results:
-            break
-            
         for title_template in source_data["titles"]:
-            if len(articles) >= num_results:
+            if len(tasks) >= num_results:
                 break
-                
-            # 실제 검색 URL 생성 (사용자가 클릭하면 관련 기사들이 나올 것)
-            search_query = f"{query} supply chain"
-            search_url = source_data["search_url"] + search_query.replace(" ", "+")
-            
-            article = {
-                'title': title_template,
-                'original_title': title_template,
-                'url': search_url,  # 실제 검색 결과로 이동
-                'source': source_name,
-                'published_time': (datetime.now() - timedelta(hours=random.randint(1, 72))).strftime('%Y-%m-%dT%H:%M:%SZ'),
-                'description': f"Comprehensive {query} analysis and supply chain insights from {source_name}.",
-                'views': random.randint(800, 4000),
-                'article_type': 'search_results'
-            }
-            articles.append(article)
+            tasks.append((source_name, source_data, title_template))
+    
+    # 병렬 처리로 백업 기사 생성
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_article = {
+            executor.submit(create_backup_article, source_name, source_data, title_template): 
+            (source_name, title_template) for source_name, source_data, title_template in tasks
+        }
+        
+        for future in concurrent.futures.as_completed(future_to_article):
+            try:
+                article = future.result()
+                articles.append(article)
+                if len(articles) >= num_results:
+                    break
+            except Exception as e:
+                continue
     
     return articles[:num_results]
 
@@ -2191,7 +2354,12 @@ def main():
                             # 검색 결과 타입별 분류
                             search_results = [a for a in articles if a.get('article_type') == 'search_results']
                             
+                            # 번역된 검색어 표시
+                            english_query = translate_korean_to_english(query)
+                            
                             success_msg = f"🎯 '{query}' 관련 {len(articles)}개의 검증된 뉴스 링크를 생성했습니다!"
+                            if english_query != query:
+                                success_msg += f"\n🔤 영어 번역: '{english_query}' (해외 뉴스사 검색용)"
                             if search_results:
                                 success_msg += f"\n📰 각 링크는 해당 뉴스사의 실제 검색 결과로 연결됩니다."
                             

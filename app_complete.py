@@ -44,12 +44,12 @@ try:
         API_KEY = os.getenv("GEMINI_API_KEY")
 
     if API_KEY:
-        client = genai.Client(api_key=API_KEY)
-        test_response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents="Hello"
-        )
-        API_KEY_WORKING = True
+    client = genai.Client(api_key=API_KEY)
+    test_response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents="Hello"
+    )
+    API_KEY_WORKING = True
     else:
         API_KEY_WORKING = False
         st.warning("⚠️ GEMINI_API_KEY가 설정되지 않았습니다. AI 기능이 비활성화됩니다.")
@@ -772,7 +772,7 @@ def get_naver_weather():
         }
         
         response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
+            if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
             
             # 온도 정보 추출
@@ -803,14 +803,14 @@ def get_naver_weather():
             
             # 기압 (시뮬레이션)
             pressure = random.randint(1010, 1025)
-            
-            return {
-                "condition": condition,
+                
+                return {
+                    "condition": condition,
                 "temperature": temperature,
-                "humidity": humidity,
-                "feels_like": feels_like,
-                "wind_speed": wind_speed,
-                "pressure": pressure,
+                    "humidity": humidity,
+                    "feels_like": feels_like,
+                    "wind_speed": wind_speed,
+                    "pressure": pressure,
                 "source": "네이버 날씨"
             }
             
@@ -2550,8 +2550,8 @@ def crawl_extended_news(query, num_results=30):
 
 def generate_realistic_news_articles(query, num_results):
     """현실적인 뉴스 기사 생성 (실제 기사 URL 패턴 사용)"""
-    articles = []
-    
+        articles = []
+        
     # 실제 뉴스 기사 URL 패턴 (실제 존재하는 기사들)
     real_article_urls = [
         {"name": "Reuters", "url": "https://www.reuters.com/business/autos-transportation/global-supply-chain-crisis-2024/"},
@@ -2593,8 +2593,8 @@ def generate_realistic_news_articles(query, num_results):
         minutes_ago = random.randint(0, 59)
         
         pub_time = datetime.now() - timedelta(days=days_ago, hours=hours_ago, minutes=minutes_ago)
-        
-        article = {
+            
+            article = {
             'title': template,
             'original_title': template,
             'url': article_data['url'],  # 실제 기사 URL 패턴 사용
@@ -2604,9 +2604,9 @@ def generate_realistic_news_articles(query, num_results):
             'views': random.randint(1500, 8000),
             'article_type': 'real_article',
             'verified': True  # 검증된 기사 표시
-        }
-        articles.append(article)
-    
+            }
+            articles.append(article)
+        
     return articles
 
 def generate_real_news_articles(query, num_results=30):
@@ -2731,57 +2731,6 @@ def crawl_google_news_backup(query, num_results=10):
         backup_articles.append(article)
     
     return backup_articles
-        
-        # 실제 뉴스가 부족한 경우에만 백업 뉴스 추가 (SCM Risk 관련)
-        if len(articles) < num_results:
-            # 실제 뉴스 사이트 URL 매핑
-            news_site_urls = {
-                "Reuters": "https://www.reuters.com",
-                "Bloomberg": "https://www.bloomberg.com",
-                "WSJ": "https://www.wsj.com",
-                "CNBC": "https://www.cnbc.com",
-                "Financial Times": "https://www.ft.com",
-                "BBC": "https://www.bbc.com",
-                "CNN": "https://www.cnn.com",
-                "AP": "https://apnews.com",
-                "Forbes": "https://www.forbes.com",
-                "TechCrunch": "https://techcrunch.com"
-            }
-            
-            # SCM Risk 관련 동적 백업 뉴스 생성
-            backup_titles = [
-                f"{query} Supply Chain Risk Analysis",
-                f"{query} Logistics and Supply Chain Updates",
-                f"Supply Chain Risk Management: {query}",
-                f"{query} Global Supply Chain Impact",
-                f"{query} Supply Chain Disruption News",
-                f"{query} Logistics Industry Risk Assessment",
-                f"{query} Supply Chain Resilience Strategies",
-                f"{query} Procurement and Supply Chain News"
-            ]
-            
-            backup_sources = ["Reuters", "Bloomberg", "WSJ", "CNBC", "Financial Times", "BBC", "CNN", "AP"]
-            
-            for i in range(min(num_results - len(articles), len(backup_titles))):
-                source = random.choice(backup_sources)
-                base_url = news_site_urls.get(source, "https://www.reuters.com")
-                
-                backup_article = {
-                    "title": backup_titles[i],
-                    "source": source,
-                    "description": f"Supply chain risk analysis and logistics updates related to {query} from leading news sources.",
-                    "url": base_url,
-                    "published_time": (datetime.now() - timedelta(days=random.randint(0, 7), hours=random.randint(0, 23))).strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "views": random.randint(500, 3000)
-                }
-                articles.append(backup_article)
-        
-        return articles[:num_results]
-        
-    except Exception as e:
-        st.error(f"뉴스 크롤링 오류: {e}")
-        # 오류 발생 시 향상된 백업 뉴스 반환
-        return generate_enhanced_backup_news(query, num_results)
 
 def generate_enhanced_backup_news(query, num_results):
     """최적화된 백업 뉴스 시스템 - 고속 병렬 처리"""
@@ -3468,7 +3417,7 @@ def main():
                     <div>
                         <div style="color: #64748b; font-size: 0.75rem;">Seoul</div>
                         <div style="color: #0f172a; font-weight: 600; font-size: 1rem;">{time_str}</div>
-                    </div>
+            </div>
                 </div>
                 <div style="text-align: right;">
                     <div style="color: #64748b; font-size: 0.75rem;">{date_str}</div>
@@ -3587,12 +3536,12 @@ def main():
                                 
                                 if validated_articles:
                                     st.session_state.articles = validated_articles
-                                    st.session_state.query = query
-                                    st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            st.session_state.query = query
+                            st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                     st.success(f"✅ '{query}' 관련 검증된 {len(validated_articles)}개 기사를 찾았습니다! (404 오류 기사 제외)")
-                                else:
-                                    st.warning(f"'{query}' 키워드로 접근 가능한 뉴스를 찾을 수 없습니다. (모든 기사가 404 오류)")
                             else:
+                                    st.warning(f"'{query}' 키워드로 접근 가능한 뉴스를 찾을 수 없습니다. (모든 기사가 404 오류)")
+                        else:
                                 st.warning(f"'{query}' 키워드로 뉴스를 찾을 수 없습니다.")
                         else:
                             st.warning("검색 결과가 없습니다.")
@@ -3610,14 +3559,14 @@ def main():
         if 'auto_articles' in st.session_state and st.session_state.auto_articles:
             # 자동 감지 통계
             auto_load_time = st.session_state.get('auto_load_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            st.markdown(f"""
+                    st.markdown(f"""
             <div class="search-stats">
                 <h4 style="color: #1e293b; margin-bottom: 1rem;">🤖 AI 자동 감지</h4>
                 <p style="color: #475569; margin-bottom: 1rem;">🌍 전 세계 SCM RISK 뉴스 | 📰 총 {len(st.session_state.auto_articles)}개 기사 | 📅 최근 한달 기간</p>
                 <p style="color: #475569; margin-bottom: 1rem;">🕒 업데이트: {auto_load_time} | 🏷️ 자동 해시태그 생성</p>
                 <div class="risk-indicator">⚡ 22개 키워드로 확장 모니터링 중 | ✅ 404 오류 기사 자동 제외</div>
-            </div>
-            """, unsafe_allow_html=True)
+                    </div>
+                    """, unsafe_allow_html=True)
             
             # 뉴스 필터링 옵션
             col_filter1, col_filter2 = st.columns([1, 3])
@@ -3648,7 +3597,7 @@ def main():
                 # 해시태그 생성 (데모 기사의 경우 미리 정의된 해시태그 사용)
                 if 'hashtags' in article:
                     hashtags = article['hashtags']
-                else:
+            else:
                     hashtags = generate_news_hashtags(article['title'], article['description'])
                 hashtags_html = ' '.join([f'<span style="background: #e0f2fe; color: #0277bd; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px;">{tag}</span>' for tag in hashtags])
                 
@@ -3952,7 +3901,7 @@ def main():
                         <span style="color: {change_color}; font-size: 0.85rem; font-weight: 600;">
                             {change_icon} {exchange_data["change_percent"]:+.2f}%
                         </span>
-                    </div>
+                        </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -3967,7 +3916,7 @@ def main():
             # 금속별 아이콘
             metal_icons = {
                 "금": "🥇",
-                "은": "🥈", 
+                "은": "🥈",
                 "구리": "🥉",
                 "알루미늄": "⚙️"
             }
@@ -3988,10 +3937,10 @@ def main():
                     <div style="display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem;">
                         <span style="font-size: 0.85rem;">{metal_icons.get(metal_name, "🏭")}</span>
                         <span style="color: #64748b; font-size: 0.7rem; font-weight: 500;">{metal_name}</span>
-                    </div>
+                        </div>
                     <div style="color: #0f172a; font-size: 0.9rem; font-weight: 600;">
                         ${data["price"]:,.0f}
-                    </div>
+                            </div>
                     <div style="color: {change_color}; font-size: 0.65rem; margin-top: 0.2rem;">
                         {change_icon} {data["change_percent"]:+.1f}%
                     </div>

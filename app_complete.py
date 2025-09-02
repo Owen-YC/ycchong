@@ -3018,53 +3018,7 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # 자동 뉴스 새로고침 버튼
-        col_refresh, col_search = st.columns([1, 2])
-        
-        with col_refresh:
-            if st.button("🔄 뉴스 새로고침", type="primary"):
-                with st.spinner("🔍 최신 SCM RISK 뉴스를 업데이트하고 있습니다..."):
-                    st.session_state.auto_articles = auto_detect_scm_risks()
-                    st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                st.rerun()
-        
-        with col_search:
-            # 확장 검색 설정
-            with st.expander("🔍 추가 키워드 검색"):
-                with st.form("search_form"):
-                    query = st.text_input("특정 키워드 검색", placeholder="예: 공급망, 물류, 운송, AI, 반도체...", value="")
-                    num_results = st.slider("검색 결과 개수", 10, 100, 50)
-                    submit_button = st.form_submit_button("🔍 검색", type="secondary")
-            
-            if submit_button:
-                if not query.strip():
-                    st.error("검색어를 입력해주세요!")
-                else:
-                    with st.spinner("🔍 실제 접근 가능한 뉴스 기사를 검증하고 수집하는 중..."):
-                        articles = crawl_google_news(query, num_results)
-                        
-                        if articles:
-                            # 실제 기사만 필터링 (검색 결과 완전 제거)
-                            real_articles = [a for a in articles if a.get('article_type') == 'real_article']
-                            
-                            if real_articles:
-                                # 번역된 검색어 표시
-                                english_query = translate_korean_to_english(query)
-                                
-                                success_msg = f"✅ '{query}' 관련 검증된 뉴스 기사 {len(real_articles)}개를 찾았습니다!"
-                                success_msg += f"\n🎯 모든 기사가 실제 접근 가능하며 404 오류 없이 연결됩니다."
-                                if english_query != query:
-                                    success_msg += f"\n🔤 번역: '{english_query}' (글로벌 뉴스 검색용)"
-                                
-                                st.success(success_msg)
-                                st.session_state.articles = real_articles  # 실제 기사만 저장
-                                st.session_state.query = query
-                                st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            else:
-                                st.warning(f"'{query}' 키워드로 실제 뉴스 기사를 찾을 수 없습니다. 다른 키워드로 시도해보세요.")
-                                st.session_state.articles = []
-                        else:
-                            st.warning(f"'{query}' 키워드로 검색 결과가 없습니다. 다른 키워드로 시도해보세요.")
+
         
         # AI 챗봇 섹션 (사이드바에 추가)
         st.header("🤖 AI 챗봇")
@@ -3088,6 +3042,48 @@ def main():
                     """, unsafe_allow_html=True)
             else:
                 st.warning("질문을 입력해주세요!")
+    
+    # 뉴스 컨트롤 패널 (메인 상단)
+    st.markdown("---")
+    col_control1, col_control2, col_control3 = st.columns([1, 1, 2])
+    
+    with col_control1:
+        if st.button("🔄 뉴스 새로고침", type="primary", use_container_width=True):
+            with st.spinner("🔍 최신 SCM RISK 뉴스를 업데이트하고 있습니다..."):
+                st.session_state.auto_articles = auto_detect_scm_risks()
+                st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            st.rerun()
+    
+    with col_control2:
+        show_search = st.button("🔍 키워드 검색", type="secondary", use_container_width=True)
+    
+    with col_control3:
+        if show_search:
+            with st.form("main_search_form", clear_on_submit=False):
+                col_query, col_num, col_submit = st.columns([2, 1, 1])
+                with col_query:
+                    query = st.text_input("검색어", placeholder="예: 반도체, 공급망, 물류...", label_visibility="collapsed")
+                with col_num:
+                    num_results = st.selectbox("개수", [20, 50, 100], index=1, label_visibility="collapsed")
+                with col_submit:
+                    submit_button = st.form_submit_button("검색", type="primary", use_container_width=True)
+                
+                if submit_button and query.strip():
+                    with st.spinner("🔍 뉴스 검색 중..."):
+                        articles = crawl_google_news(query, num_results)
+                        if articles:
+                            real_articles = [a for a in articles if a.get('article_type') == 'real_article']
+                            if real_articles:
+                                st.session_state.articles = real_articles
+                                st.session_state.query = query
+                                st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                st.success(f"✅ '{query}' 관련 {len(real_articles)}개 기사를 찾았습니다!")
+                            else:
+                                st.warning(f"'{query}' 키워드로 뉴스를 찾을 수 없습니다.")
+                        else:
+                            st.warning("검색 결과가 없습니다.")
+    
+    st.markdown("---")
     
     # 메인 컨텐츠 - 한 화면에 모든 내용 표시
     col1, col2 = st.columns([2, 1])
@@ -3354,34 +3350,24 @@ def main():
         except Exception as e:
             st.error(f"지도 로딩 오류: {e}")
         
-        # 환율 정보 섹션 (더 작은 크기)
-        st.markdown("### 💱 원/달러 환율")
+        # 환율 정보 섹션 (간결하게)
+        st.markdown("#### 💱 USD/KRW")
         
         try:
             exchange_data = get_exchange_rate()
-            
-            # 환율 변화 아이콘
             change_icon = "📈" if exchange_data["status"] == "up" else "📉" if exchange_data["status"] == "down" else "➡️"
             change_sign = "+" if exchange_data["status"] == "up" else "" if exchange_data["status"] == "down" else ""
             
             st.markdown(f"""
-            <div class="exchange-rate-card">
-                <h4 style="color: #1e293b; margin-bottom: 0.8rem; font-size: 1.1rem; text-align: center; font-weight: 700;">🇰🇷 USD/KRW</h4>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+            <div style="background: rgba(255, 255, 255, 0.8); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #3b82f6;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="font-size: 1.1rem; font-weight: 700; color: #1e40af;">
                         ₩{exchange_data["rate"]:,}
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 0.9rem; font-weight: 600; color: #64748b;">
-                            {change_icon} {change_sign}{exchange_data["change"]:+.2f}
-                        </div>
-                        <div style="font-size: 0.8rem; color: #64748b;">
-                            ({change_sign}{exchange_data["change_percent"]:+.2f}%)
-                        </div>
+                    <div style="text-align: right; font-size: 0.85rem;">
+                        <div style="color: #64748b;">{change_icon} {change_sign}{exchange_data["change"]:+.2f}</div>
+                        <div style="color: #64748b;">({change_sign}{exchange_data["change_percent"]:+.2f}%)</div>
                     </div>
-                </div>
-                <div style="font-size: 0.8rem; color: #64748b; text-align: center;">
-                    🕒 {datetime.now().strftime('%H:%M:%S')}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -3389,8 +3375,8 @@ def main():
         except Exception as e:
             st.error(f"환율 정보 로딩 오류: {e}")
         
-        # 금속 가격 정보 섹션 (더 작은 크기)
-        st.markdown("### 🏭 LME 주요 금속")
+        # 금속 가격 정보 섹션 (간결하게)
+        st.markdown("#### 🏭 주요 금속")
         
         try:
             metal_data = get_metal_prices()
@@ -3407,23 +3393,26 @@ def main():
                 "주석": "🔗"
             }
             
-            for metal_name, data in metal_data.items():
+            # 주요 4개 금속만 표시
+            major_metals = list(metal_data.items())[:4]
+            
+            for metal_name, data in major_metals:
                 change_icon = "📈" if data["status"] == "up" else "📉" if data["status"] == "down" else "➡️"
                 change_sign = "+" if data["status"] == "up" else "" if data["status"] == "down" else ""
                 
                 st.markdown(f"""
-                <div class="metal-price-card">
+                <div style="background: rgba(255, 255, 255, 0.8); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.5rem; border-left: 3px solid #f59e0b;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center;">
-                            <span class="metal-icon" style="font-size: 1rem; margin-right: 0.5rem;">{metal_icons.get(metal_name, "🏭")}</span>
-                            <span style="font-weight: 700; color: #1e293b; font-size: 0.9rem;">{metal_name}</span>
+                            <span style="font-size: 0.9rem; margin-right: 0.5rem;">{metal_icons.get(metal_name, "🏭")}</span>
+                            <span style="font-weight: 600; color: #1e293b; font-size: 0.85rem;">{metal_name}</span>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 0.9rem; font-weight: 700; color: #1e40af;">
-                                ${data["price"]:,}
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #1e40af;">
+                                ${data["price"]:,.0f}
                             </div>
-                            <div class="price-change {data['status']}" style="font-size: 0.8rem; color: #64748b;">
-                                {change_icon} {change_sign}{data["change"]:+.2f} ({change_sign}{data["change_percent"]:+.2f}%)
+                            <div style="font-size: 0.75rem; color: #64748b;">
+                                {change_icon} {change_sign}{data["change_percent"]:+.1f}%
                             </div>
                         </div>
                     </div>

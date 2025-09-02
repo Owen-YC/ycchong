@@ -2935,8 +2935,8 @@ def main():
                                 
                                 st.success(success_msg)
                                 st.session_state.articles = real_articles  # 실제 기사만 저장
-                            st.session_state.query = query
-                            st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                st.session_state.query = query
+                                st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             else:
                                 st.warning(f"'{query}' 키워드로 실제 뉴스 기사를 찾을 수 없습니다. 다른 키워드로 시도해보세요.")
                                 st.session_state.articles = []

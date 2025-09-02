@@ -733,7 +733,7 @@ def get_naver_weather():
         }
         
         response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
+        if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
             
             # 온도 정보 추출
@@ -764,14 +764,14 @@ def get_naver_weather():
             
             # 기압 (시뮬레이션)
             pressure = random.randint(1010, 1025)
-                
-                return {
-                    "condition": condition,
+            
+            return {
+                "condition": condition,
                 "temperature": temperature,
-                    "humidity": humidity,
-                    "feels_like": feels_like,
-                    "wind_speed": wind_speed,
-                    "pressure": pressure,
+                "humidity": humidity,
+                "feels_like": feels_like,
+                "wind_speed": wind_speed,
+                "pressure": pressure,
                 "source": "네이버 날씨"
             }
             

@@ -2244,8 +2244,12 @@ def verify_article_accessibility(url):
             'Cache-Control': 'no-cache'
         }
         
-        # HEAD 요청으로 빠르게 상태 확인 (페이지 내용은 다운로드하지 않음)
+        # HEAD 요청으로 빠르게 상태 확인
         response = requests.head(url, headers=headers, timeout=5, allow_redirects=True)
+        
+        # 404, 403, 500 등 오류 상태 코드 확인
+        if response.status_code in [404, 403, 500, 502, 503, 504]:
+            return False
         
         # 성공적인 상태 코드 확인
         if response.status_code == 200:
@@ -2253,9 +2257,24 @@ def verify_article_accessibility(url):
         elif response.status_code == 405:  # HEAD 요청을 지원하지 않는 경우
             # GET 요청으로 재시도 (응답 크기 제한)
             response = requests.get(url, headers=headers, timeout=5, stream=True)
-            # 처음 1KB만 읽어서 확인
-            content_chunk = next(response.iter_content(chunk_size=1024), b'')
-            if response.status_code == 200 and len(content_chunk) > 100:
+            
+            # 404 오류 페이지 키워드 확인
+            content_chunk = next(response.iter_content(chunk_size=2048), b'')
+            content_text = content_chunk.decode('utf-8', errors='ignore').lower()
+            
+            # 404 관련 키워드 체크
+            error_keywords = [
+                '404', 'not found', 'page not found', 'not available', 
+                'does not exist', 'no page', "can't find", 'error 404',
+                'page cannot be found', 'requested page', 'page missing'
+            ]
+            
+            for keyword in error_keywords:
+                if keyword in content_text:
+                    return False
+            
+            # 정상 응답이고 충분한 콘텐츠가 있으면 유효
+            if response.status_code == 200 and len(content_chunk) > 500:
                 return True
         
         return False
@@ -2263,6 +2282,44 @@ def verify_article_accessibility(url):
     except Exception as e:
         # 네트워크 오류, 타임아웃 등의 경우 접근 불가능으로 판단
         return False
+
+def enhanced_article_filter(articles):
+    """향상된 기사 필터링 - 404 오류 및 무효한 기사 제거"""
+    if not articles:
+        return []
+    
+    valid_articles = []
+    
+    # 병렬로 URL 검증
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # URL 검증 작업 제출
+        future_to_article = {
+            executor.submit(verify_article_accessibility, article['url']): article 
+            for article in articles
+        }
+        
+        # 결과 수집
+        for future in concurrent.futures.as_completed(future_to_article, timeout=30):
+            try:
+                article = future_to_article[future]
+                is_valid = future.result()
+                
+                if is_valid:
+                    # 추가 검증: 제목에 오류 키워드가 없는지 확인
+                    title_lower = article['title'].lower()
+                    error_in_title = any(keyword in title_lower for keyword in [
+                        '404', 'not found', 'error', 'page not available',
+                        'access denied', 'forbidden'
+                    ])
+                    
+                    if not error_in_title:
+                        valid_articles.append(article)
+                        
+            except Exception as e:
+                # 검증 실패한 기사는 제외
+                continue
+    
+    return valid_articles
 
 def generate_demo_real_articles(query, num_results=10):
     """데모용 실제 기사 데이터 생성 (실제 뉴스 사이트 URL 패턴 사용)"""
@@ -2405,7 +2462,10 @@ def auto_detect_scm_risks():
     # 최신순으로 정렬
     recent_articles.sort(key=lambda x: x['published_time'], reverse=True)
     
-    return recent_articles[:150]  # 최대 150개까지 확장
+    # 향상된 필터링 적용 - 404 오류 기사 제거
+    validated_articles = enhanced_article_filter(recent_articles[:200])  # 더 많이 수집해서 필터링
+    
+    return validated_articles[:100]  # 검증된 기사 중 100개만 반환
 
 def crawl_extended_news(query, num_results=30):
     """확장된 뉴스 크롤링 - 더 많은 소스에서 수집"""
@@ -3226,9 +3286,10 @@ def main():
     
     with col_control1:
         if st.button("🔄 뉴스 새로고침", type="primary", use_container_width=True):
-            with st.spinner("🔍 최신 SCM RISK 뉴스를 업데이트하고 있습니다..."):
+            with st.spinner("🔍 최신 SCM RISK 뉴스를 수집하고 검증하고 있습니다..."):
                 st.session_state.auto_articles = auto_detect_scm_risks()
                 st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            st.success(f"✅ 검증된 {len(st.session_state.auto_articles)}개 기사로 업데이트 완료! (404 오류 기사 제외)")
             st.rerun()
     
     with col_control2:
@@ -3246,15 +3307,24 @@ def main():
                     submit_button = st.form_submit_button("검색", type="primary", use_container_width=True)
                 
                 if submit_button and query.strip():
-                    with st.spinner("🔍 뉴스 검색 중..."):
+                    with st.spinner("🔍 뉴스 검색 및 검증 중..."):
                         articles = crawl_google_news(query, num_results)
                         if articles:
+                            # 실제 기사만 필터링
                             real_articles = [a for a in articles if a.get('article_type') == 'real_article']
+                            
                             if real_articles:
-                                st.session_state.articles = real_articles
-                                st.session_state.query = query
-                                st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                st.success(f"✅ '{query}' 관련 {len(real_articles)}개 기사를 찾았습니다!")
+                                # 404 오류 기사 제거를 위한 추가 검증
+                                with st.spinner("📋 기사 접근성 검증 중..."):
+                                    validated_articles = enhanced_article_filter(real_articles)
+                                
+                                if validated_articles:
+                                    st.session_state.articles = validated_articles
+                                    st.session_state.query = query
+                                    st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    st.success(f"✅ '{query}' 관련 검증된 {len(validated_articles)}개 기사를 찾았습니다! (404 오류 기사 제외)")
+                                else:
+                                    st.warning(f"'{query}' 키워드로 접근 가능한 뉴스를 찾을 수 없습니다. (모든 기사가 404 오류)")
                             else:
                                 st.warning(f"'{query}' 키워드로 뉴스를 찾을 수 없습니다.")
                         else:
@@ -3278,7 +3348,7 @@ def main():
                 <h4 style="color: #1e293b; margin-bottom: 1rem;">🤖 AI 자동 감지</h4>
                 <p style="color: #475569; margin-bottom: 1rem;">🌍 전 세계 SCM RISK 뉴스 | 📰 총 {len(st.session_state.auto_articles)}개 기사 | 📅 최근 한달 기간</p>
                 <p style="color: #475569; margin-bottom: 1rem;">🕒 업데이트: {auto_load_time} | 🏷️ 자동 해시태그 생성</p>
-                <div class="risk-indicator">⚡ 22개 키워드로 확장 모니터링 중</div>
+                <div class="risk-indicator">⚡ 22개 키워드로 확장 모니터링 중 | ✅ 404 오류 기사 자동 제외</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -3340,7 +3410,7 @@ def main():
                             </span>
                         </div>
                         <div style="font-size: 0.75rem; color: #059669; padding: 8px; background: rgba(5, 150, 105, 0.05); border-radius: 6px; border-left: 3px solid #059669;">
-                            🤖 <strong>AI 자동감지:</strong> 글로벌 SCM RISK 키워드로 실시간 감지된 기사입니다.
+                            🤖 <strong>AI 자동감지:</strong> 글로벌 SCM RISK 키워드로 감지 | ✅ <strong>접근성 검증완료</strong> (404 오류 없음)
                         </div>
                     </div>
                 </div>
@@ -3426,7 +3496,7 @@ def main():
                             </span>
                         </div>
                         <div style="font-size: 0.75rem; color: #059669; padding: 8px; background: rgba(5, 150, 105, 0.05); border-radius: 6px; border-left: 3px solid #059669;">
-                            ✅ <strong>검증된 기사:</strong> 접근 가능한 실제 {article['source']} 기사입니다. (404 오류 없음)
+                            ✅ <strong>검증된 기사:</strong> 접근 가능한 실제 {article['source']} 기사 | 🔍 <strong>404 오류 검사 완료</strong>
                         </div>
                     </div>
                 </div>

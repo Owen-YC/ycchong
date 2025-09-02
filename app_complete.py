@@ -44,12 +44,12 @@ try:
         API_KEY = os.getenv("GEMINI_API_KEY")
 
     if API_KEY:
-    client = genai.Client(api_key=API_KEY)
-    test_response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents="Hello"
-    )
-    API_KEY_WORKING = True
+        client = genai.Client(api_key=API_KEY)
+        test_response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Hello"
+        )
+        API_KEY_WORKING = True
     else:
         API_KEY_WORKING = False
         st.warning("⚠️ GEMINI_API_KEY가 설정되지 않았습니다. AI 기능이 비활성화됩니다.")

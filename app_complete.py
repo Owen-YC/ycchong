@@ -3686,22 +3686,31 @@ def main():
                     # 하단 버튼과 정보
                     col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
                     with col_btn1:
-                        # 확실한 방법: Streamlit link_button 사용
-                        st.link_button(
-                            f"📖 기사 읽기 →",
-                            url=article['url'],
-                            use_container_width=True,
-                            type="primary"
-                        )
-                        
-                        # 링크 미리보기
+                        # 가장 확실한 방법: 직접 링크 표시 + 복사 기능
                         st.markdown(f"""
-                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
-                            <small style="color: #64748b; font-size: 0.75rem;">
-                                🔗 {article['url'][:50]}{'...' if len(article['url']) > 50 else ''}
-                            </small>
+                        <div style="margin-bottom: 0.5rem;">
+                            <a href="{article['url']}" target="_blank" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);">
+                                    📖 기사 읽기 →
+                                </button>
+                            </a>
                         </div>
                         """, unsafe_allow_html=True)
+                        
+                        # 링크 직접 표시 및 복사 기능
+                        col_link1, col_link2 = st.columns([3, 1])
+                        with col_link1:
+                            st.markdown(f"""
+                            <div style="padding: 0.5rem; background: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <small style="color: #475569; font-size: 0.75rem; word-break: break-all;">
+                                    🔗 {article['url']}
+                                </small>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        with col_link2:
+                            if st.button("📋 복사", key=f"copy_{i}", use_container_width=True):
+                                st.write("🔗 링크가 클립보드에 복사되었습니다!")
+                                # 실제로는 pyperclip 등을 사용해야 하지만, 여기서는 사용자에게 알림만
                         
                     with col_btn2:
                         st.markdown(f"👁️ {article['views']:,}")

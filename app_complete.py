@@ -2434,31 +2434,26 @@ def crawl_google_news(query, num_results=100):
         return []
 
 def auto_detect_scm_risks(num_articles=60):
-    """자동 SCM RISK 뉴스 감지 (실제 기사 URL 우선, 60개 기본)"""
-    # 확장된 키워드 리스트
+    """자동 SCM RISK 뉴스 감지 (실제 기사 URL 우선, 60개 기본) - 성능 최적화"""
+    # 핵심 키워드만 사용하여 성능 향상
     core_keywords = [
         "supply chain disruption",
         "logistics crisis", 
-        "shipping delays",
         "semiconductor shortage",
-        "manufacturing shutdown",
-        "port congestion",
-        "trade war impact",
-        "energy crisis supply",
-        "raw material shortage"
+        "port congestion"
     ]
     
     all_articles = []
     
-    # 각 키워드별로 실제 뉴스 기사 생성 (직접 링크)
+    # 각 키워드별로 실제 뉴스 기사 생성 (직접 링크) - 성능 최적화
     for keyword in core_keywords:
         try:
-            # 실제 뉴스 기사 생성 우선
-            real_articles = generate_real_news_articles(keyword, 8)
+            # 실제 뉴스 기사 생성 우선 (개수 줄여서 성능 향상)
+            real_articles = generate_real_news_articles(keyword, 6)
             all_articles.extend(real_articles)
             
-            # 추가 뉴스 수집
-            extended_articles = crawl_extended_news(keyword, 8)
+            # 추가 뉴스 수집 (개수 줄여서 성능 향상)
+            extended_articles = crawl_extended_news(keyword, 6)
             all_articles.extend(extended_articles)
             
         except Exception as e:
@@ -2490,15 +2485,15 @@ def quick_article_filter(articles):
     
     valid_articles = []
     
-    # 워커 수와 타임아웃 줄여서 성능 향상
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    # 성능 최적화: 워커 수 줄이고 타임아웃 단축
+    with ThreadPoolExecutor(max_workers=3) as executor:
         future_to_article = {
             executor.submit(quick_url_check, article['url']): article 
-            for article in articles
+            for article in articles[:20]  # 최대 20개만 검증하여 성능 향상
         }
         
-        # 타임아웃 단축
-        for future in concurrent.futures.as_completed(future_to_article, timeout=15):
+        # 타임아웃 더 단축
+        for future in concurrent.futures.as_completed(future_to_article, timeout=10):
             try:
                 article = future_to_article[future]
                 is_valid = future.result()
@@ -3340,10 +3335,25 @@ def generate_quick_demo_articles():
     
     return quick_articles
 
-@st.cache_data(ttl=3600)  # 1시간 캐시
+@st.cache_data(ttl=7200)  # 2시간 캐시로 연장
 def cached_auto_detect_scm_risks():
     """캐시된 자동 SCM RISK 뉴스 감지 (60개)"""
     return auto_detect_scm_risks(60)
+
+@st.cache_data(ttl=3600)  # 1시간 캐시
+def cached_weather_data():
+    """날씨 데이터 캐시"""
+    return get_naver_weather()
+
+@st.cache_data(ttl=1800)  # 30분 캐시
+def cached_exchange_rate():
+    """환율 데이터 캐시"""
+    return get_exchange_rate()
+
+@st.cache_data(ttl=1800)  # 30분 캐시
+def cached_metal_prices():
+    """금속 가격 데이터 캐시"""
+    return get_metal_prices()
 
 def main():
     # 자동 SCM RISK 뉴스 로딩 (캐시 우선 사용)
@@ -3354,17 +3364,16 @@ def main():
             st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             st.session_state.demo_loaded = True
             
-            # 백그라운드에서 실제 뉴스 로딩
-            with st.spinner("🔍 실제 뉴스를 백그라운드에서 로딩 중..."):
-                try:
-                    real_articles = cached_auto_detect_scm_risks()
-                    if real_articles and len(real_articles) > 5:  # 충분한 기사가 있을 때만 교체
-                        st.session_state.auto_articles = real_articles
-                        st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        st.rerun()
-                except Exception as e:
-                    # 실제 뉴스 로딩 실패시 데모 데이터 유지
-                    pass
+            # 백그라운드에서 실제 뉴스 로딩 (성능 최적화)
+            try:
+                # 캐시된 데이터 우선 사용
+                real_articles = cached_auto_detect_scm_risks()
+                if real_articles and len(real_articles) > 5:  # 충분한 기사가 있을 때만 교체
+                    st.session_state.auto_articles = real_articles
+                    st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            except Exception as e:
+                # 실제 뉴스 로딩 실패시 데모 데이터 유지
+                pass
     
     # 2025년 트렌드 헤더 - 미니멀하고 세련된 디자인 + 동적 애니메이션
     st.markdown("""
@@ -3393,7 +3402,7 @@ def main():
         
         # 한국 시간 정보 - 컴팩트
         date_str, time_str = get_korean_time()
-        weather_info = get_naver_weather()
+        weather_info = cached_weather_data()
         
         # 시간대별 테마 및 날씨별 클래스 결정
         current_hour = datetime.now().hour
@@ -3406,29 +3415,29 @@ def main():
         
         weather_classes = f"realtime-info-card weather-info {time_class} {weather_class}".strip()
         
-        # 시간 & 날씨 카드 - 2025 스타일 with Motion
+        # 시간 & 날씨 카드 - 2025 스타일 with Motion (성능 최적화)
         weather_motion_styles = """
         <style>
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.02); }
         }
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-3px); }
         }
         .weather-card {
-            animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 0.5s ease-out;
         }
         .weather-icon {
-            animation: float 3s ease-in-out infinite;
+            animation: float 4s ease-in-out infinite;
         }
         .temp-display {
-            animation: pulse 2s ease-in-out infinite;
+            animation: pulse 3s ease-in-out infinite;
         }
         </style>
         """
@@ -3536,21 +3545,19 @@ def main():
     
     with col_control1:
         if st.button("🔄 뉴스 새로고침", type="primary", use_container_width=True):
-            # 캐시 클리어 후 새로운 데이터 로드
-            cached_auto_detect_scm_risks.clear()
-            
-            with st.spinner("🔍 최신 SCM RISK 뉴스를 수집하고 검증하고 있습니다..."):
+            # 성능 최적화: 캐시 클리어 없이 새로운 데이터 로드
+            with st.spinner("🔍 최신 SCM RISK 뉴스를 수집하고 있습니다..."):
                 try:
-                    new_articles = cached_auto_detect_scm_risks()
+                    # 캐시된 함수를 직접 호출하여 성능 향상
+                    new_articles = auto_detect_scm_risks(60)
                     if new_articles and len(new_articles) > 0:
                         st.session_state.auto_articles = new_articles
                         st.session_state.auto_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                        st.success(f"✅ 검증된 {len(new_articles)}개 기사로 업데이트 완료! (404 오류 기사 제외)")
+                        st.success(f"✅ 검증된 {len(new_articles)}개 기사로 업데이트 완료!")
                     else:
                         st.warning("새로운 기사를 찾을 수 없습니다. 기존 데이터를 유지합니다.")
                 except Exception as e:
                     st.error(f"뉴스 업데이트 중 오류가 발생했습니다: {e}")
-            st.rerun()
     
     with col_control2:
         show_search = st.button("🔍 키워드 검색", type="secondary", use_container_width=True)
@@ -3923,15 +3930,21 @@ def main():
         except Exception as e:
             st.error(f"지도 로딩 오류: {e}")
         
-        # 환율 & 금속 가격 통합 섹션 - 2025 Bento Box
+        # Market Data - SCM Risk AI와 동일한 스타일
         st.markdown("""
-        <div style="background: white; border-radius: 16px; padding: 1.2rem; margin-top: 1rem; border: 1px solid #e5e7eb;">
-            <h4 style="color: #0f172a; margin: 0 0 0.75rem 0; font-size: 0.95rem; font-weight: 600;">📊 Market Data</h4>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);">
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem; margin-right: 0.8rem;">📊</span>
+                <div>
+                    <h3 style="color: white; margin: 0; font-size: 1.3rem; font-weight: 700;">Market Data</h3>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0.3rem 0 0 0;">실시간 시장 데이터 모니터링</p>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
         try:
-            exchange_data = get_exchange_rate()
+            exchange_data = cached_exchange_rate()
             change_color = "#10b981" if exchange_data["status"] == "up" else "#ef4444" if exchange_data["status"] == "down" else "#64748b"
             change_icon = "↑" if exchange_data["status"] == "up" else "↓" if exchange_data["status"] == "down" else "→"
             
@@ -3958,7 +3971,7 @@ def main():
         
         # 금속 가격 - 2025 Grid Layout
         try:
-            metal_data = get_metal_prices()
+            metal_data = cached_metal_prices()
             
             # 금속별 아이콘
             metal_icons = {
@@ -4000,4 +4013,31 @@ def main():
             st.error(f"금속 가격 정보 로딩 오류: {e}")
 
 if __name__ == "__main__":
+    # 성능 최적화 설정
+    import streamlit as st
+    
+    # 페이지 설정 최적화
+    st.set_page_config(
+        page_title="SCM Risk Management AI",
+        page_icon="🤖",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # 성능 최적화를 위한 CSS
+    st.markdown("""
+    <style>
+    /* 성능 최적화를 위한 CSS */
+    .stMarkdown {
+        animation: none !important;
+    }
+    .stButton > button {
+        transition: all 0.2s ease;
+    }
+    .stTextInput > div > div > input {
+        transition: all 0.2s ease;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     main()

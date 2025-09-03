@@ -3471,49 +3471,56 @@ def main():
         
 
         
-        # AI SCM 어시스턴트 - 개선된 UI 레이아웃
+        # AI Assistant - 개선된 UI 레이아웃
         st.markdown("""
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);">
             <div style="display: flex; align-items: center; margin-bottom: 1rem;">
                 <span style="font-size: 1.5rem; margin-right: 0.8rem;">🤖</span>
                 <div>
-                    <h3 style="color: white; margin: 0; font-size: 1.3rem; font-weight: 700;">AI SCM 어시스턴트</h3>
-                    <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0.3rem 0 0 0;">SCM Risk 관리 전문 AI가 도와드립니다</p>
+                    <h3 style="color: white; margin: 0; font-size: 1.3rem; font-weight: 700;">AI Assistant</h3>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0.3rem 0 0 0;">궁금하신 점은 무엇이든 물어봐주세요!</p>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # 챗봇 인터페이스 - 더 나은 레이아웃
-        with st.container():
-            col1, col2 = st.columns([3, 1])
-            
-            with col1:
-                user_question = st.text_input("💬 질문을 입력하세요", placeholder="예: 반도체 공급망 리스크 대응 방법은?", key="chatbot_input", label_visibility="collapsed")
-            
-            with col2:
-                ask_button = st.button("🚀 답변", key="chatbot_button", use_container_width=True, type="primary")
-            
-            if ask_button and user_question:
-                with st.spinner("🤖 AI가 전문적으로 분석 중입니다..."):
-                    response = gemini_chatbot_response(user_question)
+        # 챗봇 인터페이스 - 완전히 개선된 레이아웃
+        st.markdown("---")
+        
+        # 질문 입력 섹션
+        st.markdown("**💬 질문을 입력하세요**")
+        user_question = st.text_area(
+            "질문",
+            placeholder="예: 반도체 공급망 리스크 대응 방법은?",
+            key="chatbot_input",
+            height=80,
+            label_visibility="collapsed"
+        )
+        
+        # 답변 버튼
+        col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+        with col_btn2:
+            ask_button = st.button("🚀 AI 답변 받기", key="chatbot_button", use_container_width=True, type="primary")
+        
+        # 답변 표시
+        if ask_button and user_question:
+            with st.spinner("🤖 AI가 전문적으로 분석 중입니다..."):
+                response = gemini_chatbot_response(user_question)
+                
+                # 답변 카드
+                st.markdown("""
+                <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-top: 1rem; border-left: 6px solid #667eea; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+                </div>
+                """, unsafe_allow_html=True)
+                
+                with st.container():
+                    st.markdown("**🎯 AI 전문 분석 결과**")
+                    st.markdown(f"**질문:** {user_question}")
+                    st.markdown("---")
+                    st.markdown(response)
                     
-                    st.markdown(f"""
-                    <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-top: 1rem; border-left: 6px solid #667eea; box-shadow: 0 4px 16px rgba(0,0,0,0.1); animation: fadeInUp 0.6s ease-out;">
-                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                            <span style="font-size: 1.3rem; margin-right: 0.8rem;">🎯</span>
-                            <div>
-                                <h4 style="font-weight: 700; color: #1e293b; margin: 0; font-size: 1.1rem;">AI 전문 분석 결과</h4>
-                                <p style="color: #64748b; font-size: 0.85rem; margin: 0.2rem 0 0 0;">질문: {user_question}</p>
-                            </div>
-                        </div>
-                        <div style="color: #475569; font-size: 1rem; line-height: 1.8; background: #f8fafc; padding: 1rem; border-radius: 12px;">
-                            {response}
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            elif ask_button:
-                st.warning("💭 질문을 입력해주세요!")
+        elif ask_button:
+            st.warning("💭 질문을 입력해주세요!")
     
     # 뉴스 컨트롤 패널 - 2025 Floating Action Bar
     st.markdown("""
@@ -3614,11 +3621,11 @@ def main():
                     key="sort_auto_articles"
                 )
             
-            # 자동 감지된 뉴스 표시 (30개)
+            # 자동 감지된 뉴스 표시 (60개)
             filtered_articles = filter_articles(st.session_state.auto_articles, sort_option)
             
             # 뉴스 표시 개수 관리
-            display_count = st.session_state.get('news_display_count', 30)
+            display_count = st.session_state.get('news_display_count', 60)
             
             for i, article in enumerate(filtered_articles[:display_count], 1):
                 # 발행 시간 포맷팅
@@ -3641,43 +3648,45 @@ def main():
                 # AI 전략 버튼을 위한 고유 키 생성
                 strategy_key = f"auto_strategy_{i}"
                 
-                # 2025 모던 뉴스 카드
-                news_card_html = f"""
-                <div style="background: white; border: 1px solid #e5e7eb; border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem; transition: all 0.2s;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <span style="background: #10b981; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600;">AI Detected</span>
-                            <span style="background: #0f172a; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600;">{article['source']}</span>
-                        </div>
-                        <span style="color: #94a3b8; font-size: 0.75rem;">{formatted_time}</span>
-                    </div>
+                # 2025 모던 뉴스 카드 - Streamlit 컴포넌트로 직접 구성
+                with st.container():
+                    # 뉴스 카드 컨테이너
+                    st.markdown("""
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                    """, unsafe_allow_html=True)
                     
-                    <h3 style="color: #0f172a; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4;">
-                        {article['title']}
-                    </h3>
+                    # 헤더 섹션
+                    col_header1, col_header2 = st.columns([3, 1])
+                    with col_header1:
+                        col_tag1, col_tag2 = st.columns([1, 1])
+                        with col_tag1:
+                            st.markdown(f'<span style="background: #10b981; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600;">AI Detected</span>', unsafe_allow_html=True)
+                        with col_tag2:
+                            st.markdown(f'<span style="background: #0f172a; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 600;">{article["source"]}</span>', unsafe_allow_html=True)
+                    with col_header2:
+                        st.markdown(f'<span style="color: #94a3b8; font-size: 0.75rem;">{formatted_time}</span>', unsafe_allow_html=True)
                     
-                    <p style="color: #64748b; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
-                        {article['description'][:200]}...
-                    </p>
+                    # 제목
+                    st.markdown(f"**{article['title']}**")
                     
-                    <div style="margin-bottom: 1rem;">
-                        {hashtags_html}
-                    </div>
+                    # 설명
+                    st.markdown(f"{article['description'][:200]}...")
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                        <a href="{article['url']}" target="_blank" style="text-decoration: none;">
-                            <button style="background: #0f172a; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
-                                Read Full Article →
-                            </button>
-                        </a>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <span style="color: #94a3b8; font-size: 0.75rem;">👁️ {article['views']:,}</span>
-                            <span style="color: #10b981; font-size: 0.75rem;">✓ Verified</span>
-                        </div>
-                    </div>
-                </div>
-                """
-                st.markdown(news_card_html, unsafe_allow_html=True)
+                    # 해시태그
+                    if hashtags:
+                        st.markdown(hashtags_html, unsafe_allow_html=True)
+                    
+                    # 하단 버튼과 정보
+                    col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
+                    with col_btn1:
+                        if st.button(f"📖 기사 읽기", key=f"read_{i}", use_container_width=True):
+                            st.markdown(f"[{article['url']}]({article['url']})")
+                    with col_btn2:
+                        st.markdown(f"👁️ {article['views']:,}")
+                    with col_btn3:
+                        st.markdown("✅ Verified")
+                    
+                    st.markdown("</div>", unsafe_allow_html=True)
                 
                 # AI 대응전략 버튼과 내용
                 if st.button(f"🤖 AI 대응전략 보기", key=strategy_key):
@@ -3689,14 +3698,14 @@ def main():
                     </div>
                     """, unsafe_allow_html=True)
             
-            # 더보기 버튼 (100개 뉴스 로드)
+            # 더보기 버튼 (200개 뉴스 로드)
             if len(filtered_articles) >= display_count:
                 col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
                 with col_btn2:
-                    if st.button("📰 더 많은 뉴스 보기 (100개)", key="load_more_news", use_container_width=True):
+                    if st.button("📰 더 많은 뉴스 보기 (200개)", key="load_more_news", use_container_width=True):
                         with st.spinner("🔄 추가 뉴스를 로딩하고 있습니다..."):
                             try:
-                                # 100개 뉴스 로드
+                                # 200개 뉴스 로드
                                 extended_articles = get_extended_scm_news()
                                 if extended_articles:
                                     st.session_state.auto_articles = extended_articles

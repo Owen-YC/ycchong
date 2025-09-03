@@ -3686,23 +3686,18 @@ def main():
                     # 하단 버튼과 정보
                     col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
                     with col_btn1:
-                        # Streamlit 방식으로 확실하게 작동하는 링크 구현
-                        # 1. 링크 직접 표시 (클릭 가능)
-                        st.markdown(f"""
-                        <div style="margin-bottom: 0.5rem;">
-                            <a href="{article['url']}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; text-decoration: none; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-sizing: border-box; text-align: center; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);">
-                                📖 기사 읽기 →
-                            </a>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        # Python webbrowser 모듈을 사용하여 직접 브라우저에서 링크 열기
+                        if st.button(f"📖 기사 읽기 →", key=f"read_{i}", use_container_width=True, type="primary"):
+                            try:
+                                import webbrowser
+                                webbrowser.open(article['url'], new=2)  # new=2는 새 탭에서 열기
+                                st.success(f"🔗 새 탭에서 기사를 열었습니다!")
+                            except Exception as e:
+                                st.error(f"링크 열기 실패: {e}")
+                                # 백업 방법: 링크 정보 표시
+                                st.info(f"**🔗 링크를 복사하여 브라우저에 붙여넣기 하세요:** {article['url']}")
                         
-                        # 2. 백업 방법: Streamlit 버튼으로 링크 열기
-                        if st.button(f"🔗 링크 열기", key=f"open_{i}", use_container_width=True, type="secondary"):
-                            # 링크를 직접 열기
-                            st.markdown(f"**🔗 링크가 열렸습니다:** {article['url']}")
-                            st.markdown(f"**💡 위 링크를 복사하여 브라우저에 붙여넣기 하세요!**")
-                        
-                        # 3. 링크 정보 표시
+                        # 링크 정보 표시
                         st.markdown(f"""
                         <div style="padding: 0.5rem; background: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 0.5rem;">
                             <small style="color: #475569; font-size: 0.75rem; word-break: break-all;">

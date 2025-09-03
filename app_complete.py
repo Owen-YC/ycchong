@@ -44,12 +44,12 @@ try:
         API_KEY = os.getenv("GEMINI_API_KEY")
 
     if API_KEY:
-    client = genai.Client(api_key=API_KEY)
-    test_response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents="Hello"
-    )
-    API_KEY_WORKING = True
+        client = genai.Client(api_key=API_KEY)
+        test_response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Hello"
+        )
+        API_KEY_WORKING = True
     else:
         API_KEY_WORKING = False
         st.warning("⚠️ GEMINI_API_KEY가 설정되지 않았습니다. AI 기능이 비활성화됩니다.")
@@ -772,7 +772,7 @@ def get_naver_weather():
         }
         
         response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
+        if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
             
             # 온도 정보 추출
@@ -804,21 +804,19 @@ def get_naver_weather():
             # 기압 (시뮬레이션)
             pressure = random.randint(1010, 1025)
                 
-                return {
-                    "condition": condition,
+            return {
+                "condition": condition,
                 "temperature": temperature,
-                    "humidity": humidity,
-                    "feels_like": feels_like,
-                    "wind_speed": wind_speed,
-                    "pressure": pressure,
+                "humidity": humidity,
+                "feels_like": feels_like,
+                "wind_speed": wind_speed,
+                "pressure": pressure,
                 "source": "네이버 날씨"
             }
             
     except Exception as e:
-        pass
-    
-    # 네이버 접근 실패 시 백업 데이터
-    return get_weather_info_backup()
+        # 네이버 접근 실패 시 백업 데이터
+        return get_weather_info_backup()
 
 def get_weather_info_backup():
     """백업 날씨 정보 (시뮬레이션)"""
@@ -2550,7 +2548,7 @@ def crawl_extended_news(query, num_results=30):
 
 def generate_realistic_news_articles(query, num_results):
     """현실적인 뉴스 기사 생성 (실제 기사 URL 패턴 사용)"""
-        articles = []
+    articles = []
         
     # 실제 뉴스 기사 URL 패턴 (실제 존재하는 기사들)
     real_article_urls = [
@@ -2593,8 +2591,8 @@ def generate_realistic_news_articles(query, num_results):
         minutes_ago = random.randint(0, 59)
         
         pub_time = datetime.now() - timedelta(days=days_ago, hours=hours_ago, minutes=minutes_ago)
-            
-            article = {
+        
+        article = {
             'title': template,
             'original_title': template,
             'url': article_data['url'],  # 실제 기사 URL 패턴 사용
@@ -2604,8 +2602,8 @@ def generate_realistic_news_articles(query, num_results):
             'views': random.randint(1500, 8000),
             'article_type': 'real_article',
             'verified': True  # 검증된 기사 표시
-            }
-            articles.append(article)
+        }
+        articles.append(article)
         
     return articles
 
@@ -3536,12 +3534,12 @@ def main():
                                 
                                 if validated_articles:
                                     st.session_state.articles = validated_articles
-                            st.session_state.query = query
-                            st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                    st.session_state.query = query
+                                    st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                     st.success(f"✅ '{query}' 관련 검증된 {len(validated_articles)}개 기사를 찾았습니다! (404 오류 기사 제외)")
-                            else:
+                                else:
                                     st.warning(f"'{query}' 키워드로 접근 가능한 뉴스를 찾을 수 없습니다. (모든 기사가 404 오류)")
-                        else:
+                            else:
                                 st.warning(f"'{query}' 키워드로 뉴스를 찾을 수 없습니다.")
                         else:
                             st.warning("검색 결과가 없습니다.")
@@ -3559,7 +3557,7 @@ def main():
         if 'auto_articles' in st.session_state and st.session_state.auto_articles:
             # 자동 감지 통계
             auto_load_time = st.session_state.get('auto_load_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                    st.markdown(f"""
+            st.markdown(f"""
             <div class="search-stats">
                 <h4 style="color: #1e293b; margin-bottom: 1rem;">🤖 AI 자동 감지</h4>
                 <p style="color: #475569; margin-bottom: 1rem;">🌍 전 세계 SCM RISK 뉴스 | 📰 총 {len(st.session_state.auto_articles)}개 기사 | 📅 최근 한달 기간</p>
@@ -3597,7 +3595,7 @@ def main():
                 # 해시태그 생성 (데모 기사의 경우 미리 정의된 해시태그 사용)
                 if 'hashtags' in article:
                     hashtags = article['hashtags']
-            else:
+                else:
                     hashtags = generate_news_hashtags(article['title'], article['description'])
                 hashtags_html = ' '.join([f'<span style="background: #e0f2fe; color: #0277bd; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px;">{tag}</span>' for tag in hashtags])
                 

@@ -3686,16 +3686,15 @@ def main():
                     # 하단 버튼과 정보
                     col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
                     with col_btn1:
-                        # 클릭 가능한 링크로 변경 (새 탭에서 열기)
-                        st.markdown(f"""
-                        <a href="{article['url']}" target="_blank" style="text-decoration: none;">
-                            <button style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);">
-                                📖 기사 읽기 →
-                            </button>
-                        </a>
-                        """, unsafe_allow_html=True)
+                        # 확실한 방법: Streamlit link_button 사용
+                        st.link_button(
+                            f"📖 기사 읽기 →",
+                            url=article['url'],
+                            use_container_width=True,
+                            type="primary"
+                        )
                         
-                        # 링크 미리보기 (호버 시 표시)
+                        # 링크 미리보기
                         st.markdown(f"""
                         <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
                             <small style="color: #64748b; font-size: 0.75rem;">

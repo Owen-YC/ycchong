@@ -2433,8 +2433,8 @@ def crawl_google_news(query, num_results=100):
         st.error(f"뉴스 크롤링 오류: {e}")
         return []
 
-def auto_detect_scm_risks(num_articles=30):
-    """자동 SCM RISK 뉴스 감지 (실제 기사 URL 우선, 30개 기본)"""
+def auto_detect_scm_risks(num_articles=60):
+    """자동 SCM RISK 뉴스 감지 (실제 기사 URL 우선, 60개 기본)"""
     # 확장된 키워드 리스트
     core_keywords = [
         "supply chain disruption",
@@ -2454,7 +2454,7 @@ def auto_detect_scm_risks(num_articles=30):
     for keyword in core_keywords:
         try:
             # 실제 뉴스 기사 생성 우선
-            real_articles = generate_real_news_articles(keyword, 10)
+            real_articles = generate_real_news_articles(keyword, 8)
             all_articles.extend(real_articles)
             
             # 추가 뉴스 수집
@@ -3342,8 +3342,8 @@ def generate_quick_demo_articles():
 
 @st.cache_data(ttl=3600)  # 1시간 캐시
 def cached_auto_detect_scm_risks():
-    """캐시된 자동 SCM RISK 뉴스 감지 (30개)"""
-    return auto_detect_scm_risks(30)
+    """캐시된 자동 SCM RISK 뉴스 감지 (60개)"""
+    return auto_detect_scm_risks(60)
 
 def main():
     # 자동 SCM RISK 뉴스 로딩 (캐시 우선 사용)
@@ -3406,16 +3406,42 @@ def main():
         
         weather_classes = f"realtime-info-card weather-info {time_class} {weather_class}".strip()
         
-        # 시간 & 날씨 카드 - 2025 스타일
-        st.markdown(f"""
-        <div style="background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid #e5e7eb;">
+        # 시간 & 날씨 카드 - 2025 스타일 with Motion
+        weather_motion_styles = """
+        <style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .weather-card {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .weather-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        .temp-display {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        </style>
+        """
+        
+        st.markdown(weather_motion_styles + f"""
+        <div class="weather-card" style="background: white; border-radius: 16px; padding: 1.2rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-size: 1.2rem;">🕐</span>
+                    <span style="font-size: 1.2rem;" class="weather-icon">🕐</span>
                     <div>
                         <div style="color: #64748b; font-size: 0.75rem;">Seoul</div>
                         <div style="color: #0f172a; font-weight: 600; font-size: 1rem;">{time_str}</div>
-            </div>
+                    </div>
                 </div>
                 <div style="text-align: right;">
                     <div style="color: #64748b; font-size: 0.75rem;">{date_str}</div>
@@ -3423,19 +3449,19 @@ def main():
             </div>
             <div style="border-top: 1px solid #f1f5f9; padding-top: 1rem;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="font-size: 1.5rem;">☁️</span>
+                    <span style="font-size: 1.5rem;" class="weather-icon">☁️</span>
                     <div style="text-align: right;">
-                        <div style="color: #0f172a; font-weight: 600;">{weather_info['temperature']}°C</div>
+                        <div style="color: #0f172a; font-weight: 600;" class="temp-display">{weather_info['temperature']}°C</div>
                         <div style="color: #64748b; font-size: 0.75rem;">{weather_info['condition']}</div>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.3rem;">
-                        <span style="font-size: 0.9rem;">💧</span>
+                        <span style="font-size: 0.9rem;" class="weather-icon">💧</span>
                         <span style="color: #64748b; font-size: 0.8rem;">{weather_info['humidity']}%</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.3rem;">
-                        <span style="font-size: 0.9rem;">💨</span>
+                        <span style="font-size: 0.9rem;" class="weather-icon">💨</span>
                         <span style="color: #64748b; font-size: 0.8rem;">{weather_info['wind_speed']}m/s</span>
                     </div>
                 </div>
@@ -3445,36 +3471,49 @@ def main():
         
 
         
-        # AI 챗봇 섹션 (사이드바에 추가 - 개선된 UI)
+        # AI SCM 어시스턴트 - 개선된 UI 레이아웃
         st.markdown("""
-        <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-            <h3 style="color: #1e293b; margin: 0 0 1rem 0; font-size: 1.2rem;">🤖 AI SCM 어시스턴트</h3>
-            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">SCM Risk 관리에 대해 무엇이든 물어보세요!</p>
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);">
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem; margin-right: 0.8rem;">🤖</span>
+                <div>
+                    <h3 style="color: white; margin: 0; font-size: 1.3rem; font-weight: 700;">AI SCM 어시스턴트</h3>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin: 0.3rem 0 0 0;">SCM Risk 관리 전문 AI가 도와드립니다</p>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # 챗봇 인터페이스
+        # 챗봇 인터페이스 - 더 나은 레이아웃
         with st.container():
-            user_question = st.text_input("💬 질문 입력", placeholder="예: 공급망 리스크 대응 방법은?", key="chatbot_input", label_visibility="collapsed")
+            col1, col2 = st.columns([3, 1])
             
-            if st.button("🚀 답변 받기", key="chatbot_button", use_container_width=True):
-                if user_question:
-                    with st.spinner("🤖 AI가 분석 중입니다..."):
-                        response = gemini_chatbot_response(user_question)
-                        
-                        st.markdown(f"""
-                        <div style="background: white; border-radius: 12px; padding: 1.2rem; margin-top: 1rem; border-left: 4px solid #3b82f6; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-                            <div style="display: flex; align-items: center; margin-bottom: 0.8rem;">
-                                <span style="font-size: 1.2rem; margin-right: 0.5rem;">🤖</span>
-                                <span style="font-weight: 600; color: #1e293b;">AI 답변</span>
-                            </div>
-                            <div style="color: #475569; font-size: 0.95rem; line-height: 1.7;">
-                                {response}
+            with col1:
+                user_question = st.text_input("💬 질문을 입력하세요", placeholder="예: 반도체 공급망 리스크 대응 방법은?", key="chatbot_input", label_visibility="collapsed")
+            
+            with col2:
+                ask_button = st.button("🚀 답변", key="chatbot_button", use_container_width=True, type="primary")
+            
+            if ask_button and user_question:
+                with st.spinner("🤖 AI가 전문적으로 분석 중입니다..."):
+                    response = gemini_chatbot_response(user_question)
+                    
+                    st.markdown(f"""
+                    <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-top: 1rem; border-left: 6px solid #667eea; box-shadow: 0 4px 16px rgba(0,0,0,0.1); animation: fadeInUp 0.6s ease-out;">
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <span style="font-size: 1.3rem; margin-right: 0.8rem;">🎯</span>
+                            <div>
+                                <h4 style="font-weight: 700; color: #1e293b; margin: 0; font-size: 1.1rem;">AI 전문 분석 결과</h4>
+                                <p style="color: #64748b; font-size: 0.85rem; margin: 0.2rem 0 0 0;">질문: {user_question}</p>
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.warning("💭 질문을 입력해주세요!")
+                        <div style="color: #475569; font-size: 1rem; line-height: 1.8; background: #f8fafc; padding: 1rem; border-radius: 12px;">
+                            {response}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            elif ask_button:
+                st.warning("💭 질문을 입력해주세요!")
     
     # 뉴스 컨트롤 패널 - 2025 Floating Action Bar
     st.markdown("""
@@ -3516,7 +3555,7 @@ def main():
                 with col_query:
                     query = st.text_input("검색어", placeholder="예: 반도체, 공급망, 물류...", label_visibility="collapsed")
                 with col_num:
-                    num_results = st.selectbox("개수", [20, 50, 100], index=1, label_visibility="collapsed")
+                    num_results = st.selectbox("개수", [50, 100, 200], index=0, label_visibility="collapsed")
                 with col_submit:
                     submit_button = st.form_submit_button("검색", type="primary", use_container_width=True)
                 
@@ -3603,7 +3642,7 @@ def main():
                 strategy_key = f"auto_strategy_{i}"
                 
                 # 2025 모던 뉴스 카드
-                st.markdown(f"""
+                news_card_html = f"""
                 <div style="background: white; border: 1px solid #e5e7eb; border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem; transition: all 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                         <div style="display: flex; gap: 0.5rem;">
@@ -3637,7 +3676,8 @@ def main():
                         </div>
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """
+                st.markdown(news_card_html, unsafe_allow_html=True)
                 
                 # AI 대응전략 버튼과 내용
                 if st.button(f"🤖 AI 대응전략 보기", key=strategy_key):

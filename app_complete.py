@@ -3686,8 +3686,24 @@ def main():
                     # 하단 버튼과 정보
                     col_btn1, col_btn2, col_btn3 = st.columns([2, 1, 1])
                     with col_btn1:
-                        if st.button(f"📖 기사 읽기", key=f"read_{i}", use_container_width=True):
-                            st.markdown(f"[{article['url']}]({article['url']})")
+                        # 클릭 가능한 링크로 변경 (새 탭에서 열기)
+                        st.markdown(f"""
+                        <a href="{article['url']}" target="_blank" style="text-decoration: none;">
+                            <button style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; width: 100%; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);">
+                                📖 기사 읽기 →
+                            </button>
+                        </a>
+                        """, unsafe_allow_html=True)
+                        
+                        # 링크 미리보기 (호버 시 표시)
+                        st.markdown(f"""
+                        <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <small style="color: #64748b; font-size: 0.75rem;">
+                                🔗 {article['url'][:50]}{'...' if len(article['url']) > 50 else ''}
+                            </small>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
                     with col_btn2:
                         st.markdown(f"👁️ {article['views']:,}")
                     with col_btn3:
@@ -4024,7 +4040,7 @@ if __name__ == "__main__":
         initial_sidebar_state="expanded"
     )
     
-    # 성능 최적화를 위한 CSS
+    # 성능 최적화 및 UI 개선을 위한 CSS
     st.markdown("""
     <style>
     /* 성능 최적화를 위한 CSS */
@@ -4036,6 +4052,26 @@ if __name__ == "__main__":
     }
     .stTextInput > div > div > input {
         transition: all 0.2s ease;
+    }
+    
+    /* 뉴스 카드 버튼 호버 효과 */
+    .news-read-button {
+        transition: all 0.3s ease !important;
+    }
+    
+    .news-read-button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.3) !important;
+    }
+    
+    /* 링크 미리보기 호버 효과 */
+    .link-preview {
+        transition: all 0.2s ease;
+    }
+    
+    .link-preview:hover {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
     }
     </style>
     """, unsafe_allow_html=True)

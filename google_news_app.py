@@ -13,6 +13,8 @@ import json
 import pytz
 import os
 from typing import List, Dict, Optional
+import folium
+from streamlit_folium import st_folium
 
 # 페이지 설정
 st.set_page_config(
@@ -22,85 +24,83 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# SCM Risk Monitor CSS
+# SCM Risk Monitor CSS - Clean White/Gray Design
 st.markdown("""
 <style>
-    /* 전체 배경 */
+    /* 전체 배경 - 깔끔한 화이트/그레이 */
     .stApp {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         min-height: 100vh;
     }
     
-    /* Glassmorphism 효과 */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 깔끔한 카드 디자인 */
+    .clean-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
     }
     
-    .glass-card::before {
+    .clean-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border-color: #cbd5e1;
+    }
+    
+    /* 메인 헤더 - 배너 스타일 */
+    .main-banner {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        animation: slideInFromTop 1s ease-out;
+    }
+    
+    .main-banner::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        animation: shimmer 3s infinite;
     }
     
-    .glass-card:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        background: rgba(255, 255, 255, 0.15);
-    }
-    
-    
-    /* 메인 헤더 - SCM Risk */
-    .main-header {
-        font-size: 3.5rem;
-        font-weight: 900;
-        text-align: center;
-        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #c44569 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 2rem;
-        letter-spacing: -0.02em;
+    .main-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
         position: relative;
-        animation: slideInFromTop 1s ease-out;
-        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1;
     }
     
-    /* 서브 헤더 */
-    .sub-header {
-        font-size: 1.3rem;
-        font-weight: 500;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 3rem;
-        letter-spacing: 0.02em;
+    .main-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-weight: 400;
         position: relative;
-        animation: slideInFromBottom 1.2s ease-out;
+        z-index: 1;
     }
     
-    /* 뉴스 카드 - Glassmorphism + 모션 */
+    /* 뉴스 카드 - 깔끔한 디자인 */
     .news-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
-        cursor: pointer;
     }
     
     .news-card::before {
@@ -108,50 +108,34 @@ st.markdown("""
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform 0.3s ease;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, #3b82f6 0%, #1e40af 100%);
+        transition: width 0.3s ease;
     }
     
     .news-card:hover::before {
-        transform: scaleX(1);
+        width: 6px;
     }
     
     .news-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        background: rgba(255, 255, 255, 0.15);
-    }
-    
-    .dark-mode .news-card {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .dark-mode .news-card:hover {
-        background: rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border-color: #3b82f6;
     }
     
     /* 뉴스 제목 */
     .news-title {
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.95);
-        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.8rem;
         line-height: 1.4;
-        position: relative;
         transition: color 0.3s ease;
     }
     
-    .dark-mode .news-title {
-        color: rgba(0, 0, 0, 0.9);
-    }
-    
     .news-card:hover .news-title {
-        color: #f093fb;
+        color: #3b82f6;
     }
     
     /* 뉴스 메타 정보 */
@@ -164,139 +148,104 @@ st.markdown("""
     }
     
     .news-source {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #3b82f6;
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 25px;
-        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
         font-weight: 600;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         transition: all 0.3s ease;
     }
     
     .news-source:hover {
+        background: #1e40af;
         transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
     }
     
     .news-time {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.9rem;
+        color: #64748b;
+        font-size: 0.8rem;
         font-weight: 500;
-    }
-    
-    .dark-mode .news-time {
-        color: rgba(0, 0, 0, 0.6);
     }
     
     .news-views {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.9rem;
+        color: #64748b;
+        font-size: 0.8rem;
         font-weight: 500;
     }
     
-    .dark-mode .news-views {
-        color: rgba(0, 0, 0, 0.6);
-    }
-    
-    /* 뉴스 링크 버튼 - 2025년 트렌드 */
+    /* 뉴스 링크 버튼 - 깔끔한 디자인 */
     .news-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #3b82f6;
         color: white !important;
-        padding: 1rem 2rem;
-        border-radius: 25px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
         text-decoration: none;
         font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
         border: none;
         cursor: pointer;
     }
     
-    .news-link::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
     .news-link:hover {
-        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        background: #1e40af;
+        transform: translateY(-1px);
         color: white !important;
-    }
-    
-    .news-link:hover::before {
-        left: 100%;
     }
     
     /* 검색 섹션 */
     .search-section {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    
-    .dark-mode .search-section {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* 통계 카드 */
-    .stats-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
         padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+    
+    /* 날씨 정보 카드 */
+    .weather-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         transition: all 0.3s ease;
     }
     
-    .stats-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    .weather-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
     
-    .dark-mode .stats-card {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* 테마 토글 버튼 */
-    .theme-toggle {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50px;
-        padding: 0.5rem;
+    /* 위험 지역 플래그 */
+    .risk-flag {
+        position: relative;
+        display: inline-block;
+        margin: 0.5rem;
         cursor: pointer;
         transition: all 0.3s ease;
     }
     
-    .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
+    .risk-flag:hover {
+        transform: scale(1.05);
+    }
+    
+    .risk-flag.high {
+        color: #dc2626;
+    }
+    
+    .risk-flag.medium {
+        color: #f59e0b;
+    }
+    
+    .risk-flag.low {
+        color: #10b981;
     }
     
     /* 애니메이션 */

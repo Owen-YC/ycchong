@@ -147,11 +147,11 @@ st.markdown("""
     
     /* 뉴스 카드 - Motion 효과 */
     .news-item {
-        background: white;
+        background: #f8f9fa !important;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 0.75rem;
-        margin-bottom: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
         border-left: 3px solid #3498db;
         transition: all 0.3s ease;
         animation: fadeInUp 0.6s ease-out;
@@ -1785,7 +1785,7 @@ def main():
             share_title = display_title
             
             st.markdown(f"""
-            <div class="news-item" style="background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; animation: fadeInUp 0.6s ease-out;">
+            <div class="news-item">
                 <div class="news-title">{display_title}</div>
                 <div class="news-description" style="margin: 0.5rem 0;">
                     {keywords_html}

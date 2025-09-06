@@ -1431,13 +1431,13 @@ def main():
         # SCM Risk 뉴스 자동 로드 (기존 데이터 호환성 체크)
         if 'scm_articles' not in st.session_state:
             with st.spinner("Loading SCM Risk news..."):
-                st.session_state.scm_articles = crawl_scm_risk_news(50)
+                st.session_state.scm_articles = crawl_scm_risk_news(100)
                 st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         else:
             # 기존 데이터에 keywords 필드가 없는 경우 새로 로드
             if st.session_state.scm_articles and 'keywords' not in st.session_state.scm_articles[0]:
                 with st.spinner("Updating news format..."):
-                    st.session_state.scm_articles = crawl_scm_risk_news(50)
+                    st.session_state.scm_articles = crawl_scm_risk_news(100)
                     st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         
         # 뉴스 헤더와 검색 기능
@@ -1452,22 +1452,30 @@ def main():
             col_header, col_search = st.columns([2, 1])
             
             with col_header:
-                # SCM Risk News 배너와 언어 선택을 함께 배치
+                # SCM Risk News 배너 안에 언어 선택 포함
                 st.markdown(f"""
                 <div class="unified-info-card">
-                    <h3 class="section-header">SCM Risk News</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3 class="section-header" style="margin: 0;">SCM Risk News</h3>
+                        <div style="display: flex; gap: 0.25rem; align-items: center;">
+                            <span style="font-size: 0.6rem; color: #7f8c8d; margin-right: 0.25rem;">🌐</span>
+                            <button onclick="window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'ko'}}, '*')" 
+                                    style="background: {'#3498db' if st.session_state.get('language', 'ko') == 'ko' else '#ecf0f1'}; 
+                                           color: {'white' if st.session_state.get('language', 'ko') == 'ko' else '#2c3e50'}; 
+                                           border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;"
+                                    title="한국어">🇰🇷</button>
+                            <button onclick="window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'en'}}, '*')" 
+                                    style="background: {'#3498db' if st.session_state.get('language', 'ko') == 'en' else '#ecf0f1'}; 
+                                           color: {'white' if st.session_state.get('language', 'ko') == 'en' else '#2c3e50'}; 
+                                           border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;"
+                                    title="English">🇺🇸</button>
+                        </div>
+                    </div>
                     <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 언어 전환 버튼을 작게 배너 아래에 배치
-                st.markdown("""
-                <div style="margin-top: 0.5rem; margin-bottom: 1rem;">
-                    <div style="font-size: 0.7rem; color: #7f8c8d; margin-bottom: 0.25rem;">🌐 Language</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 언어 전환 버튼 (작은 크기)
+                # 실제 언어 전환 버튼 (숨김 처리)
                 lang_col1, lang_col2 = st.columns(2)
                 with lang_col1:
                     if st.button("🇰🇷", key="lang_ko", use_container_width=True, help="한국어"):
@@ -1478,12 +1486,13 @@ def main():
                         st.session_state.language = 'en'
                         st.rerun()
                 
-                # 현재 언어 표시 (작게)
-                current_lang = "한국어" if st.session_state.language == 'ko' else "English"
-                st.markdown(f"""
-                <div style="text-align: center; font-size: 0.6rem; color: #95a5a6; margin-top: 0.25rem;">
-                    {current_lang}
-                </div>
+                # 버튼을 숨기기 위한 스타일
+                st.markdown("""
+                <style>
+                .stButton > button {
+                    display: none !important;
+                }
+                </style>
                 """, unsafe_allow_html=True)
             
             with col_search:
@@ -1504,9 +1513,10 @@ def main():
                         if search_query:
                             with st.spinner(f"Searching for: {search_query}..."):
                                 # 새로운 검색 결과 로드
-                                st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
+                                st.session_state.scm_articles = crawl_scm_risk_news(100, search_query)
                                 st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
                                 st.session_state.search_query = search_query
+                                st.session_state.current_page = 1  # 검색 시 페이지 리셋
                                 st.rerun()
                         else:
                             st.warning("Please enter a search term")
@@ -1516,39 +1526,79 @@ def main():
                     st.info(f"🔍 Current: {st.session_state.search_query}")
                     if st.button("Clear", key="clear_search", use_container_width=True):
                         st.session_state.search_query = ""
-                        st.session_state.scm_articles = crawl_scm_risk_news(50)
+                        st.session_state.scm_articles = crawl_scm_risk_news(100)
                         st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                        st.session_state.current_page = 1  # 클리어 시 페이지 리셋
                         st.rerun()
         
-        # 뉴스 정렬 옵션 추가
+        # 뉴스 정렬 옵션 추가 (컴팩트하게)
         st.markdown("""
-        <div style="margin-bottom: 1rem;">
-            <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">📊 Sort Options</h4>
+        <div style="margin-bottom: 0.5rem;">
+            <h4 style="font-size: 0.7rem; margin: 0 0 0.25rem 0; color: #2c3e50;">📊 Sort Options</h4>
         </div>
         """, unsafe_allow_html=True)
         
-        sort_col1, sort_col2 = st.columns([1, 1])
-        with sort_col1:
-            sort_option = st.selectbox(
-                "정렬 기준",
-                ["최신순", "조회순", "제목순", "출처순"],
-                key="sort_news",
-                label_visibility="collapsed"
-                )
+        # 컴팩트한 정렬 옵션
+        sort_option = st.selectbox(
+            "Sort by",
+            ["Latest", "Views", "Title", "Source"],
+            key="sort_news",
+            label_visibility="collapsed"
+        )
         
         # 뉴스 정렬
         sorted_articles = st.session_state.scm_articles.copy()
-        if sort_option == "최신순":
+        if sort_option == "Latest":
             sorted_articles.sort(key=lambda x: x['published_time'], reverse=True)
-        elif sort_option == "조회순":
+        elif sort_option == "Views":
             sorted_articles.sort(key=lambda x: x['views'], reverse=True)
-        elif sort_option == "제목순":
+        elif sort_option == "Title":
             sorted_articles.sort(key=lambda x: x['title'])
-        elif sort_option == "출처순":
+        elif sort_option == "Source":
             sorted_articles.sort(key=lambda x: x['source'])
         
+        # 정렬 옵션이 변경되면 페이지를 1로 리셋
+        if 'last_sort_option' not in st.session_state or st.session_state.last_sort_option != sort_option:
+            st.session_state.current_page = 1
+            st.session_state.last_sort_option = sort_option
+        
+        # 페이지네이션 설정
+        articles_per_page = 25
+        total_articles = len(sorted_articles)
+        total_pages = (total_articles + articles_per_page - 1) // articles_per_page
+        
+        # 현재 페이지 설정 (기본값: 1)
+        if 'current_page' not in st.session_state:
+            st.session_state.current_page = 1
+        
+        # 페이지네이션 컨트롤
+        if total_pages > 1:
+            col_prev, col_info, col_next = st.columns([1, 2, 1])
+            
+            with col_prev:
+                if st.button("◀ Prev", key="prev_page", disabled=(st.session_state.current_page <= 1)):
+                    st.session_state.current_page -= 1
+                    st.rerun()
+            
+            with col_info:
+                st.markdown(f"""
+                <div style="text-align: center; font-size: 0.7rem; color: #7f8c8d; padding: 0.5rem 0;">
+                    Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_next:
+                if st.button("Next ▶", key="next_page", disabled=(st.session_state.current_page >= total_pages)):
+                    st.session_state.current_page += 1
+                    st.rerun()
+        
+        # 현재 페이지에 해당하는 뉴스만 표시
+        start_idx = (st.session_state.current_page - 1) * articles_per_page
+        end_idx = start_idx + articles_per_page
+        current_page_articles = sorted_articles[start_idx:end_idx]
+        
         # 뉴스 리스트 (Motion 효과 + 해시태그 + 번역)
-        for i, article in enumerate(sorted_articles, 1):
+        for i, article in enumerate(current_page_articles, start_idx + 1):
             # 키워드 안전하게 처리 (기존 데이터 호환성)
             if 'keywords' in article and article['keywords']:
                 keywords = article['keywords']
@@ -1556,22 +1606,24 @@ def main():
                 # 기존 데이터의 경우 제목에서 키워드 추출
                 keywords = extract_keywords_from_title(article['title'])
             
-            # 언어에 따른 번역
+            # 언어에 따른 번역 (기본값: 한국어)
             current_language = st.session_state.get('language', 'ko')
             
-            # 제목 번역
+            # 제목 번역 - 기본 설정된 언어로 표시
             if current_language == 'ko':
+                # 한국어 설정 시: 영어 제목을 한국어로 번역
                 display_title = translate_text(article['title'], 'ko')
             else:
-                display_title = article['title']  # 영어는 원본 유지
+                # 영어 설정 시: 원본 영어 제목 유지
+                display_title = article['title']
             
-            # 키워드 번역
+            # 키워드 번역 - 기본 설정된 언어로 표시
             display_keywords = get_keywords_for_language(keywords, current_language)
             
             # 키워드를 HTML로 변환
             keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in display_keywords])
             
-            # 메타 정보 번역
+            # 메타 정보 번역 - 기본 설정된 언어로 표시
             if current_language == 'ko':
                 views_text = f"{article['views']:,} 조회"
                 read_more_text = "더 읽기 →"
@@ -1596,17 +1648,17 @@ def main():
     
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
-        # 실시간 정보와 Risk Map을 나란히 배치
-        col_realtime, col_map = st.columns([1, 1])
+        # 실시간 정보 (시간과 날씨를 나란히 배치)
+        st.markdown('<h3 class="section-header">🌤️ 실시간 정보</h3>', unsafe_allow_html=True)
         
-        # 왼쪽: 실시간 정보
-        with col_realtime:
-            st.markdown('<h3 class="section-header">🌤️ 실시간 정보</h3>', unsafe_allow_html=True)
-            
-            # 한국 시간 정보
-            date_str, time_str = get_korean_time()
-            weather_info = get_seoul_weather()
-            
+        # 한국 시간 정보와 날씨 정보를 나란히 배치
+        col_time, col_weather = st.columns([1, 1])
+        
+        # 한국 시간 정보
+        date_str, time_str = get_korean_time()
+        weather_info = get_seoul_weather()
+        
+        with col_time:
             st.markdown(f"""
             <div class="unified-info-card">
                 <div class="info-title">🇰🇷 서울 시간</div>
@@ -1616,8 +1668,8 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-            
-            # 서울 날씨 정보
+        
+        with col_weather:
             st.markdown(f"""
             <div class="unified-info-card">
                 <div class="info-title">🌤️ 서울 날씨</div>
@@ -1645,13 +1697,12 @@ def main():
             </div>
             """, unsafe_allow_html=True)
         
-        # 오른쪽: Risk Map
-        with col_map:
-            st.markdown('<h3 class="section-header">🗺️ Risk Map</h3>', unsafe_allow_html=True)
+        # Risk Map (아래로 이동하고 크기 확대)
+        st.markdown('<h3 class="section-header">🗺️ Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
-            # 지도 크기를 컨테이너에 맞게 조정
-            st_folium(risk_map, width=250, height=200, returned_objects=[])
+            # 지도 크기를 확대
+            st_folium(risk_map, width=400, height=300, returned_objects=[])
         except Exception as e:
             st.error(f"Map error: {e}")
         
@@ -1659,23 +1710,26 @@ def main():
         st.markdown("""
         <div class="market-info">
             <div class="market-title">🚩 Risk Levels</div>
-            <div style="font-size: 0.7rem; color: #7f8c8d; margin-bottom: 0.75rem; line-height: 1.3;">
-                <strong>위험도 기준:</strong><br>
-                • <strong>High:</strong> 전쟁, 자연재해, 대규모 파업<br>
-                • <strong>Medium:</strong> 정부정책 변화, 노동분쟁<br>
-                • <strong>Low:</strong> 일반적 운영상 이슈
-            </div>
             <div class="risk-item risk-high">
                 <div class="risk-title"><span class="cute-flag">🔴</span> High Risk</div>
                 <div class="risk-desc">Immediate action required</div>
+                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                    전쟁, 자연재해, 대규모 파업
+                </div>
             </div>
             <div class="risk-item risk-medium">
                 <div class="risk-title"><span class="cute-flag">🟠</span> Medium Risk</div>
                 <div class="risk-desc">Monitor closely</div>
+                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                    정부정책 변화, 노동분쟁
+                </div>
             </div>
             <div class="risk-item risk-low">
                 <div class="risk-title"><span class="cute-flag">🟢</span> Low Risk</div>
                 <div class="risk-desc">Normal operations</div>
+                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                    일반적 운영상 이슈
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)

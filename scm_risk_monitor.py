@@ -898,60 +898,11 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 메인 레이아웃 - 균형잡힌 비율로 조정
-    col1, col2, col3 = st.columns([1.2, 2.2, 1.1])
-    
-    # 좌측 컬럼 - 통합 정보
-    with col1:
-        # 통합 시간/날씨 카드
-        date_str, time_str = get_korean_time()
-        weather_info = get_seoul_weather()
-        st.markdown(f"""
-        <div class="unified-info-card">
-            <div class="info-title">🇰🇷 Seoul Info</div>
-            <div class="info-content">
-                <strong>{date_str}</strong><br>
-                <strong style="font-size: 1rem;">{time_str}</strong><br><br>
-                ☁️ {weather_info['condition']}<br>
-                <strong>{weather_info['temperature']}°C</strong><br>
-                체감 {weather_info['feels_like']}°C
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 검색 기능
-        st.markdown("""
-        <div class="search-section">
-            <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">🔍 Search</h4>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Streamlit 검색 입력
-        search_query = st.text_input("", placeholder="Search SCM news...", key="search_input")
-        
-        # 검색 버튼
-        if st.button("Search", key="search_button"):
-            if search_query:
-                with st.spinner(f"Searching for: {search_query}..."):
-                    # 새로운 검색 결과 로드
-                    st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
-                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                    st.session_state.search_query = search_query
-                    st.rerun()
-            else:
-                st.warning("Please enter a search term")
-        
-        # 검색어 표시
-        if 'search_query' in st.session_state and st.session_state.search_query:
-            st.info(f"🔍 Current search: {st.session_state.search_query}")
-            if st.button("Clear Search", key="clear_search"):
-                st.session_state.search_query = ""
-                st.session_state.scm_articles = crawl_scm_risk_news(50)
-                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                st.rerun()
+    # 메인 레이아웃 - 검색 영역 제거로 2컬럼으로 변경
+    col1, col2 = st.columns([2, 1])
     
     # 중앙 컬럼 - 뉴스
-    with col2:
+    with col1:
         # SCM Risk 뉴스 자동 로드
         if 'scm_articles' not in st.session_state:
             with st.spinner("Loading SCM Risk news..."):
@@ -961,14 +912,11 @@ def main():
         # 뉴스 헤더
         if st.session_state.scm_articles:
             load_time = st.session_state.get('scm_load_time', datetime.now().strftime('%H:%M'))
-            search_status = ""
-            if 'search_query' in st.session_state and st.session_state.search_query:
-                search_status = f" | 🔍 Search: {st.session_state.search_query}"
             
             st.markdown(f"""
             <div class="unified-info-card">
                 <h3 class="section-header">SCM Risk News ({len(st.session_state.scm_articles)} articles)</h3>
-                <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}{search_status}</p>
+                <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -988,7 +936,7 @@ def main():
                 """, unsafe_allow_html=True)
     
     # 우측 컬럼 - 지도와 시장 정보
-    with col3:
+    with col2:
         # 지도 (크기 조정)
         st.markdown('<h3 class="section-header">Risk Map</h3>', unsafe_allow_html=True)
         try:

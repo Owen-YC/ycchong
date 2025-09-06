@@ -1003,11 +1003,17 @@ def main():
     
     # 중앙 컬럼 - 뉴스
     with col1:
-        # SCM Risk 뉴스 자동 로드
+        # SCM Risk 뉴스 자동 로드 (기존 데이터 호환성 체크)
         if 'scm_articles' not in st.session_state:
             with st.spinner("Loading SCM Risk news..."):
                 st.session_state.scm_articles = crawl_scm_risk_news(50)
                 st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+        else:
+            # 기존 데이터에 keywords 필드가 없는 경우 새로 로드
+            if st.session_state.scm_articles and 'keywords' not in st.session_state.scm_articles[0]:
+                with st.spinner("Updating news format..."):
+                    st.session_state.scm_articles = crawl_scm_risk_news(50)
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         
         # 뉴스 헤더와 검색 기능
         if st.session_state.scm_articles:
@@ -1060,8 +1066,15 @@ def main():
             
             # 뉴스 리스트 (Motion 효과 + 해시태그)
             for i, article in enumerate(st.session_state.scm_articles, 1):
+                # 키워드 안전하게 처리 (기존 데이터 호환성)
+                if 'keywords' in article and article['keywords']:
+                    keywords = article['keywords']
+                else:
+                    # 기존 데이터의 경우 제목에서 키워드 추출
+                    keywords = extract_keywords_from_title(article['title'])
+                
                 # 키워드를 HTML로 변환
-                keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in article['keywords']])
+                keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in keywords])
                 
                 st.markdown(f"""
                 <div class="news-item">

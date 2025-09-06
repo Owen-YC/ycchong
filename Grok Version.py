@@ -14,10 +14,6 @@ import logging
 from markupsafe import escape
 import folium
 from streamlit_folium import st_folium
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from newspaper import Article
 import sqlite3
 from typing import List, Dict, Optional
 
@@ -263,43 +259,64 @@ def get_korean_time():
     return now.strftime('%Y년 %m월 %d일'), now.strftime('%H:%M:%S')
 
 def get_seoul_weather():
-    """서울 날씨 정보 가져오기 (네이버 날씨 크롤링)"""
+    """서울 날씨 정보 가져오기 (시뮬레이션)"""
     try:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.get("https://weather.naver.com/today/09140105")
-        time.sleep(3)
-        temp_element = driver.find_element(By.CSS_SELECTOR, ".current")
-        temperature = float(temp_element.text.replace("현재 온도", "").replace("°", "").strip())
-        condition_element = driver.find_element(By.CSS_SELECTOR, ".weather")
-        condition = condition_element.text.strip()
-        summary_list = driver.find_elements(By.CSS_SELECTOR, ".summary_list .summary_item")
-        humidity = None
-        wind_speed = None
+        # 현재 시간과 계절에 따른 현실적인 날씨 시뮬레이션
+        current_hour = datetime.now().hour
+        current_month = datetime.now().month
+        
+        # 계절별 기본 온도 설정 (서울 기준)
+        if current_month in [12, 1, 2]:  # 겨울
+            base_temp = random.randint(-8, 8)
+            conditions = ["맑음", "흐림", "눈", "안개", "구름많음"]
+        elif current_month in [3, 4, 5]:  # 봄
+            base_temp = random.randint(8, 22)
+            conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
+        elif current_month in [6, 7, 8]:  # 여름
+            base_temp = random.randint(22, 35)
+            conditions = ["맑음", "흐림", "비", "천둥번개", "구름많음"]
+        else:  # 가을
+            base_temp = random.randint(8, 25)
+            conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
+        
+        # 시간대별 온도 조정
+        if 6 <= current_hour <= 12:  # 오전
+            temperature = base_temp + random.randint(0, 3)
+        elif 12 < current_hour <= 18:  # 오후
+            temperature = base_temp + random.randint(2, 6)
+        else:  # 저녁/밤
+            temperature = base_temp - random.randint(0, 4)
+        
+        condition = random.choice(conditions)
+        
+        # 습도는 날씨 조건에 따라 현실적으로 조정
+        if condition in ["비", "눈", "천둥번개"]:
+            humidity = random.randint(75, 95)
+        elif condition == "안개":
+            humidity = random.randint(65, 90)
+        elif condition == "구름많음":
+            humidity = random.randint(55, 80)
+        else:  # 맑음
+            humidity = random.randint(30, 65)
+        
+        # 체감온도 계산
+        wind_speed = random.randint(0, 12)
         feels_like = temperature
-        for item in summary_list:
-            text = item.text
-            if "습도" in text:
-                humidity = int(text.replace("습도", "").replace("%", "").strip())
-            elif "바람" in text:
-                wind_speed = float(text.split("m/s")[0].replace("바람", "").strip())
-            elif "체감" in text:
-                feels_like = float(text.replace("체감", "").replace("°", "").strip())
-        driver.quit()
+        if wind_speed > 5:
+            feels_like -= random.randint(1, 3)
+        if humidity > 80:
+            feels_like += random.randint(1, 3)
+        
         return {
             "condition": condition,
             "temperature": round(temperature, 1),
-            "humidity": humidity or 60,
+            "humidity": humidity,
             "feels_like": round(feels_like, 1),
-            "wind_speed": wind_speed or 5,
+            "wind_speed": wind_speed,
             "location": "서울"
         }
     except Exception as e:
-        logging.error(f"Naver weather crawling error: {e}")
-        st.error("네이버 날씨 데이터를 불러오지 못했습니다. 기본 데이터를 표시합니다.")
+        logging.error(f"Weather simulation error: {e}")
         return {
             "condition": "맑음",
             "temperature": 22,
@@ -493,7 +510,7 @@ def create_risk_map():
 
 @st.cache_data(ttl=3600)
 def crawl_scm_risk_news(num_results: int = 20, search_query: str = None) -> List[Dict]:
-    """SCM Risk 관련 뉴스 크롤링 및 요약"""
+    """SCM Risk 관련 뉴스 크롤링 (newspaper 모듈 없이)"""
     try:
         if search_query:
             enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
@@ -516,6 +533,8 @@ def crawl_scm_risk_news(num_results: int = 20, search_query: str = None) -> List
         soup = BeautifulSoup(response.content, 'xml')
         items = soup.find_all('item')
         articles = []
+        
+        # SQLite 데이터베이스 연결
         conn = sqlite3.connect('scm_news.db')
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS news
@@ -526,6 +545,7 @@ def crawl_scm_risk_news(num_results: int = 20, search_query: str = None) -> List
             link = item.find('link').text if item.find('link') else ""
             pub_date = item.find('pubDate').text if item.find('pubDate') else ""
             source = item.find('source').text if item.find('source') else ""
+            
             if title.strip():
                 try:
                     from email.utils import parsedate_to_datetime
@@ -534,15 +554,8 @@ def crawl_scm_risk_news(num_results: int = 20, search_query: str = None) -> List
                 except:
                     formatted_date = datetime.now().strftime('%Y-%m-%d %H:%M')
                 
-                # 뉴스 요약 생성
-                try:
-                    article = Article(link)
-                    article.download()
-                    article.parse()
-                    article.nlp()
-                    description = article.summary[:200] or f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다."
-                except:
-                    description = f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다."
+                # 간단한 설명 생성 (newspaper 모듈 대신)
+                description = f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다."
                 
                 article_data = {
                     'title': title,
@@ -555,9 +568,11 @@ def crawl_scm_risk_news(num_results: int = 20, search_query: str = None) -> List
                 articles.append(article_data)
                 c.execute("INSERT INTO news VALUES (?, ?, ?, ?, ?, ?)",
                          (title, link, source, formatted_date, description, article_data['views']))
+        
         conn.commit()
         conn.close()
         return articles
+        
     except Exception as e:
         logging.error(f"News crawling failed: {e}")
         st.error(f"뉴스 데이터를 불러오지 못했습니다: {e}. 대체 데이터를 표시합니다.")
@@ -576,6 +591,7 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
         {"name": "CNN", "url": "https://www.cnn.com"},
         {"name": "AP", "url": "https://apnews.com"}
     ]
+    
     scm_news_data = [
         {
             "title": "Global Supply Chain Disruptions Impact Manufacturing",
@@ -588,8 +604,17 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
         {
             "title": "Semiconductor Shortage Affects Global Electronics",
             "description": "반도체 부족 현상이 전자제품 생산에 심각한 영향을 미치고 있습니다."
+        },
+        {
+            "title": "Energy Crisis Disrupts Global Supply Chains",
+            "description": "에너지 위기가 글로벌 공급망에 심각한 영향을 미치고 있습니다."
+        },
+        {
+            "title": "Trade War Escalates Supply Chain Risks",
+            "description": "무역 전쟁이 공급망 위험을 더욱 악화시키고 있습니다."
         }
     ]
+    
     filtered_news_data = scm_news_data
     if search_query:
         search_lower = search_query.lower()
@@ -599,16 +624,20 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
         ]
         if not filtered_news_data:
             filtered_news_data = scm_news_data
+    
+    # SQLite 데이터베이스 연결
     conn = sqlite3.connect('scm_news.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS news
                  (title TEXT, url TEXT, source TEXT, published_time TEXT, description TEXT, views INTEGER)''')
+    
     for i in range(num_results):
         site = random.choice(news_sites)
         news_data = filtered_news_data[i % len(filtered_news_data)]
         title = news_data['title']
         if search_query and search_query.lower() in title.lower():
             title = title.replace(search_query, f"**{search_query}**")
+        
         article = {
             'title': title,
             'url': site['url'],
@@ -620,6 +649,7 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
         articles.append(article)
         c.execute("INSERT INTO news VALUES (?, ?, ?, ?, ?, ?)",
                  (title, site['url'], site['name'], article['published_time'], news_data['description'], article['views']))
+    
     conn.commit()
     conn.close()
     return articles
@@ -839,9 +869,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except ModuleNotFoundError as e:
-        st.error("Required module not found. Please install required packages using: pip install newspaper3k")
-        logging.error(f"ModuleNotFoundError: {str(e)}")
     except Exception as e:
-        st.error("An error occurred. Please check the logs for details.")
+        st.error("앱 실행 중 오류가 발생했습니다. 로그를 확인해주세요.")
         logging.error(f"Unexpected error: {str(e)}")

@@ -837,4 +837,11 @@ def main():
     """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ModuleNotFoundError as e:
+        st.error("Required module not found. Please install required packages using: pip install newspaper3k")
+        logging.error(f"ModuleNotFoundError: {str(e)}")
+    except Exception as e:
+        st.error("An error occurred. Please check the logs for details.")
+        logging.error(f"Unexpected error: {str(e)}")

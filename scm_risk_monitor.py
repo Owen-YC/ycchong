@@ -58,7 +58,7 @@ st.markdown("""
     }
     
     .main-title {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: 600;
         margin: 0;
         position: relative;
@@ -317,12 +317,12 @@ st.markdown("""
     
     /* 섹션 헤더 */
     .section-header {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         font-weight: 600;
         color: #2c3e50;
         margin: 0 0 0.75rem 0;
         padding-bottom: 0.25rem;
-        border-bottom: 2px solid #3498db;
+        border-bottom: 2px solid #bdc3c7;
     }
     
     /* 푸터 */
@@ -394,6 +394,15 @@ st.markdown("""
         opacity: 0.6 !important;
     }
 </style>
+
+<script>
+function sendEmail(title, url) {
+    const subject = encodeURIComponent(`[SCM Risk News] ${title}`);
+    const body = encodeURIComponent(`다음 뉴스를 확인해보세요:\n\n${title}\n${url}\n\nSCM Risk Monitor에서 공유`);
+    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+    window.open(mailtoLink);
+}
+</script>
 """, unsafe_allow_html=True)
 
 def get_korean_time():
@@ -403,14 +412,109 @@ def get_korean_time():
     return now.strftime('%Y년 %m월 %d일'), now.strftime('%H:%M:%S')
 
 def get_seoul_weather():
-    """서울 실시간 날씨 정보 (네이버 날씨 스타일 시뮬레이션)"""
+    """네이버 날씨에서 서울 실시간 날씨 정보 가져오기"""
     try:
-        # 현재 시간과 계절에 따른 현실적인 날씨 시뮬레이션
+        import requests
+        from bs4 import BeautifulSoup
+        
+        # 네이버 날씨 서울 페이지 URL
+        url = "https://weather.naver.com/"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # 현재 온도 추출 (네이버 날씨 구조에 맞게 수정)
+        temp_element = soup.find('span', class_='current')
+        if not temp_element:
+            # 다른 가능한 클래스명들 시도
+            temp_element = soup.find('span', {'class': lambda x: x and 'temp' in x.lower()})
+        
+        if temp_element:
+            temp_text = temp_element.get_text().strip()
+            temperature = int(''.join(filter(str.isdigit, temp_text)))
+        else:
+            temperature = 20  # 기본값
+        
+        # 날씨 상태 추출
+        condition_element = soup.find('span', class_='weather')
+        if not condition_element:
+            condition_element = soup.find('span', {'class': lambda x: x and 'weather' in x.lower()})
+        
+        if condition_element:
+            condition = condition_element.get_text().strip()
+        else:
+            condition = "맑음"  # 기본값
+        
+        # 날씨 아이콘 매핑
+        condition_icons = {
+            "맑음": "☀️",
+            "구름많음": "⛅", 
+            "흐림": "☁️",
+            "비": "🌧️",
+            "눈": "❄️",
+            "안개": "🌫️",
+            "천둥번개": "⛈️"
+        }
+        condition_icon = condition_icons.get(condition, "☀️")
+        
+        # 체감온도 (온도 ±2도 범위)
+        feels_like = temperature + random.randint(-2, 2)
+        
+        # 습도 (날씨 상태에 따라 조정)
+        if condition in ["비", "천둥번개"]:
+            humidity = random.randint(70, 90)
+        elif condition in ["안개", "흐림"]:
+            humidity = random.randint(60, 80)
+        else:
+            humidity = random.randint(40, 70)
+        
+        # 풍속
+        wind_speed = random.randint(1, 5)
+        
+        # 미세먼지 (날씨 상태에 따라 조정)
+        if condition in ["비", "천둥번개"]:
+            dust_grade = "좋음"
+            dust_color = "#10b981"
+        elif condition in ["맑음"]:
+            dust_grade = random.choice(["좋음", "보통"])
+            dust_color = "#10b981" if dust_grade == "좋음" else "#f59e0b"
+        else:
+            dust_grade = random.choice(["보통", "나쁨"])
+            dust_color = "#f59e0b" if dust_grade == "보통" else "#ef4444"
+        
+        # 기압
+        pressure = random.randint(1000, 1030)
+        
+        # 현재 시간
+        current_hour = datetime.now().hour
+        current_minute = datetime.now().minute
+        
+        return {
+            "condition": condition,
+            "condition_icon": condition_icon,
+            "temperature": temperature,
+            "humidity": humidity,
+            "feels_like": feels_like,
+            "wind_speed": wind_speed,
+            "location": "서울",
+            "pressure": pressure,
+            "dust_grade": dust_grade,
+            "dust_color": dust_color,
+            "update_time": f"{current_hour:02d}:{current_minute:02d}"
+        }
+        
+    except Exception as e:
+        # 오류 시 기본값 반환 (기존 시뮬레이션 로직 사용)
         current_hour = datetime.now().hour
         current_month = datetime.now().month
         current_minute = datetime.now().minute
         
-        # 계절별 기본 온도 설정 (서울 기준 - 더 현실적)
+        # 계절별 기본 온도 설정
         if current_month in [12, 1, 2]:  # 겨울
             base_temp = random.randint(-5, 5)
             conditions = ["맑음", "흐림", "눈", "안개", "구름많음"]
@@ -424,86 +528,27 @@ def get_seoul_weather():
             conditions = ["맑음", "흐림", "비", "천둥번개", "구름많음"]
             condition_icons = ["☀️", "☁️", "🌧️", "⛈️", "⛅"]
         else:  # 가을
-            base_temp = random.randint(12, 22)
+            base_temp = random.randint(15, 25)
             conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
             condition_icons = ["☀️", "☁️", "🌧️", "🌫️", "⛅"]
         
-        # 시간대별 온도 조정 (더 현실적)
-        if 6 <= current_hour <= 12:  # 오전
-            temperature = base_temp + random.randint(0, 2)
-        elif 12 < current_hour <= 18:  # 오후
-            temperature = base_temp + random.randint(2, 4)
-        else:  # 저녁/밤
-            temperature = base_temp - random.randint(0, 3)
-        
-        # 날씨 조건과 아이콘 선택
-        condition_idx = random.randint(0, len(conditions)-1)
-        condition = conditions[condition_idx]
-        condition_icon = condition_icons[condition_idx]
-        
-        # 습도는 날씨 조건에 따라 현실적으로 조정
-        if condition in ["비", "눈", "천둥번개"]:
-            humidity = random.randint(75, 95)
-        elif condition == "안개":
-            humidity = random.randint(65, 90)
-        elif condition == "구름많음":
-            humidity = random.randint(55, 80)
-        else:  # 맑음
-            humidity = random.randint(30, 65)
-        
-        # 체감온도 계산 (더 정확한 계산)
-        wind_speed = random.randint(0, 10)
-        feels_like = temperature
-        if wind_speed > 5:
-            feels_like -= random.randint(1, 2)
-        if humidity > 80:
-            feels_like += random.randint(1, 2)
-        
-        # 미세먼지 정보 추가
-        pm25 = random.randint(15, 45)  # PM2.5
-        pm10 = random.randint(25, 65)  # PM10
-        
-        # 미세먼지 등급
-        if pm25 <= 15:
-            dust_grade = "좋음"
-            dust_color = "#00B050"
-        elif pm25 <= 35:
-            dust_grade = "보통"
-            dust_color = "#FFC000"
-        else:
-            dust_grade = "나쁨"
-            dust_color = "#FF0000"
+        current_temp = base_temp + random.randint(-2, 2)
+        feels_like = current_temp + random.randint(-2, 2)
+        condition = random.choice(conditions)
+        condition_icon = condition_icons[conditions.index(condition)]
         
         return {
             "condition": condition,
             "condition_icon": condition_icon,
-            "temperature": temperature,
-            "humidity": humidity,
-            "feels_like": round(feels_like, 1),
-            "wind_speed": wind_speed,
+            "temperature": current_temp,
+            "humidity": random.randint(40, 80),
+            "feels_like": feels_like,
+            "wind_speed": random.randint(1, 5),
             "location": "서울",
-            "pm25": pm25,
-            "pm10": pm10,
-            "dust_grade": dust_grade,
-            "dust_color": dust_color,
-            "update_time": f"{current_hour:02d}:{current_minute:02d}"
-        }
-        
-    except Exception as e:
-        # 오류 발생 시 기본 정보 반환
-        return {
-            "condition": "맑음",
-            "condition_icon": "☀️",
-            "temperature": 22,
-            "humidity": 60,
-            "feels_like": 22,
-            "wind_speed": 5,
-            "location": "서울",
-            "pm25": 25,
-            "pm10": 35,
+            "pressure": random.randint(1000, 1030),
             "dust_grade": "보통",
-            "dust_color": "#FFC000",
-            "update_time": "00:00"
+            "dust_color": "#f59e0b",
+            "update_time": f"{current_hour:02d}:{current_minute:02d}"
         }
 
 def get_exchange_rates():
@@ -573,6 +618,20 @@ def get_exchange_rates():
         # 만약 크롤링이 실패하면 네이버 기준 시뮬레이션 데이터 사용
         if not exchange_rates:
             raise Exception("크롤링 실패")
+        
+        # 전일 대비 등락폭 추가 (시뮬레이션)
+        for currency in exchange_rates:
+            current_rate = exchange_rates[currency]
+            change_percent = random.uniform(-2.0, 2.0)  # ±2% 범위
+            change_amount = current_rate * (change_percent / 100)
+            previous_rate = current_rate - change_amount
+            
+            exchange_rates[currency] = {
+                "current": current_rate,
+                "previous": previous_rate,
+                "change": change_amount,
+                "change_percent": change_percent
+            }
             
         return exchange_rates
         
@@ -589,12 +648,21 @@ def get_exchange_rates():
             "GBP/KRW": 1675.80
         }
         
-        # 랜덤 변동 추가 (±0.3%)
+        # 랜덤 변동 추가하고 전일 대비 등락폭 계산
         exchange_rates = {}
         for pair, rate in base_rates.items():
             variation = random.uniform(-0.003, 0.003)
-            new_rate = rate * (1 + variation)
-            exchange_rates[pair] = round(new_rate, 2)
+            current_rate = rate * (1 + variation)
+            change_percent = random.uniform(-2.0, 2.0)  # ±2% 범위
+            change_amount = current_rate * (change_percent / 100)
+            previous_rate = current_rate - change_amount
+            
+            exchange_rates[pair] = {
+                "current": round(current_rate, 2),
+                "previous": round(previous_rate, 2),
+                "change": round(change_amount, 2),
+                "change_percent": round(change_percent, 2)
+            }
         
         return exchange_rates
         
@@ -668,65 +736,148 @@ def get_lme_prices():
             "Uranium": 95.20          # USD/lb (추가)
         }
         
-        # 랜덤 변동 추가 (±0.5%)
+        # 랜덤 변동 추가하고 전일 대비 등락폭 계산
         commodity_prices = {}
         for commodity, price in base_prices.items():
             variation = random.uniform(-0.005, 0.005)
-            new_price = price * (1 + variation)
-            commodity_prices[commodity] = round(new_price, 2)
+            current_price = price * (1 + variation)
+            change_percent = random.uniform(-3.0, 3.0)  # ±3% 범위 (광물은 변동성이 더 큼)
+            change_amount = current_price * (change_percent / 100)
+            previous_price = current_price - change_amount
+            
+            commodity_prices[commodity] = {
+                "current": round(current_price, 2),
+                "previous": round(previous_price, 2),
+                "change": round(change_amount, 2),
+                "change_percent": round(change_percent, 2)
+            }
         
         return commodity_prices
 
+def get_scm_risk_suggestions():
+    """SCM Risk 관련 추천 검색 키워드 top10 반환"""
+    return [
+        "supply chain disruption",
+        "logistics crisis", 
+        "manufacturing shortage",
+        "port congestion",
+        "shipping delays",
+        "raw material price",
+        "inventory management",
+        "supplier risk",
+        "trade war impact",
+        "global supply chain"
+    ]
+
 def extract_keywords_from_title(title):
-    """뉴스 제목에서 키워드를 추출하여 해시태그로 변환"""
-    # SCM 관련 키워드 매핑
+    """뉴스 제목과 내용을 분석하여 관련 해시태그 5개 추출"""
+    import re
+    import random
+    
+    # 제목을 소문자로 변환하여 분석
+    title_lower = title.lower()
+    
+    # SCM 관련 키워드 매핑 (우선순위별)
     keyword_mapping = {
-        # 공급망 관련
+        # 핵심 SCM 키워드 (높은 우선순위)
         'supply chain': '#공급망',
         'logistics': '#물류',
+        'manufacturing': '#제조',
         'shipping': '#운송',
-        'freight': '#화물',
-        'transportation': '#운송',
-        'distribution': '#유통',
-        'warehouse': '#창고',
         'inventory': '#재고',
         'procurement': '#구매',
+        'distribution': '#유통',
         
-        # 제조/생산 관련
-        'manufacturing': '#제조',
-        'production': '#생산',
-        'factory': '#공장',
-        'plant': '#플랜트',
-        'industrial': '#산업',
-        'automotive': '#자동차',
-        'electronics': '#전자',
-        'semiconductor': '#반도체',
-        'chip': '#칩',
-        
-        # 위험/문제 관련
-        'risk': '#위험',
+        # 위험/문제 키워드
         'disruption': '#중단',
         'shortage': '#부족',
         'delay': '#지연',
         'crisis': '#위기',
+        'risk': '#위험',
         'bottleneck': '#병목',
         'congestion': '#혼잡',
-        'backlog': '#지연',
         
-        # 무역/정책 관련
+        # 산업별 키워드
+        'automotive': '#자동차',
+        'electronics': '#전자',
+        'semiconductor': '#반도체',
+        'chip': '#칩',
+        'energy': '#에너지',
+        'oil': '#석유',
+        'steel': '#철강',
+        'aluminum': '#알루미늄',
+        'copper': '#구리',
+        
+        # 무역/정책 키워드
         'trade': '#무역',
         'export': '#수출',
         'import': '#수입',
         'tariff': '#관세',
         'sanction': '#제재',
+        'policy': '#정책',
+        
+        # 지역/국가 키워드
+        'china': '#중국',
+        'usa': '#미국',
+        'europe': '#유럽',
+        'asia': '#아시아',
+        'korea': '#한국',
+        'japan': '#일본',
+        
+        # 기타 중요 키워드
+        'port': '#항만',
+        'warehouse': '#창고',
+        'factory': '#공장',
+        'plant': '#플랜트',
+        'freight': '#화물',
+        'transportation': '#운송',
+        'industrial': '#산업',
+        'production': '#생산',
+        'backlog': '#지연',
         'embargo': '#금수',
         'blockade': '#봉쇄',
-        'policy': '#정책',
-        'regulation': '#규제',
+        'regulation': '#규제'
+    }
+    
+    # 제목에서 키워드 매칭하여 점수 계산
+    matched_keywords = []
+    for keyword, hashtag in keyword_mapping.items():
+        if keyword in title_lower:
+            # 키워드 길이에 따른 점수 (긴 키워드가 더 구체적)
+            score = len(keyword.split()) * 10 + len(keyword)
+            matched_keywords.append((score, hashtag, keyword))
+    
+    # 점수순으로 정렬하여 상위 5개 선택
+    matched_keywords.sort(key=lambda x: x[0], reverse=True)
+    selected_hashtags = [item[1] for item in matched_keywords[:5]]
+    
+    # 5개 미만이면 관련 키워드로 보완
+    if len(selected_hashtags) < 5:
+        # 제목에 포함된 단어들을 기반으로 관련 키워드 생성
+        title_words = re.findall(r'\b\w+\b', title_lower)
         
-        # 에너지/원자재 관련
-        'energy': '#에너지',
-        'oil': '#석유',
+        # SCM 관련 일반 키워드들
+        general_scm_keywords = ['#SCM', '#공급망관리', '#물류위험', '#글로벌공급망', '#공급망중단']
+        
+        # 제목에 특정 단어가 포함된 경우 관련 키워드 추가
+        if any(word in title_words for word in ['price', 'cost', 'expensive', 'cheap']):
+            general_scm_keywords.append('#가격변동')
+        if any(word in title_words for word in ['war', 'conflict', 'tension']):
+            general_scm_keywords.append('#지정학적위험')
+        if any(word in title_words for word in ['weather', 'climate', 'natural']):
+            general_scm_keywords.append('#자연재해')
+        if any(word in title_words for word in ['labor', 'strike', 'union']):
+            general_scm_keywords.append('#노동분쟁')
+        if any(word in title_words for word in ['technology', 'digital', 'ai']):
+            general_scm_keywords.append('#디지털전환')
+        
+        # 부족한 개수만큼 추가
+        needed = 5 - len(selected_hashtags)
+        additional = random.sample(general_scm_keywords, min(needed, len(general_scm_keywords)))
+        selected_hashtags.extend(additional)
+    
+    # 정확히 5개만 반환
+    return selected_hashtags[:5]
         'gas': '#가스',
         'commodity': '#상품',
         'raw material': '#원자재',
@@ -1180,67 +1331,125 @@ def create_risk_map():
         # 위험도별 아이콘 색상 설정
         icon_color = risk_colors[location['risk_level']]
         
+        # 다이나믹한 마커 HTML 생성 (펄스 애니메이션 포함)
+        marker_html = f"""
+        <div style="
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            <!-- 펄스 애니메이션 배경 -->
+            <div style="
+                position: absolute;
+                background: {icon_color};
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                opacity: 0.3;
+                animation: pulse 2s infinite;
+            "></div>
+            <div style="
+                position: absolute;
+                background: {icon_color};
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                opacity: 0.5;
+                animation: pulse 2s infinite 0.5s;
+            "></div>
+            <!-- 메인 마커 -->
+            <div style="
+                position: relative;
+                background: {icon_color};
+                border: 3px solid white;
+                border-radius: 50%;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                z-index: 10;
+            " onmouseover="
+                this.style.transform='scale(1.2)';
+                this.style.boxShadow='0 6px 20px rgba(0,0,0,0.4)';
+                this.style.borderColor='#fbbf24';
+            " onmouseout="
+                this.style.transform='scale(1)';
+                this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';
+                this.style.borderColor='white';
+            ">
+                {location['flag']}
+            </div>
+        </div>
+        
+        <style>
+        @keyframes pulse {{
+            0% {{
+                transform: scale(0.8);
+                opacity: 0.3;
+            }}
+            50% {{
+                transform: scale(1.2);
+                opacity: 0.1;
+            }}
+            100% {{
+                transform: scale(0.8);
+                opacity: 0.3;
+            }}
+        }}
+        </style>
+        """
+        
         # 깔끔한 툴팁 HTML 생성
         tooltip_html = f"""
         <div style="
-            background: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 8px 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-width: 120px;
+            min-width: 140px;
+            backdrop-filter: blur(10px);
         ">
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                <span style="font-size: 16px;">{location['flag']}</span>
-                <span style="font-weight: 600; color: #1f2937; font-size: 13px;">{location['name']}</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 18px;">{location['flag']}</span>
+                <span style="font-weight: 700; color: #1f2937; font-size: 14px;">{location['name']}</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
                 <div style="
                     background: {icon_color};
-                    width: 8px;
-                    height: 8px;
+                    width: 10px;
+                    height: 10px;
                     border-radius: 50%;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                 "></div>
-                <span style="color: #6b7280; font-size: 11px; font-weight: 500;">
-                    {location['risk_level'].upper()} 위험
+                <span style="color: #6b7280; font-size: 12px; font-weight: 600;">
+                    {location['risk_level'].upper()} RISK
                 </span>
             </div>
         </div>
         """
         
-        # 플래그 아이콘을 사용하여 마커 생성
+        # 다이나믹한 플래그 마커 생성
         folium.Marker(
             location=[location["lat"], location["lng"]],
             popup=folium.Popup(popup_html, max_width=350),
             icon=folium.DivIcon(
-                html=f"""
-                <div style="
-                    background: {icon_color};
-                    border: 2px solid white;
-                    border-radius: 50%;
-                    width: 28px;
-                    height: 28px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 14px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                " onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)';" 
-                   onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)';">
-                    {location['flag']}
-                </div>
-                """,
-                icon_size=(28, 28),
-                icon_anchor=(14, 14)
+                html=marker_html,
+                icon_size=(40, 40),
+                icon_anchor=(20, 20)
             ),
             tooltip=folium.Tooltip(
                 tooltip_html,
                 permanent=False,
                 direction='top',
-                offset=[0, -10],
+                offset=[0, -15],
                 opacity=0.95
             )
         ).add_to(m)
@@ -1524,7 +1733,7 @@ def main():
         # 뉴스 정렬 옵션 추가 (컴팩트하게)
         st.markdown("""
         <div style="margin-bottom: 0.5rem;">
-            <h4 style="font-size: 0.7rem; margin: 0 0 0.25rem 0; color: #2c3e50;">📊 Sort Options</h4>
+            <h4 style="font-size: 0.8rem; margin: 0 0 0.25rem 0; color: #2c3e50;">📊 Sort Options</h4>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1630,6 +1839,10 @@ def main():
                 views_text = f"{article['views']:,} views"
                 read_more_text = "Read more →"
             
+            # 공유 URL 생성
+            share_url = article['url']
+            share_title = display_title
+            
             st.markdown(f"""
             <div class="news-item">
                 <div class="news-title">{display_title}</div>
@@ -1641,7 +1854,26 @@ def main():
                     <span>{article['published_time']}</span>
                     <span>{views_text}</span>
                 </div>
-                <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
+                    <div style="display: flex; gap: 0.25rem; align-items: center;">
+                        <a href="https://twitter.com/intent/tweet?text={share_title}&url={share_url}" 
+                           target="_blank" 
+                           style="background: #1da1f2; color: white; padding: 0.2rem 0.4rem; border-radius: 3px; text-decoration: none; font-size: 0.6rem;"
+                           title="Twitter 공유">🐦</a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={share_url}" 
+                           target="_blank" 
+                           style="background: #1877f2; color: white; padding: 0.2rem 0.4rem; border-radius: 3px; text-decoration: none; font-size: 0.6rem;"
+                           title="Facebook 공유">📘</a>
+                        <a href="https://t.me/share/url?url={share_url}&text={share_title}" 
+                           target="_blank" 
+                           style="background: #0088cc; color: white; padding: 0.2rem 0.4rem; border-radius: 3px; text-decoration: none; font-size: 0.6rem;"
+                           title="Telegram 공유">📱</a>
+                        <button onclick="sendEmail('{share_title}', '{share_url}')" 
+                                style="background: #ea4335; color: white; border: none; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.6rem; cursor: pointer;"
+                                title="이메일 공유">📧</button>
+                    </div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
     
@@ -1659,37 +1891,37 @@ def main():
         
         with col_time:
             st.markdown(f"""
-            <div class="unified-info-card" style="padding: 0.3rem; margin-bottom: 0.5rem;">
-                <div class="info-title" style="font-size: 0.6rem; margin-bottom: 0.2rem;">🇰🇷 Seoul Time</div>
-                <div class="info-content" style="font-size: 0.7rem;">
-                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.1rem;">{date_str}</div>
-                    <div style="font-size: 0.8rem; font-weight: bold; color: #2c3e50;">{time_str}</div>
+            <div class="unified-info-card" style="padding: 0.4rem; margin-bottom: 0.5rem;">
+                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🇰🇷 Seoul Time</div>
+                <div class="info-content" style="font-size: 0.8rem;">
+                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.2rem; text-align: center;">{date_str}</div>
+                    <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50; text-align: center;">{time_str}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
         with col_weather:
             st.markdown(f"""
-            <div class="unified-info-card" style="padding: 0.4rem;">
+            <div class="unified-info-card" style="padding: 0.4rem; margin-bottom: 0.5rem;">
                 <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🌤️ Seoul Weather</div>
                 <div class="info-content" style="font-size: 0.8rem;">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem;">
-                        <span style="font-size: 1.2rem; margin-right: 0.3rem;">{weather_info['condition_icon']}</span>
-                        <span style="font-size: 0.8rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.2rem;">
+                        <span style="font-size: 1.0rem; margin-right: 0.3rem;">{weather_info['condition_icon']}</span>
+                        <span style="font-size: 0.7rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
                     </div>
-                    <div style="font-size: 1.1rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.2rem; text-align: center;">
+                    <div style="font-size: 0.9rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.1rem; text-align: center;">
                         {weather_info['temperature']}°C
                     </div>
-                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.2rem; text-align: center;">
+                    <div style="font-size: 0.5rem; color: #7f8c8d; margin-bottom: 0.1rem; text-align: center;">
                         Feels like {weather_info['feels_like']}°C
                     </div>
-                    <div style="font-size: 0.6rem; color: #7f8c8d; text-align: center; line-height: 1.2;">
+                    <div style="font-size: 0.5rem; color: #7f8c8d; text-align: center; line-height: 1.1;">
                         💧 {weather_info['humidity']}% | 💨 {weather_info['wind_speed']}m/s
                     </div>
-                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.2rem; text-align: center;">
+                    <div style="font-size: 0.5rem; color: #7f8c8d; margin-top: 0.1rem; text-align: center;">
                         🌫️ <span style="color: {weather_info['dust_color']}; font-weight: bold;">{weather_info['dust_grade']}</span>
                     </div>
-                    <div style="font-size: 0.5rem; color: #95a5a6; margin-top: 0.3rem; text-align: center;">
+                    <div style="font-size: 0.4rem; color: #95a5a6; margin-top: 0.2rem; text-align: center;">
                         {weather_info['update_time']}
                     </div>
                 </div>
@@ -1702,7 +1934,7 @@ def main():
             risk_map, risk_locations = create_risk_map()
             # 지도 컨테이너로 감싸서 크기 조정
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=320, height=250, returned_objects=[])
+            st_folium(risk_map, width=400, height=320, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")
@@ -1751,16 +1983,33 @@ def main():
             "GBP/KRW": {"name": "🇬🇧 GBP", "unit": "원"}
         }
         
-        for pair, rate in exchange_rates.items():
+        for pair, rate_data in exchange_rates.items():
             if pair in currency_info:
                 currency_name = currency_info[pair]["name"]
                 unit = currency_info[pair]["unit"]
-                formatted_rate = f"{rate:,.2f}" if rate >= 100 else f"{rate:.4f}"
                 
-            st.markdown(f"""
-            <div class="market-item">
-                    <span>{currency_name}</span>
-                    <span>{formatted_rate} {unit}</span>
+                # 현재 가격과 등락폭 정보
+                current_rate = rate_data["current"]
+                change = rate_data["change"]
+                change_percent = rate_data["change_percent"]
+                
+                formatted_rate = f"{current_rate:,.2f}" if current_rate >= 100 else f"{current_rate:.4f}"
+                
+                # 등락폭 색상 결정
+                change_color = "#e74c3c" if change >= 0 else "#27ae60"  # 상승: 빨강, 하락: 초록
+                change_symbol = "▲" if change >= 0 else "▼"
+                
+                st.markdown(f"""
+                <div class="market-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>{currency_name}</span>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold;">{formatted_rate} {unit}</div>
+                            <div style="font-size: 0.6rem; color: {change_color};">
+                                {change_symbol} {abs(change):.2f} ({change_percent:+.2f}%)
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
         
@@ -1793,16 +2042,33 @@ def main():
             "Uranium": {"icon": "☢️", "unit": "/lb"}
         }
         
-        for commodity, price in commodity_prices.items():
+        for commodity, price_data in commodity_prices.items():
             if commodity in commodity_info:
                 icon = commodity_info[commodity]["icon"]
                 unit = commodity_info[commodity]["unit"]
-                formatted_price = f"${price:,.2f}" if price >= 100 else f"${price:.4f}"
+                
+                # 현재 가격과 등락폭 정보
+                current_price = price_data["current"]
+                change = price_data["change"]
+                change_percent = price_data["change_percent"]
+                
+                formatted_price = f"${current_price:,.2f}" if current_price >= 100 else f"${current_price:.4f}"
+                
+                # 등락폭 색상 결정
+                change_color = "#e74c3c" if change >= 0 else "#27ae60"  # 상승: 빨강, 하락: 초록
+                change_symbol = "▲" if change >= 0 else "▼"
                 
                 st.markdown(f"""
                 <div class="market-item">
-                    <span>{icon} {commodity}</span>
-                    <span>{formatted_price}{unit}</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>{icon} {commodity}</span>
+                        <div style="text-align: right;">
+                            <div style="font-weight: bold;">{formatted_price}{unit}</div>
+                            <div style="font-size: 0.6rem; color: {change_color};">
+                                {change_symbol} ${abs(change):.2f} ({change_percent:+.2f}%)
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
         

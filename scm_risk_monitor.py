@@ -236,7 +236,7 @@ st.markdown("""
         transform: translateX(2px);
     }
     
-    /* 지도 컨테이너 - 크기 조정 */
+    /* 지도 컨테이너 - 단순화 */
     .map-wrapper {
         background: white;
         border: 1px solid #e1e5e9;
@@ -245,37 +245,6 @@ st.markdown("""
         margin-bottom: 0.75rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         animation: fadeInUp 0.8s ease-out;
-        overflow: hidden;
-        width: 100%;
-        max-width: 100%;
-        position: relative;
-    }
-    
-    /* 지도 자체 크기 제한 */
-    .map-container {
-        width: 100%;
-        height: 280px;
-        overflow: hidden;
-        border-radius: 6px;
-    }
-    
-    /* 지도 iframe 스타일 조정 */
-    .map-wrapper iframe {
-        width: 100% !important;
-        height: 100% !important;
-        border: none;
-        border-radius: 6px;
-    }
-    
-    /* Streamlit 지도 컨테이너 조정 */
-    .map-wrapper > div {
-        width: 100% !important;
-        height: 280px !important;
-    }
-    
-    .map-wrapper > div > div {
-        width: 100% !important;
-        height: 100% !important;
     }
     
     /* 위험도 표시 - 작고 귀여운 플래그 */
@@ -921,8 +890,8 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 메인 레이아웃 - 검색 영역 제거로 2컬럼으로 변경
-    col1, col2 = st.columns([2, 1])
+    # 메인 레이아웃 - 검색 영역 제거로 2컬럼으로 변경 (비율 조정)
+    col1, col2 = st.columns([2.5, 1.5])
     
     # 중앙 컬럼 - 뉴스
     with col1:
@@ -1002,9 +971,8 @@ def main():
         st.markdown('<h3 class="section-header">Risk Detecting Area</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
-            st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=350, height=280, returned_objects=[])
-            st.markdown('</div>', unsafe_allow_html=True)
+            # 지도 크기를 컨테이너에 맞게 조정
+            st_folium(risk_map, width=300, height=250, returned_objects=[])
         except Exception as e:
             st.error(f"Map error: {e}")
         

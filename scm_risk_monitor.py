@@ -1475,34 +1475,27 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 실제 언어 전환 버튼 (숨김 처리)
-                lang_col1, lang_col2 = st.columns(2)
-                with lang_col1:
-                    if st.button("🇰🇷", key="lang_ko", use_container_width=True, help="한국어"):
-                        st.session_state.language = 'ko'
-                        st.rerun()
-                with lang_col2:
-                    if st.button("🇺🇸", key="lang_en", use_container_width=True, help="English"):
-                        st.session_state.language = 'en'
-                        st.rerun()
+                # 언어 전환을 위한 숨겨진 버튼들 (실제 기능용)
+                if st.button("", key="lang_ko_hidden", help="한국어", type="primary"):
+                    st.session_state.language = 'ko'
+                    st.rerun()
                 
-                # 버튼을 숨기기 위한 스타일
+                if st.button("", key="lang_en_hidden", help="English", type="primary"):
+                    st.session_state.language = 'en'
+                    st.rerun()
+                
+                # 숨겨진 버튼들을 완전히 숨기기
                 st.markdown("""
                 <style>
-                .stButton > button {
+                div[data-testid="column"]:has(button[key="lang_ko_hidden"]),
+                div[data-testid="column"]:has(button[key="lang_en_hidden"]) {
                     display: none !important;
                 }
                 </style>
                 """, unsafe_allow_html=True)
             
             with col_search:
-                st.markdown("""
-                <div class="search-section">
-                    <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">🔍 Search News</h4>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 검색 입력과 버튼을 같은 행에 배치
+                # 단순한 검색 입력과 버튼
                 search_col1, search_col2 = st.columns([3, 1])
                 
                 with search_col1:
@@ -1576,24 +1569,34 @@ def main():
             st.session_state.current_page = 1
         
         # 페이지네이션 컨트롤 (항상 표시)
+        st.markdown("---")  # 구분선 추가
         col_prev, col_info, col_next = st.columns([1, 2, 1])
         
         with col_prev:
-            if st.button("◀ Prev", key="prev_page", disabled=(st.session_state.current_page <= 1)):
+            prev_disabled = st.session_state.current_page <= 1
+            if st.button("◀ Prev", key="prev_page", disabled=prev_disabled, use_container_width=True):
                 st.session_state.current_page -= 1
                 st.rerun()
         
         with col_info:
             st.markdown(f"""
-            <div style="text-align: center; font-size: 0.7rem; color: #7f8c8d; padding: 0.5rem 0;">
+            <div style="text-align: center; font-size: 0.8rem; color: #2c3e50; padding: 0.5rem 0; font-weight: bold;">
                 Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
             </div>
             """, unsafe_allow_html=True)
         
         with col_next:
-            if st.button("Next ▶", key="next_page", disabled=(st.session_state.current_page >= total_pages)):
+            next_disabled = st.session_state.current_page >= total_pages
+            if st.button("Next ▶", key="next_page", disabled=next_disabled, use_container_width=True):
                 st.session_state.current_page += 1
                 st.rerun()
+        
+        # 디버깅 정보 (임시)
+        st.markdown(f"""
+        <div style="font-size: 0.6rem; color: #95a5a6; text-align: center; margin-top: 0.5rem;">
+            Debug: Current page: {st.session_state.current_page}, Total pages: {total_pages}, Articles per page: {articles_per_page}
+        </div>
+        """, unsafe_allow_html=True)
         
         # 현재 페이지에 해당하는 뉴스만 표시
         start_idx = (st.session_state.current_page - 1) * articles_per_page
@@ -1663,11 +1666,11 @@ def main():
         
         with col_time:
             st.markdown(f"""
-            <div class="unified-info-card" style="padding: 0.4rem;">
-                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🇰🇷 Seoul Time</div>
-                <div class="info-content" style="font-size: 0.8rem;">
-                    <div style="font-size: 0.7rem; color: #7f8c8d; margin-bottom: 0.2rem;">{date_str}</div>
-                    <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50;">{time_str}</div>
+            <div class="unified-info-card" style="padding: 0.3rem; margin-bottom: 0.5rem;">
+                <div class="info-title" style="font-size: 0.6rem; margin-bottom: 0.2rem;">🇰🇷 Seoul Time</div>
+                <div class="info-content" style="font-size: 0.7rem;">
+                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.1rem;">{date_str}</div>
+                    <div style="font-size: 0.8rem; font-weight: bold; color: #2c3e50;">{time_str}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)

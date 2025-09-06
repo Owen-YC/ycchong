@@ -13,8 +13,6 @@ import json
 import pytz
 import os
 from typing import List, Dict, Optional
-import folium
-from streamlit_folium import st_folium
 
 # 페이지 설정
 st.set_page_config(

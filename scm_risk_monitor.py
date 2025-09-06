@@ -505,6 +505,108 @@ def get_lme_prices():
             "Uranium": 95.20
         }
 
+def extract_keywords_from_title(title):
+    """뉴스 제목에서 키워드를 추출하여 해시태그로 변환"""
+    # SCM 관련 키워드 매핑
+    keyword_mapping = {
+        # 공급망 관련
+        'supply chain': '#공급망',
+        'logistics': '#물류',
+        'shipping': '#운송',
+        'freight': '#화물',
+        'transportation': '#운송',
+        'distribution': '#유통',
+        'warehouse': '#창고',
+        'inventory': '#재고',
+        'procurement': '#구매',
+        
+        # 제조/생산 관련
+        'manufacturing': '#제조',
+        'production': '#생산',
+        'factory': '#공장',
+        'plant': '#플랜트',
+        'industrial': '#산업',
+        'automotive': '#자동차',
+        'electronics': '#전자',
+        'semiconductor': '#반도체',
+        'chip': '#칩',
+        
+        # 위험/문제 관련
+        'risk': '#위험',
+        'disruption': '#중단',
+        'shortage': '#부족',
+        'delay': '#지연',
+        'crisis': '#위기',
+        'bottleneck': '#병목',
+        'congestion': '#혼잡',
+        'backlog': '#지연',
+        
+        # 무역/정책 관련
+        'trade': '#무역',
+        'export': '#수출',
+        'import': '#수입',
+        'tariff': '#관세',
+        'sanction': '#제재',
+        'embargo': '#금수',
+        'blockade': '#봉쇄',
+        'policy': '#정책',
+        'regulation': '#규제',
+        
+        # 에너지/원자재 관련
+        'energy': '#에너지',
+        'oil': '#석유',
+        'gas': '#가스',
+        'commodity': '#상품',
+        'raw material': '#원자재',
+        'steel': '#철강',
+        'copper': '#구리',
+        'aluminum': '#알루미늄',
+        
+        # 기술/AI 관련
+        'ai': '#AI',
+        'artificial intelligence': '#인공지능',
+        'technology': '#기술',
+        'digital': '#디지털',
+        'automation': '#자동화',
+        'innovation': '#혁신',
+        
+        # 지역/국가 관련
+        'china': '#중국',
+        'usa': '#미국',
+        'europe': '#유럽',
+        'asia': '#아시아',
+        'global': '#글로벌',
+        'international': '#국제',
+        
+        # 기타
+        'security': '#보안',
+        'sustainability': '#지속가능성',
+        'environment': '#환경',
+        'climate': '#기후',
+        'food': '#식품',
+        'healthcare': '#의료',
+        'retail': '#소매'
+    }
+    
+    # 제목을 소문자로 변환
+    title_lower = title.lower()
+    
+    # 키워드 추출
+    found_keywords = []
+    for keyword, hashtag in keyword_mapping.items():
+        if keyword in title_lower:
+            found_keywords.append(hashtag)
+    
+    # 최대 5개 키워드만 선택
+    if len(found_keywords) > 5:
+        found_keywords = found_keywords[:5]
+    
+    # 키워드가 없으면 기본 키워드 추가
+    if not found_keywords:
+        found_keywords = ['#SCM', '#공급망', '#물류']
+    
+    return found_keywords
+
 def get_scm_risk_locations():
     """SCM Risk 발생 지역 데이터"""
     risk_locations = [
@@ -751,12 +853,15 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 except:
                     formatted_date = datetime.now().strftime('%Y-%m-%d %H:%M')
                 
+                # 키워드 추출
+                keywords = extract_keywords_from_title(title)
+                
                 article = {
                     'title': title,
                     'url': link,
                     'source': source,
                     'published_time': formatted_date,
-                    'description': f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다.",
+                    'keywords': keywords,
                     'views': random.randint(100, 5000)
                 }
                 articles.append(article)
@@ -869,12 +974,15 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
         if search_query and search_query.lower() in title.lower():
             title = title.replace(search_query, f"**{search_query}**")
         
+        # 키워드 추출
+        keywords = extract_keywords_from_title(title)
+        
         article = {
             'title': title,
             'url': site['url'],
             'source': site['name'],
             'published_time': (datetime.now() - timedelta(hours=random.randint(0, 24))).strftime('%Y-%m-%d %H:%M'),
-            'description': news_data['description'],
+            'keywords': keywords,
             'views': random.randint(100, 5000)
         }
         articles.append(article)
@@ -950,12 +1058,17 @@ def main():
                         st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
                         st.rerun()
             
-            # 뉴스 리스트 (Motion 효과 + 설명)
+            # 뉴스 리스트 (Motion 효과 + 해시태그)
             for i, article in enumerate(st.session_state.scm_articles, 1):
+                # 키워드를 HTML로 변환
+                keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in article['keywords']])
+                
                 st.markdown(f"""
                 <div class="news-item">
                     <div class="news-title">{article['title']}</div>
-                    <div class="news-description">{article['description']}</div>
+                    <div class="news-description" style="margin: 0.5rem 0;">
+                        {keywords_html}
+                    </div>
                     <div class="news-meta">
                         <span class="news-source">{article['source']}</span>
                         <span>{article['published_time']}</span>

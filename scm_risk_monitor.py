@@ -246,13 +246,36 @@ st.markdown("""
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         animation: fadeInUp 0.8s ease-out;
         overflow: hidden;
+        width: 100%;
         max-width: 100%;
+        position: relative;
     }
     
     /* 지도 자체 크기 제한 */
     .map-container {
-        max-width: 100%;
+        width: 100%;
+        height: 280px;
         overflow: hidden;
+        border-radius: 6px;
+    }
+    
+    /* 지도 iframe 스타일 조정 */
+    .map-wrapper iframe {
+        width: 100% !important;
+        height: 100% !important;
+        border: none;
+        border-radius: 6px;
+    }
+    
+    /* Streamlit 지도 컨테이너 조정 */
+    .map-wrapper > div {
+        width: 100% !important;
+        height: 280px !important;
+    }
+    
+    .map-wrapper > div > div {
+        width: 100% !important;
+        height: 100% !important;
     }
     
     /* 위험도 표시 - 작고 귀여운 플래그 */
@@ -980,7 +1003,7 @@ def main():
         try:
             risk_map, risk_locations = create_risk_map()
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=400, height=300, returned_objects=[])
+            st_folium(risk_map, width=350, height=280, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")

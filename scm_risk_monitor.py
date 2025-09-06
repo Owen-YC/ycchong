@@ -1509,17 +1509,21 @@ def main():
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                 
                 with search_col2:
-                    if st.button("Search", key="search_button", use_container_width=True):
-                        if search_query:
-                            with st.spinner(f"Searching for: {search_query}..."):
-                                # 새로운 검색 결과 로드
-                                st.session_state.scm_articles = crawl_scm_risk_news(100, search_query)
-                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                                st.session_state.search_query = search_query
-                                st.session_state.current_page = 1  # 검색 시 페이지 리셋
-                                st.rerun()
-                        else:
-                            st.warning("Please enter a search term")
+                    search_clicked = st.button("Search", key="search_button", use_container_width=True)
+                
+                # 검색 실행 (버튼 클릭 또는 엔터키)
+                if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
+                    if search_query:
+                        with st.spinner(f"Searching for: {search_query}..."):
+                            # 새로운 검색 결과 로드
+                            st.session_state.scm_articles = crawl_scm_risk_news(100, search_query)
+                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                            st.session_state.search_query = search_query
+                            st.session_state.last_search = search_query
+                            st.session_state.current_page = 1  # 검색 시 페이지 리셋
+                            st.rerun()
+                    else:
+                        st.warning("Please enter a search term")
                 
                 # 검색어 표시 및 클리어 버튼
                 if 'search_query' in st.session_state and st.session_state.search_query:
@@ -1571,26 +1575,25 @@ def main():
         if 'current_page' not in st.session_state:
             st.session_state.current_page = 1
         
-        # 페이지네이션 컨트롤
-        if total_pages > 1:
-            col_prev, col_info, col_next = st.columns([1, 2, 1])
-            
-            with col_prev:
-                if st.button("◀ Prev", key="prev_page", disabled=(st.session_state.current_page <= 1)):
-                    st.session_state.current_page -= 1
-                    st.rerun()
-            
-            with col_info:
-                st.markdown(f"""
-                <div style="text-align: center; font-size: 0.7rem; color: #7f8c8d; padding: 0.5rem 0;">
-                    Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col_next:
-                if st.button("Next ▶", key="next_page", disabled=(st.session_state.current_page >= total_pages)):
-                    st.session_state.current_page += 1
-                    st.rerun()
+        # 페이지네이션 컨트롤 (항상 표시)
+        col_prev, col_info, col_next = st.columns([1, 2, 1])
+        
+        with col_prev:
+            if st.button("◀ Prev", key="prev_page", disabled=(st.session_state.current_page <= 1)):
+                st.session_state.current_page -= 1
+                st.rerun()
+        
+        with col_info:
+            st.markdown(f"""
+            <div style="text-align: center; font-size: 0.7rem; color: #7f8c8d; padding: 0.5rem 0;">
+                Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_next:
+            if st.button("Next ▶", key="next_page", disabled=(st.session_state.current_page >= total_pages)):
+                st.session_state.current_page += 1
+                st.rerun()
         
         # 현재 페이지에 해당하는 뉴스만 표시
         start_idx = (st.session_state.current_page - 1) * articles_per_page
@@ -1649,7 +1652,7 @@ def main():
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
         # 실시간 정보 (시간과 날씨를 나란히 배치)
-        st.markdown('<h3 class="section-header">🌤️ 실시간 정보</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header">🌤️ Real-time Info</h3>', unsafe_allow_html=True)
         
         # 한국 시간 정보와 날씨 정보를 나란히 배치
         col_time, col_weather = st.columns([1, 1])
@@ -1660,49 +1663,51 @@ def main():
         
         with col_time:
             st.markdown(f"""
-            <div class="unified-info-card">
-                <div class="info-title">🇰🇷 서울 시간</div>
-                <div class="info-content">
-                    <strong>{date_str}</strong><br>
-                    <strong style="font-size: 1.1rem; color: #2c3e50;">{time_str}</strong>
+            <div class="unified-info-card" style="padding: 0.4rem;">
+                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🇰🇷 Seoul Time</div>
+                <div class="info-content" style="font-size: 0.8rem;">
+                    <div style="font-size: 0.7rem; color: #7f8c8d; margin-bottom: 0.2rem;">{date_str}</div>
+                    <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50;">{time_str}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
         with col_weather:
             st.markdown(f"""
-            <div class="unified-info-card">
-                <div class="info-title">🌤️ 서울 날씨</div>
-                <div class="info-content">
-                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
-                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">{weather_info['condition_icon']}</span>
-                        <span style="font-size: 1.2rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
+            <div class="unified-info-card" style="padding: 0.4rem;">
+                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🌤️ Seoul Weather</div>
+                <div class="info-content" style="font-size: 0.8rem;">
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.3rem;">
+                        <span style="font-size: 1.2rem; margin-right: 0.3rem;">{weather_info['condition_icon']}</span>
+                        <span style="font-size: 0.8rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
                     </div>
-                    <div style="font-size: 1.3rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.3rem;">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.2rem; text-align: center;">
                         {weather_info['temperature']}°C
                     </div>
-                    <div style="font-size: 0.8rem; color: #7f8c8d; margin-bottom: 0.3rem;">
-                        체감 {weather_info['feels_like']}°C
+                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.2rem; text-align: center;">
+                        Feels like {weather_info['feels_like']}°C
                     </div>
-                    <div style="font-size: 0.7rem; color: #7f8c8d;">
-                        💧 습도 {weather_info['humidity']}% | 💨 풍속 {weather_info['wind_speed']}m/s
+                    <div style="font-size: 0.6rem; color: #7f8c8d; text-align: center; line-height: 1.2;">
+                        💧 {weather_info['humidity']}% | 💨 {weather_info['wind_speed']}m/s
                     </div>
-                    <div style="font-size: 0.7rem; color: #7f8c8d; margin-top: 0.3rem;">
-                        🌫️ 미세먼지 <span style="color: {weather_info['dust_color']}; font-weight: bold;">{weather_info['dust_grade']}</span>
+                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.2rem; text-align: center;">
+                        🌫️ <span style="color: {weather_info['dust_color']}; font-weight: bold;">{weather_info['dust_grade']}</span>
                     </div>
-                    <div style="font-size: 0.6rem; color: #95a5a6; margin-top: 0.5rem; text-align: center;">
-                        업데이트: {weather_info['update_time']}
+                    <div style="font-size: 0.5rem; color: #95a5a6; margin-top: 0.3rem; text-align: center;">
+                        {weather_info['update_time']}
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
         
-        # Risk Map (아래로 이동하고 크기 확대)
+        # Risk Map (아래로 이동하고 크기 조정)
         st.markdown('<h3 class="section-header">🗺️ Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
-            # 지도 크기를 확대
-            st_folium(risk_map, width=400, height=300, returned_objects=[])
+            # 지도 컨테이너로 감싸서 크기 조정
+            st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
+            st_folium(risk_map, width=320, height=250, returned_objects=[])
+            st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")
         

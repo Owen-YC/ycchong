@@ -399,8 +399,24 @@ st.markdown("""
 function sendEmail(title, url) {
     const subject = encodeURIComponent(`[SCM Risk News] ${title}`);
     const body = encodeURIComponent(`다음 뉴스를 확인해보세요:\n\n${title}\n${url}\n\nSCM Risk Monitor에서 공유`);
-    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
-    window.open(mailtoLink);
+    
+    // Outlook Web App URL 생성
+    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?subject=${subject}&body=${body}`;
+    
+    // Outlook이 설치되어 있으면 Outlook 앱으로, 없으면 웹으로 열기
+    try {
+        // 먼저 Outlook 앱으로 시도
+        const outlookAppUrl = `ms-outlook://compose?subject=${subject}&body=${body}`;
+        window.open(outlookAppUrl, '_blank');
+        
+        // 2초 후에도 창이 열리지 않으면 웹 버전으로 fallback
+        setTimeout(() => {
+            window.open(outlookUrl, '_blank');
+        }, 2000);
+    } catch (error) {
+        // 오류 시 웹 버전으로 fallback
+        window.open(outlookUrl, '_blank');
+    }
 }
 </script>
 """, unsafe_allow_html=True)
@@ -1841,10 +1857,10 @@ def main():
         with col_time:
             st.markdown(f"""
             <div class="unified-info-card" style="padding: 0.4rem; margin-bottom: 0.5rem;">
-                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🇰🇷 Seoul Time</div>
-                <div class="info-content" style="font-size: 0.8rem;">
-                    <div style="font-size: 0.6rem; color: #7f8c8d; margin-bottom: 0.2rem; text-align: center;">{date_str}</div>
-                    <div style="font-size: 0.9rem; font-weight: bold; color: #2c3e50; text-align: center;">{time_str}</div>
+                <div class="info-title" style="font-size: 0.8rem; margin-bottom: 0.3rem; animation: fadeInUp 0.8s ease-out;">🇰🇷 Seoul Time</div>
+                <div class="info-content" style="font-size: 0.9rem;">
+                    <div style="font-size: 0.75rem; color: #7f8c8d; margin-bottom: 0.2rem; text-align: center;">{date_str}</div>
+                    <div style="font-size: 1.1rem; font-weight: bold; color: #2c3e50; text-align: center;">{time_str}</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -1852,25 +1868,25 @@ def main():
         with col_weather:
             st.markdown(f"""
             <div class="unified-info-card" style="padding: 0.4rem; margin-bottom: 0.5rem;">
-                <div class="info-title" style="font-size: 0.7rem; margin-bottom: 0.3rem;">🌤️ Seoul Weather</div>
-                <div class="info-content" style="font-size: 0.8rem;">
+                <div class="info-title" style="font-size: 0.8rem; margin-bottom: 0.3rem; animation: fadeInUp 0.8s ease-out;">🌤️ Seoul Weather</div>
+                <div class="info-content" style="font-size: 0.9rem;">
                     <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 0.2rem;">
-                        <span style="font-size: 1.0rem; margin-right: 0.3rem;">{weather_info['condition_icon']}</span>
-                        <span style="font-size: 0.7rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
+                        <span style="font-size: 1.1rem; margin-right: 0.3rem;">{weather_info['condition_icon']}</span>
+                        <span style="font-size: 0.8rem; font-weight: bold; color: #2c3e50;">{weather_info['condition']}</span>
                     </div>
-                    <div style="font-size: 0.9rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.1rem; text-align: center;">
+                    <div style="font-size: 1.1rem; font-weight: bold; color: #e74c3c; margin-bottom: 0.1rem; text-align: center;">
                         {weather_info['temperature']}°C
                     </div>
-                    <div style="font-size: 0.5rem; color: #7f8c8d; margin-bottom: 0.1rem; text-align: center;">
+                    <div style="font-size: 0.65rem; color: #7f8c8d; margin-bottom: 0.1rem; text-align: center;">
                         Feels like {weather_info['feels_like']}°C
                     </div>
-                    <div style="font-size: 0.5rem; color: #7f8c8d; text-align: center; line-height: 1.1;">
+                    <div style="font-size: 0.65rem; color: #7f8c8d; text-align: center; line-height: 1.1;">
                         💧 {weather_info['humidity']}% | 💨 {weather_info['wind_speed']}m/s
                     </div>
-                    <div style="font-size: 0.5rem; color: #7f8c8d; margin-top: 0.1rem; text-align: center;">
+                    <div style="font-size: 0.65rem; color: #7f8c8d; margin-top: 0.1rem; text-align: center;">
                         🌫️ <span style="color: {weather_info['dust_color']}; font-weight: bold;">{weather_info['dust_grade']}</span>
                     </div>
-                    <div style="font-size: 0.4rem; color: #95a5a6; margin-top: 0.2rem; text-align: center;">
+                    <div style="font-size: 0.55rem; color: #95a5a6; margin-top: 0.2rem; text-align: center;">
                         {weather_info['update_time']}
                     </div>
                 </div>
@@ -1891,25 +1907,25 @@ def main():
         # 위험도 범례 (작고 귀여운 플래그)
         st.markdown("""
         <div class="market-info">
-            <div class="market-title">🚩 Risk Levels</div>
+            <div class="market-title" style="animation: fadeInUp 0.8s ease-out;">🚩 Risk Levels</div>
             <div class="risk-item risk-high">
-                <div class="risk-title"><span class="cute-flag">🔴</span> High Risk</div>
-                <div class="risk-desc">Immediate action required</div>
-                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                <div class="risk-title" style="font-size: 0.8rem;"><span class="cute-flag">🔴</span> High Risk</div>
+                <div class="risk-desc" style="font-size: 0.7rem;">Immediate action required</div>
+                <div style="font-size: 0.65rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
                     전쟁, 자연재해, 대규모 파업
                 </div>
             </div>
             <div class="risk-item risk-medium">
-                <div class="risk-title"><span class="cute-flag">🟠</span> Medium Risk</div>
-                <div class="risk-desc">Monitor closely</div>
-                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                <div class="risk-title" style="font-size: 0.8rem;"><span class="cute-flag">🟠</span> Medium Risk</div>
+                <div class="risk-desc" style="font-size: 0.7rem;">Monitor closely</div>
+                <div style="font-size: 0.65rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
                     정부정책 변화, 노동분쟁
                 </div>
             </div>
             <div class="risk-item risk-low">
-                <div class="risk-title"><span class="cute-flag">🟢</span> Low Risk</div>
-                <div class="risk-desc">Normal operations</div>
-                <div style="font-size: 0.6rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
+                <div class="risk-title" style="font-size: 0.8rem;"><span class="cute-flag">🟢</span> Low Risk</div>
+                <div class="risk-desc" style="font-size: 0.7rem;">Normal operations</div>
+                <div style="font-size: 0.65rem; color: #7f8c8d; margin-top: 0.25rem; line-height: 1.2;">
                     일반적 운영상 이슈
                 </div>
             </div>
@@ -1920,7 +1936,7 @@ def main():
         exchange_rates = get_exchange_rates()
         st.markdown("""
         <div class="market-info">
-            <div class="market-title">💱 Exchange Rates (Naver Finance)</div>
+            <div class="market-title" style="animation: fadeInUp 0.8s ease-out;">💱 Exchange Rates (Naver Finance)</div>
         """, unsafe_allow_html=True)
         
         # 환율 정보를 더 상세하게 표시
@@ -1949,12 +1965,12 @@ def main():
                 change_symbol = "▲" if change >= 0 else "▼"
                 
                 st.markdown(f"""
-                <div class="market-item">
+                <div class="market-item" style="margin-bottom: 0.5rem; padding: 0.4rem; border-radius: 6px; background: #f8f9fa;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>{currency_name}</span>
+                        <span style="font-size: 0.8rem; font-weight: 500;">{currency_name}</span>
                         <div style="text-align: right;">
-                            <div style="font-weight: bold;">{formatted_rate} {unit}</div>
-                            <div style="font-size: 0.6rem; color: {change_color};">
+                            <div style="font-weight: bold; font-size: 0.85rem;">{formatted_rate} {unit}</div>
+                            <div style="font-size: 0.65rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} {abs(change):.2f} ({change_percent:+.2f}%)
                             </div>
                         </div>
@@ -1974,7 +1990,7 @@ def main():
         commodity_prices = get_lme_prices()
         st.markdown("""
         <div class="market-info">
-            <div class="market-title">⛏️ Commodity Prices (LME)</div>
+            <div class="market-title" style="animation: fadeInUp 0.8s ease-out;">⛏️ Commodity Prices (LME)</div>
         """, unsafe_allow_html=True)
         
         # 광물별 아이콘과 단위 정보
@@ -2008,12 +2024,12 @@ def main():
                 change_symbol = "▲" if change >= 0 else "▼"
                 
                 st.markdown(f"""
-                <div class="market-item">
+                <div class="market-item" style="margin-bottom: 0.5rem; padding: 0.4rem; border-radius: 6px; background: #f8f9fa;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>{icon} {commodity}</span>
+                        <span style="font-size: 0.8rem; font-weight: 500;">{icon} {commodity}</span>
                         <div style="text-align: right;">
-                            <div style="font-weight: bold;">{formatted_price}{unit}</div>
-                            <div style="font-size: 0.6rem; color: {change_color};">
+                            <div style="font-weight: bold; font-size: 0.85rem;">{formatted_price}{unit}</div>
+                            <div style="font-size: 0.65rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} ${abs(change):.2f} ({change_percent:+.2f}%)
                             </div>
                         </div>

@@ -207,15 +207,23 @@ st.markdown("""
         transform: translateX(2px);
     }
     
-    /* 지도 컨테이너 - 더 크게 */
+    /* 지도 컨테이너 - 크기 조정 */
     .map-wrapper {
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 0.75rem;
+        padding: 0.5rem;
         margin-bottom: 0.75rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         animation: fadeInUp 0.8s ease-out;
+        overflow: hidden;
+        max-width: 100%;
+    }
+    
+    /* 지도 자체 크기 제한 */
+    .map-container {
+        max-width: 100%;
+        overflow: hidden;
     }
     
     /* 위험도 표시 - 작고 귀여운 플래그 */
@@ -265,24 +273,25 @@ st.markdown("""
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 6px;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.7rem;
+        padding: 0.4rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.65rem;
         animation: fadeInUp 0.6s ease-out;
     }
     
     .market-title {
         font-weight: 600;
         color: #2c3e50;
-        margin: 0 0 0.3rem 0;
-        font-size: 0.75rem;
+        margin: 0 0 0.25rem 0;
+        font-size: 0.7rem;
     }
     
     .market-item {
         display: flex;
         justify-content: space-between;
-        margin: 0.2rem 0;
+        margin: 0.15rem 0;
         color: #7f8c8d;
+        font-size: 0.6rem;
     }
     
     /* 섹션 헤더 */
@@ -446,33 +455,33 @@ def get_exchange_rates():
         }
 
 def get_lme_prices():
-    """LME 주요 광물 시세 가져오기"""
+    """주요 광물 시세 가져오기 (금, 은, 석유, 구리, 우라늄)"""
     try:
-        # LME 주요 광물 시세 (USD/ton)
+        # 주요 광물 시세
         base_prices = {
-            "Copper": 8425.50,
-            "Aluminum": 2180.30,
-            "Zinc": 2485.75,
-            "Nickel": 16520.80,
-            "Lead": 1985.40
+            "Gold": 2650.80,      # USD/oz
+            "Silver": 32.45,      # USD/oz
+            "Oil": 78.50,         # USD/barrel
+            "Copper": 8425.50,    # USD/ton
+            "Uranium": 95.20      # USD/lb
         }
         
         # 랜덤 변동 추가 (±1%)
-        lme_prices = {}
-        for metal, price in base_prices.items():
+        commodity_prices = {}
+        for commodity, price in base_prices.items():
             variation = random.uniform(-0.01, 0.01)
             new_price = price * (1 + variation)
-            lme_prices[metal] = round(new_price, 2)
+            commodity_prices[commodity] = round(new_price, 2)
         
-        return lme_prices
+        return commodity_prices
         
     except Exception as e:
         return {
+            "Gold": 2650.80,
+            "Silver": 32.45,
+            "Oil": 78.50,
             "Copper": 8425.50,
-            "Aluminum": 2180.30,
-            "Zinc": 2485.75,
-            "Nickel": 16520.80,
-            "Lead": 1985.40
+            "Uranium": 95.20
         }
 
 def get_scm_risk_locations():
@@ -598,13 +607,11 @@ def create_risk_map():
     """SCM Risk 지도 생성"""
     risk_locations = get_scm_risk_locations()
     
-    # 지도 생성 (더 작게)
+    # 지도 생성 (크기 조정)
     m = folium.Map(
         location=[20, 0],
         zoom_start=2,
-        tiles='CartoDB positron',
-        width=300,
-        height=200
+        tiles='CartoDB positron'
     )
     
     # 위험도별 색상 매핑
@@ -666,26 +673,32 @@ def create_risk_map():
     
     return m, risk_locations
 
-def crawl_scm_risk_news(num_results: int = 100) -> List[Dict]:
+def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> List[Dict]:
     """SCM Risk 관련 뉴스 크롤링"""
     try:
-        # SCM Risk 관련 키워드들
-        scm_keywords = [
-            "supply chain risk",
-            "logistics disruption", 
-            "global supply chain",
-            "manufacturing shortage",
-            "shipping crisis",
-            "port congestion",
-            "trade war",
-            "semiconductor shortage",
-            "energy crisis",
-            "food security"
-        ]
+        # 검색어가 있으면 사용, 없으면 기본 SCM 키워드 사용
+        if search_query:
+            # 검색어에 SCM 관련 키워드 추가
+            enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
+            encoded_query = urllib.parse.quote(enhanced_query)
+        else:
+            # SCM Risk 관련 키워드들
+            scm_keywords = [
+                "supply chain risk",
+                "logistics disruption", 
+                "global supply chain",
+                "manufacturing shortage",
+                "shipping crisis",
+                "port congestion",
+                "trade war",
+                "semiconductor shortage",
+                "energy crisis",
+                "food security"
+            ]
+            # 랜덤하게 키워드 선택
+            selected_keyword = random.choice(scm_keywords)
+            encoded_query = urllib.parse.quote(selected_keyword)
         
-        # 랜덤하게 키워드 선택
-        selected_keyword = random.choice(scm_keywords)
-        encoded_query = urllib.parse.quote(selected_keyword)
         news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
         
         # 실제 뉴스 크롤링
@@ -731,9 +744,9 @@ def crawl_scm_risk_news(num_results: int = 100) -> List[Dict]:
         
     except Exception as e:
         st.error(f"뉴스 크롤링 오류: {e}")
-        return generate_scm_backup_news(num_results)
+        return generate_scm_backup_news(num_results, search_query)
 
-def generate_scm_backup_news(num_results: int) -> List[Dict]:
+def generate_scm_backup_news(num_results: int, search_query: str = None) -> List[Dict]:
     """SCM Risk 백업 뉴스 생성"""
     articles = []
     
@@ -813,12 +826,30 @@ def generate_scm_backup_news(num_results: int) -> List[Dict]:
         }
     ]
     
+    # 검색어가 있으면 관련 뉴스만 필터링
+    filtered_news_data = scm_news_data
+    if search_query:
+        search_lower = search_query.lower()
+        filtered_news_data = [
+            news for news in scm_news_data 
+            if search_lower in news['title'].lower() or search_lower in news['description'].lower()
+        ]
+        # 필터링된 결과가 없으면 원본 데이터 사용
+        if not filtered_news_data:
+            filtered_news_data = scm_news_data
+    
     # 뉴스 생성
     for i in range(num_results):
         site = random.choice(news_sites)
-        news_data = scm_news_data[i % len(scm_news_data)]
+        news_data = filtered_news_data[i % len(filtered_news_data)]
+        
+        # 검색어가 있으면 제목에 강조 표시
+        title = news_data['title']
+        if search_query and search_query.lower() in title.lower():
+            title = title.replace(search_query, f"**{search_query}**")
+        
         article = {
-            'title': news_data['title'],
+            'title': title,
             'url': site['url'],
             'source': site['name'],
             'published_time': (datetime.now() - timedelta(hours=random.randint(0, 24))).strftime('%Y-%m-%d %H:%M'),
@@ -838,8 +869,8 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 메인 레이아웃
-    col1, col2, col3 = st.columns([1, 2.5, 1])
+    # 메인 레이아웃 - 우측 컬럼을 더 작게
+    col1, col2, col3 = st.columns([1, 2.5, 0.8])
     
     # 좌측 컬럼 - 통합 정보
     with col1:
@@ -868,8 +899,27 @@ def main():
         
         # Streamlit 검색 입력
         search_query = st.text_input("", placeholder="Search SCM news...", key="search_input")
-        if search_query:
-            st.info(f"Searching for: {search_query}")
+        
+        # 검색 버튼
+        if st.button("Search", key="search_button"):
+            if search_query:
+                with st.spinner(f"Searching for: {search_query}..."):
+                    # 새로운 검색 결과 로드
+                    st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    st.session_state.search_query = search_query
+                    st.rerun()
+            else:
+                st.warning("Please enter a search term")
+        
+        # 검색어 표시
+        if 'search_query' in st.session_state and st.session_state.search_query:
+            st.info(f"🔍 Current search: {st.session_state.search_query}")
+            if st.button("Clear Search", key="clear_search"):
+                st.session_state.search_query = ""
+                st.session_state.scm_articles = crawl_scm_risk_news(50)
+                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                st.rerun()
     
     # 중앙 컬럼 - 뉴스
     with col2:
@@ -882,10 +932,14 @@ def main():
         # 뉴스 헤더
         if st.session_state.scm_articles:
             load_time = st.session_state.get('scm_load_time', datetime.now().strftime('%H:%M'))
+            search_status = ""
+            if 'search_query' in st.session_state and st.session_state.search_query:
+                search_status = f" | 🔍 Search: {st.session_state.search_query}"
+            
             st.markdown(f"""
             <div class="unified-info-card">
                 <h3 class="section-header">SCM Risk News ({len(st.session_state.scm_articles)} articles)</h3>
-                <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}</p>
+                <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}{search_status}</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -906,12 +960,12 @@ def main():
     
     # 우측 컬럼 - 지도와 시장 정보
     with col3:
-        # 지도 (더 크게)
+        # 지도 (크기 조정)
         st.markdown('<h3 class="section-header">Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=350, height=250, returned_objects=[])
+            st_folium(risk_map, width=280, height=200, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")
@@ -952,18 +1006,29 @@ def main():
         
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # LME 시세
-        lme_prices = get_lme_prices()
+        # 주요 광물 시세
+        commodity_prices = get_lme_prices()
         st.markdown("""
         <div class="market-info">
-            <div class="market-title">⛏️ LME Prices (USD/ton)</div>
+            <div class="market-title">⛏️ Commodity Prices</div>
         """, unsafe_allow_html=True)
         
-        for metal, price in lme_prices.items():
+        for commodity, price in commodity_prices.items():
+            # 단위 표시
+            unit = ""
+            if commodity in ["Gold", "Silver"]:
+                unit = "/oz"
+            elif commodity == "Oil":
+                unit = "/barrel"
+            elif commodity == "Copper":
+                unit = "/ton"
+            elif commodity == "Uranium":
+                unit = "/lb"
+            
             st.markdown(f"""
             <div class="market-item">
-                <span>{metal}</span>
-                <span>${price:,}</span>
+                <span>{commodity}</span>
+                <span>${price:,}{unit}</span>
             </div>
             """, unsafe_allow_html=True)
         

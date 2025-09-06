@@ -1631,7 +1631,7 @@ def main():
                 # SCM Risk News 배너 (언어 선택 제거)
                 st.markdown(f"""
                 <div class="unified-info-card">
-                    <h3 class="section-header" style="margin: 0 0 0.5rem 0;">SCM Risk News</h3>
+                    <h3 class="section-header" style="margin: 0 0 0.5rem 0; animation: fadeInUp 0.8s ease-out;">SCM Risk News</h3>
                     <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1674,7 +1674,7 @@ def main():
         # 뉴스 정렬 옵션 추가 (컴팩트하게)
         st.markdown("""
         <div style="margin-bottom: 0.5rem;">
-            <h4 style="font-size: 0.8rem; margin: 0 0 0.25rem 0; color: #2c3e50;">📊 Sort Options</h4>
+            <h4 style="font-size: 0.8rem; margin: 0 0 0.25rem 0; color: #2c3e50; animation: fadeInUp 0.8s ease-out;">📊 Sort Options</h4>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1821,7 +1821,7 @@ def main():
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
         # 실시간 정보 (시간과 날씨를 나란히 배치)
-        st.markdown('<h3 class="section-header">🌤️ Real-time Info</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header" style="animation: fadeInUp 0.8s ease-out;">🌤️ Real-time Info</h3>', unsafe_allow_html=True)
         
         # 한국 시간 정보와 날씨 정보를 나란히 배치
         col_time, col_weather = st.columns([1, 1])
@@ -1870,7 +1870,7 @@ def main():
             """, unsafe_allow_html=True)
         
         # Risk Map (아래로 이동하고 크기 조정)
-        st.markdown('<h3 class="section-header">🗺️ Risk Map</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header" style="animation: fadeInUp 0.8s ease-out;">🗺️ Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
             # 지도 컨테이너로 감싸서 크기 조정

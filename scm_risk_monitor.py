@@ -78,7 +78,7 @@ st.markdown("""
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 1rem;
+        padding: 1.2rem;
         margin-bottom: 0.75rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
@@ -110,10 +110,39 @@ st.markdown("""
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 8px;
-        padding: 0.75rem;
+        padding: 1rem;
         margin-bottom: 0.75rem;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         animation: fadeInUp 0.8s ease-out;
+    }
+    
+    /* Streamlit 입력 필드 스타일 제거 */
+    .stTextInput > div > div > input {
+        border: 1px solid #e1e5e9 !important;
+        border-radius: 6px !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border: 1px solid #3498db !important;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2) !important;
+    }
+    
+    /* Streamlit 버튼 스타일 */
+    .stButton > button {
+        background: #3498db !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .stButton > button:hover {
+        background: #2980b9 !important;
+        transform: translateY(-1px) !important;
     }
     
     /* 뉴스 카드 - Motion 효과 */
@@ -273,8 +302,8 @@ st.markdown("""
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 6px;
-        padding: 0.4rem;
-        margin-bottom: 0.4rem;
+        padding: 0.6rem;
+        margin-bottom: 0.5rem;
         font-size: 0.65rem;
         animation: fadeInUp 0.6s ease-out;
     }
@@ -869,8 +898,8 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 메인 레이아웃 - 우측 컬럼을 더 작게
-    col1, col2, col3 = st.columns([1, 2.5, 0.8])
+    # 메인 레이아웃 - 균형잡힌 비율로 조정
+    col1, col2, col3 = st.columns([1.2, 2.2, 1.1])
     
     # 좌측 컬럼 - 통합 정보
     with col1:
@@ -965,7 +994,7 @@ def main():
         try:
             risk_map, risk_locations = create_risk_map()
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=280, height=200, returned_objects=[])
+            st_folium(risk_map, width=320, height=220, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")

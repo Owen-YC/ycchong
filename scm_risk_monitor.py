@@ -312,7 +312,7 @@ st.markdown("""
         font-weight: 600;
         color: #2c3e50;
         margin: 0 0 0.25rem 0;
-        font-size: 0.7rem;
+        font-size: 0.85rem;
     }
     
     .market-item {
@@ -320,7 +320,7 @@ st.markdown("""
         justify-content: space-between;
         margin: 0.15rem 0;
         color: #7f8c8d;
-        font-size: 0.6rem;
+        font-size: 0.8rem;
     }
     
     /* 섹션 헤더 */
@@ -909,16 +909,54 @@ def main():
                 st.session_state.scm_articles = crawl_scm_risk_news(50)
                 st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         
-        # 뉴스 헤더
+        # 뉴스 헤더와 검색 기능
         if st.session_state.scm_articles:
             load_time = st.session_state.get('scm_load_time', datetime.now().strftime('%H:%M'))
             
-            st.markdown(f"""
-            <div class="unified-info-card">
-                <h3 class="section-header">SCM Risk News ({len(st.session_state.scm_articles)} articles)</h3>
-                <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            # 헤더와 검색을 같은 행에 배치
+            col_header, col_search = st.columns([2, 1])
+            
+            with col_header:
+                st.markdown(f"""
+                <div class="unified-info-card">
+                    <h3 class="section-header">SCM Risk News</h3>
+                    <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_search:
+                st.markdown("""
+                <div class="search-section">
+                    <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">🔍 Search News</h4>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # 검색 입력과 버튼을 같은 행에 배치
+                search_col1, search_col2 = st.columns([3, 1])
+                
+                with search_col1:
+                    search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
+                
+                with search_col2:
+                    if st.button("Search", key="search_button", use_container_width=True):
+                        if search_query:
+                            with st.spinner(f"Searching for: {search_query}..."):
+                                # 새로운 검색 결과 로드
+                                st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
+                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                st.session_state.search_query = search_query
+                                st.rerun()
+                        else:
+                            st.warning("Please enter a search term")
+                
+                # 검색어 표시 및 클리어 버튼
+                if 'search_query' in st.session_state and st.session_state.search_query:
+                    st.info(f"🔍 Current: {st.session_state.search_query}")
+                    if st.button("Clear", key="clear_search", use_container_width=True):
+                        st.session_state.search_query = ""
+                        st.session_state.scm_articles = crawl_scm_risk_news(50)
+                        st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                        st.rerun()
             
             # 뉴스 리스트 (Motion 효과 + 설명)
             for i, article in enumerate(st.session_state.scm_articles, 1):
@@ -937,12 +975,12 @@ def main():
     
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
-        # 지도 (크기 조정)
-        st.markdown('<h3 class="section-header">Risk Map</h3>', unsafe_allow_html=True)
+        # 지도 (크기 조정 및 이름 변경)
+        st.markdown('<h3 class="section-header">Risk Detecting Area</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=320, height=220, returned_objects=[])
+            st_folium(risk_map, width=400, height=300, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")

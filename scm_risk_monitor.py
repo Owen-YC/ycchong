@@ -878,57 +878,6 @@ def extract_keywords_from_title(title):
     
     # 정확히 5개만 반환
     return selected_hashtags[:5]
-        'gas': '#가스',
-        'commodity': '#상품',
-        'raw material': '#원자재',
-        'steel': '#철강',
-        'copper': '#구리',
-        'aluminum': '#알루미늄',
-        
-        # 기술/AI 관련
-        'ai': '#AI',
-        'artificial intelligence': '#인공지능',
-        'technology': '#기술',
-        'digital': '#디지털',
-        'automation': '#자동화',
-        'innovation': '#혁신',
-        
-        # 지역/국가 관련
-        'china': '#중국',
-        'usa': '#미국',
-        'europe': '#유럽',
-        'asia': '#아시아',
-        'global': '#글로벌',
-        'international': '#국제',
-        
-        # 기타
-        'security': '#보안',
-        'sustainability': '#지속가능성',
-        'environment': '#환경',
-        'climate': '#기후',
-        'food': '#식품',
-        'healthcare': '#의료',
-        'retail': '#소매'
-    }
-    
-    # 제목을 소문자로 변환
-    title_lower = title.lower()
-    
-    # 키워드 추출
-    found_keywords = []
-    for keyword, hashtag in keyword_mapping.items():
-        if keyword in title_lower:
-            found_keywords.append(hashtag)
-    
-    # 최대 5개 키워드만 선택
-    if len(found_keywords) > 5:
-        found_keywords = found_keywords[:5]
-    
-    # 키워드가 없으면 기본 키워드 추가
-    if not found_keywords:
-        found_keywords = ['#SCM', '#공급망', '#물류']
-    
-    return found_keywords
 
 def translate_text(text, target_language='ko'):
     """간단한 번역 함수 (실제로는 번역 API 사용 권장)"""

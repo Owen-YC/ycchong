@@ -395,30 +395,6 @@ st.markdown("""
     }
 </style>
 
-<script>
-function sendEmail(title, url) {
-    const subject = encodeURIComponent(`[SCM Risk News] ${title}`);
-    const body = encodeURIComponent(`다음 뉴스를 확인해보세요:\n\n${title}\n${url}\n\nSCM Risk Monitor에서 공유`);
-    
-    // Outlook Web App URL 생성
-    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?subject=${subject}&body=${body}`;
-    
-    // Outlook이 설치되어 있으면 Outlook 앱으로, 없으면 웹으로 열기
-    try {
-        // 먼저 Outlook 앱으로 시도
-        const outlookAppUrl = `ms-outlook://compose?subject=${subject}&body=${body}`;
-        window.open(outlookAppUrl, '_blank');
-        
-        // 2초 후에도 창이 열리지 않으면 웹 버전으로 fallback
-        setTimeout(() => {
-            window.open(outlookUrl, '_blank');
-        }, 2000);
-    } catch (error) {
-        // 오류 시 웹 버전으로 fallback
-        window.open(outlookUrl, '_blank');
-    }
-}
-</script>
 """, unsafe_allow_html=True)
 
 def get_korean_time():
@@ -1834,9 +1810,9 @@ def main():
                            target="_blank" 
                            style="background: #0088cc; color: white; padding: 0.2rem 0.4rem; border-radius: 3px; text-decoration: none; font-size: 0.6rem;"
                            title="Telegram 공유">📱</a>
-                        <button onclick="sendEmail('{share_title}', '{share_url}')" 
-                                style="background: #ea4335; color: white; border: none; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.6rem; cursor: pointer;"
-                                title="이메일 공유">📧</button>
+                        <a href="mailto:?subject={share_title}&body=다음 뉴스를 확인해보세요:%0A%0A{share_title}%0A{share_url}%0A%0ASCM Risk Monitor에서 공유" 
+                           style="background: #ea4335; color: white; padding: 0.2rem 0.4rem; border-radius: 3px; text-decoration: none; font-size: 0.6rem; display: inline-block;"
+                           title="이메일 공유">📧</a>
                     </div>
                 </div>
             </div>

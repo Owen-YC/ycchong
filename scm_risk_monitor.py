@@ -1785,7 +1785,7 @@ def main():
             share_title = display_title
             
             st.markdown(f"""
-            <div class="news-item">
+            <div class="news-item" style="background: #f8f9fa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; animation: fadeInUp 0.6s ease-out;">
                 <div class="news-title">{display_title}</div>
                 <div class="news-description" style="margin: 0.5rem 0;">
                     {keywords_html}
@@ -1875,7 +1875,7 @@ def main():
             risk_map, risk_locations = create_risk_map()
             # 지도 컨테이너로 감싸서 크기 조정
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=400, height=320, returned_objects=[])
+            st_folium(risk_map, width=642, height=332, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")
@@ -1915,7 +1915,7 @@ def main():
             <div class="market-title" style="animation: fadeInUp 0.8s ease-out;">💱 Exchange Rates (Naver Finance)</div>
         """, unsafe_allow_html=True)
         
-        # 환율 정보를 더 상세하게 표시
+        # 환율 정보를 가로 2열로 배치
         currency_info = {
             "USD/KRW": {"name": "🇺🇸 USD", "unit": "원"},
             "EUR/KRW": {"name": "🇪🇺 EUR", "unit": "원"},
@@ -1923,6 +1923,9 @@ def main():
             "CNY/KRW": {"name": "🇨🇳 CNY", "unit": "원"},
             "GBP/KRW": {"name": "🇬🇧 GBP", "unit": "원"}
         }
+        
+        # 환율 정보를 2열로 배치
+        st.markdown('<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">', unsafe_allow_html=True)
         
         for pair, rate_data in exchange_rates.items():
             if pair in currency_info:
@@ -1941,18 +1944,20 @@ def main():
                 change_symbol = "▲" if change >= 0 else "▼"
                 
                 st.markdown(f"""
-                <div class="market-item" style="margin-bottom: 0.5rem; padding: 0.4rem; border-radius: 6px; background: #f8f9fa;">
+                <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.8rem; font-weight: 500;">{currency_name}</span>
+                        <span style="font-size: 0.75rem; font-weight: 500;">{currency_name}</span>
                         <div style="text-align: right;">
-                            <div style="font-weight: bold; font-size: 0.85rem;">{formatted_rate} {unit}</div>
-                            <div style="font-size: 0.65rem; color: {change_color}; font-weight: 500;">
+                            <div style="font-weight: bold; font-size: 0.8rem;">{formatted_rate} {unit}</div>
+                            <div style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} {abs(change):.2f} ({change_percent:+.2f}%)
                             </div>
                         </div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown("""
         <div style="font-size: 0.6rem; color: #95a5a6; text-align: center; margin-top: 0.5rem;">
@@ -1983,6 +1988,9 @@ def main():
             "Uranium": {"icon": "☢️", "unit": "/lb"}
         }
         
+        # LME 시세를 2열로 배치
+        st.markdown('<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">', unsafe_allow_html=True)
+        
         for commodity, price_data in commodity_prices.items():
             if commodity in commodity_info:
                 icon = commodity_info[commodity]["icon"]
@@ -2000,18 +2008,20 @@ def main():
                 change_symbol = "▲" if change >= 0 else "▼"
                 
                 st.markdown(f"""
-                <div class="market-item" style="margin-bottom: 0.5rem; padding: 0.4rem; border-radius: 6px; background: #f8f9fa;">
+                <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.8rem; font-weight: 500;">{icon} {commodity}</span>
+                        <span style="font-size: 0.75rem; font-weight: 500;">{icon} {commodity}</span>
                         <div style="text-align: right;">
-                            <div style="font-weight: bold; font-size: 0.85rem;">{formatted_price}{unit}</div>
-                            <div style="font-size: 0.65rem; color: {change_color}; font-weight: 500;">
+                            <div style="font-weight: bold; font-size: 0.8rem;">{formatted_price}{unit}</div>
+                            <div style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} ${abs(change):.2f} ({change_percent:+.2f}%)
                             </div>
                         </div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown("""
         <div style="font-size: 0.6rem; color: #95a5a6; text-align: center; margin-top: 0.5rem;">

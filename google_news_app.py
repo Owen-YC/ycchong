@@ -13,27 +13,24 @@ import json
 import pytz
 import os
 from typing import List, Dict, Optional
+import folium
+from streamlit_folium import st_folium
 
 # 페이지 설정
 st.set_page_config(
-    page_title="📰 Google News Crawler",
-    page_icon="📰",
+    page_title="🚨 SCM Risk Monitor",
+    page_icon="🚨",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2024-2025년 최신 UI/UX 트렌드 CSS
+# SCM Risk Monitor CSS
 st.markdown("""
 <style>
-    /* 전체 배경 - 다크모드 지원 */
+    /* 전체 배경 */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         min-height: 100vh;
-        transition: all 0.3s ease;
-    }
-    
-    .stApp.light-mode {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
     
     /* Glassmorphism 효과 */
@@ -64,22 +61,13 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.15);
     }
     
-    /* 다크모드 지원 */
-    .dark-mode .glass-card {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
     
-    .dark-mode .glass-card:hover {
-        background: rgba(0, 0, 0, 0.3);
-    }
-    
-    /* 메인 헤더 - 2025년 트렌드 */
+    /* 메인 헤더 - SCM Risk */
     .main-header {
         font-size: 3.5rem;
         font-weight: 900;
         text-align: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 50%, #c44569 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -88,13 +76,6 @@ st.markdown("""
         position: relative;
         animation: slideInFromTop 1s ease-out;
         text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .dark-mode .main-header {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #d299c2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
     }
     
     /* 서브 헤더 */
@@ -107,10 +88,6 @@ st.markdown("""
         letter-spacing: 0.02em;
         position: relative;
         animation: slideInFromBottom 1.2s ease-out;
-    }
-    
-    .dark-mode .sub-header {
-        color: rgba(0, 0, 0, 0.8);
     }
     
     /* 뉴스 카드 - Glassmorphism + 모션 */
@@ -472,9 +449,60 @@ st.markdown("""
         background: rgba(0, 0, 0, 0.3);
     }
     
-    .dark-mode .filter-btn.active {
-        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-        color: #333;
+    /* 날씨 정보 카드 */
+    .weather-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .weather-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* 위험 지역 플래그 */
+    .risk-flag {
+        position: relative;
+        display: inline-block;
+        margin: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .risk-flag:hover {
+        transform: scale(1.1);
+    }
+    
+    .risk-flag.high {
+        color: #ff4757;
+        text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
+    }
+    
+    .risk-flag.medium {
+        color: #ffa502;
+        text-shadow: 0 0 10px rgba(255, 165, 2, 0.5);
+    }
+    
+    .risk-flag.low {
+        color: #2ed573;
+        text-shadow: 0 0 10px rgba(46, 213, 115, 0.5);
+    }
+    
+    /* 검색 섹션 */
+    .search-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -485,13 +513,202 @@ def get_korean_time():
     now = datetime.now(korea_tz)
     return now.strftime('%Y년 %m월 %d일'), now.strftime('%H:%M:%S')
 
-def crawl_google_news(query: str, num_results: int = 20) -> List[Dict]:
-    """Google News RSS API를 사용한 실제 뉴스 크롤링"""
+def get_seoul_weather():
+    """서울 날씨 정보 가져오기 (네이버 날씨 참조)"""
     try:
-        # Google News RSS 피드 URL 구성
-        search_query = query
-        encoded_query = urllib.parse.quote(search_query)
-        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
+        # 네이버 날씨 API 대신 시뮬레이션 데이터 사용
+        # 실제로는 네이버 날씨 API나 OpenWeatherMap API 사용 가능
+        
+        # 현재 시간과 계절에 따른 현실적인 날씨 시뮬레이션
+        current_hour = datetime.now().hour
+        current_month = datetime.now().month
+        
+        # 계절별 기본 온도 설정 (서울 기준)
+        if current_month in [12, 1, 2]:  # 겨울
+            base_temp = random.randint(-8, 8)
+            conditions = ["맑음", "흐림", "눈", "안개", "구름많음"]
+        elif current_month in [3, 4, 5]:  # 봄
+            base_temp = random.randint(8, 22)
+            conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
+        elif current_month in [6, 7, 8]:  # 여름
+            base_temp = random.randint(22, 35)
+            conditions = ["맑음", "흐림", "비", "천둥번개", "구름많음"]
+        else:  # 가을
+            base_temp = random.randint(8, 25)
+            conditions = ["맑음", "흐림", "비", "안개", "구름많음"]
+        
+        # 시간대별 온도 조정
+        if 6 <= current_hour <= 12:  # 오전
+            temperature = base_temp + random.randint(0, 3)
+        elif 12 < current_hour <= 18:  # 오후
+            temperature = base_temp + random.randint(2, 6)
+        else:  # 저녁/밤
+            temperature = base_temp - random.randint(0, 4)
+        
+        condition = random.choice(conditions)
+        
+        # 습도는 날씨 조건에 따라 현실적으로 조정
+        if condition in ["비", "눈", "천둥번개"]:
+            humidity = random.randint(75, 95)
+        elif condition == "안개":
+            humidity = random.randint(65, 90)
+        elif condition == "구름많음":
+            humidity = random.randint(55, 80)
+        else:  # 맑음
+            humidity = random.randint(30, 65)
+        
+        # 체감온도 계산
+        wind_speed = random.randint(0, 12)
+        feels_like = temperature
+        if wind_speed > 5:
+            feels_like -= random.randint(1, 3)
+        if humidity > 80:
+            feels_like += random.randint(1, 3)
+        
+        return {
+            "condition": condition,
+            "temperature": temperature,
+            "humidity": humidity,
+            "feels_like": round(feels_like, 1),
+            "wind_speed": wind_speed,
+            "location": "서울"
+        }
+        
+    except Exception as e:
+        # 오류 발생 시 기본 정보 반환
+        return {
+            "condition": "맑음",
+            "temperature": 22,
+            "humidity": 60,
+            "feels_like": 22,
+            "wind_speed": 5,
+            "location": "서울"
+        }
+
+def get_scm_risk_locations():
+    """SCM Risk 발생 지역 데이터"""
+    risk_locations = [
+        {
+            "name": "우크라이나",
+            "flag": "🇺🇦",
+            "risk_level": "high",
+            "risk_type": "전쟁",
+            "description": "러시아-우크라이나 전쟁으로 인한 공급망 중단",
+            "news": [
+                "우크라이나 곡물 수출 중단으로 글로벌 식량 위기",
+                "러시아 에너지 공급 중단으로 유럽 에너지 위기",
+                "우크라이나 항구 봉쇄로 해상 운송 혼잡"
+            ]
+        },
+        {
+            "name": "홍해",
+            "flag": "🌊",
+            "risk_level": "high",
+            "risk_type": "해적활동",
+            "description": "호세이드 해적 활동으로 인한 해상 운송 위험",
+            "news": [
+                "홍해 해적 활동 증가로 운송비 상승",
+                "홍해 봉쇄로 글로벌 물류 혼잡",
+                "홍해 해적 공격으로 화물선 운항 중단"
+            ]
+        },
+        {
+            "name": "대만",
+            "flag": "🇹🇼",
+            "risk_level": "medium",
+            "risk_type": "지정학적",
+            "description": "중국-대만 관계 악화로 인한 반도체 공급 위험",
+            "news": [
+                "대만 해협 긴장으로 반도체 공급망 위기",
+                "중국-대만 관계 악화로 전자제품 공급 중단",
+                "대만 반도체 산업 지리적 위험 증가"
+            ]
+        },
+        {
+            "name": "일본 후쿠시마",
+            "flag": "🇯🇵",
+            "risk_level": "medium",
+            "risk_type": "환경",
+            "description": "원전 오염수 방류로 인한 수산물 수출 제한",
+            "news": [
+                "후쿠시마 원전 오염수 방류로 수산물 수출 제한",
+                "일본 원전 사고로 농수산물 교역 중단",
+                "후쿠시마 방사능 오염으로 식품 안전 위기"
+            ]
+        },
+        {
+            "name": "중국 상하이",
+            "flag": "🇨🇳",
+            "risk_level": "medium",
+            "risk_type": "정책",
+            "description": "중국 제조업 생산 중단으로 인한 부품 부족",
+            "news": [
+                "상하이 봉쇄로 글로벌 공급망 위기",
+                "중국 제조업 생산 중단으로 부품 부족",
+                "상하이 항구 혼잡으로 물류 지연"
+            ]
+        },
+        {
+            "name": "미국 로스앤젤레스",
+            "flag": "🇺🇸",
+            "risk_level": "low",
+            "risk_type": "노동",
+            "description": "항구 혼잡과 노동자 파업 위험",
+            "news": [
+                "LA 항구 혼잡으로 물류 지연",
+                "미국 서부 해안 노동자 파업 위기",
+                "LA 항구 자동화 시스템 도입 확대"
+            ]
+        },
+        {
+            "name": "독일 함부르크",
+            "flag": "🇩🇪",
+            "risk_level": "low",
+            "risk_type": "기술",
+            "description": "물류 디지털화 가속화",
+            "news": [
+                "함부르크 항구 물류 효율성 향상",
+                "독일 물류 디지털화 가속화",
+                "함부르크 스마트 포트 프로젝트"
+            ]
+        },
+        {
+            "name": "싱가포르",
+            "flag": "🇸🇬",
+            "risk_level": "low",
+            "risk_type": "기술",
+            "description": "물류 허브 경쟁력 강화",
+            "news": [
+                "싱가포르 물류 허브 경쟁력 강화",
+                "싱가포르 디지털 물류 플랫폼 도입",
+                "싱가포르 친환경 물류 정책"
+            ]
+        }
+    ]
+    
+    return risk_locations
+
+def crawl_scm_risk_news(num_results: int = 20) -> List[Dict]:
+    """SCM Risk 관련 뉴스 크롤링"""
+    try:
+        # SCM Risk 관련 키워드들
+        scm_keywords = [
+            "supply chain risk",
+            "logistics disruption", 
+            "global supply chain",
+            "manufacturing shortage",
+            "shipping crisis",
+            "port congestion",
+            "trade war",
+            "semiconductor shortage",
+            "energy crisis",
+            "food security"
+        ]
+        
+        # 랜덤하게 키워드 선택
+        selected_keyword = random.choice(scm_keywords)
+        encoded_query = urllib.parse.quote(selected_keyword)
+        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
         
         # 실제 뉴스 크롤링
         headers = {
@@ -527,9 +744,8 @@ def crawl_google_news(query: str, num_results: int = 20) -> List[Dict]:
                     'url': link,
                     'source': source,
                     'published_time': formatted_date,
-                    'description': f"{title} - {source}에서 제공하는 {query} 관련 뉴스입니다.",
-                    'views': random.randint(100, 5000),
-                    'category': categorize_news(title, query)
+                    'description': f"{title} - {source}에서 제공하는 SCM Risk 관련 뉴스입니다.",
+                    'views': random.randint(100, 5000)
                 }
                 articles.append(article)
         
@@ -537,7 +753,7 @@ def crawl_google_news(query: str, num_results: int = 20) -> List[Dict]:
         
     except Exception as e:
         st.error(f"뉴스 크롤링 오류: {e}")
-        return generate_backup_news(query, num_results)
+        return generate_scm_backup_news(num_results)
 
 def categorize_news(title: str, query: str) -> str:
     """뉴스 카테고리 분류"""
@@ -559,44 +775,50 @@ def categorize_news(title: str, query: str) -> str:
     
     return '기타'
 
-def generate_backup_news(query: str, num_results: int) -> List[Dict]:
-    """백업 뉴스 생성"""
+def generate_scm_backup_news(num_results: int) -> List[Dict]:
+    """SCM Risk 백업 뉴스 생성"""
     articles = []
     
     # 실제 뉴스 사이트 URL 매핑
     news_sites = [
-        {"name": "연합뉴스", "url": "https://www.yna.co.kr"},
-        {"name": "뉴스1", "url": "https://www.news1.kr"},
-        {"name": "뉴시스", "url": "https://www.newsis.com"},
-        {"name": "매일경제", "url": "https://www.mk.co.kr"},
-        {"name": "한국경제", "url": "https://www.hankyung.com"},
-        {"name": "조선일보", "url": "https://www.chosun.com"},
-        {"name": "중앙일보", "url": "https://www.joongang.co.kr"},
-        {"name": "동아일보", "url": "https://www.donga.com"}
+        {"name": "Reuters", "url": "https://www.reuters.com"},
+        {"name": "Bloomberg", "url": "https://www.bloomberg.com"},
+        {"name": "WSJ", "url": "https://www.wsj.com"},
+        {"name": "CNBC", "url": "https://www.cnbc.com"},
+        {"name": "Financial Times", "url": "https://www.ft.com"},
+        {"name": "BBC", "url": "https://www.bbc.com"},
+        {"name": "CNN", "url": "https://www.cnn.com"},
+        {"name": "AP", "url": "https://apnews.com"}
     ]
     
-    # 동적 뉴스 제목 생성
-    news_templates = [
-        f"{query} 관련 최신 동향 분석",
-        f"{query}에 대한 전문가 의견",
-        f"{query} 관련 정책 변화 소식",
-        f"{query} 시장 동향 전망",
-        f"{query} 관련 업계 반응",
-        f"{query}에 대한 상세 분석",
-        f"{query} 관련 주요 이슈",
-        f"{query} 시장 전망 보고서"
+    # SCM Risk 관련 뉴스 제목
+    scm_news_titles = [
+        "Global Supply Chain Disruptions Impact Manufacturing",
+        "Shipping Crisis Causes Port Congestion Worldwide",
+        "Semiconductor Shortage Affects Global Electronics",
+        "Energy Crisis Disrupts Global Supply Chains",
+        "Trade War Escalates Supply Chain Risks",
+        "Logistics Disruption Hits Global Commerce",
+        "Manufacturing Shortage Creates Supply Chain Bottlenecks",
+        "Port Congestion Delays Global Shipping",
+        "Supply Chain Risk Management Strategies",
+        "Global Trade Tensions Impact Supply Chains",
+        "Food Security Concerns Rise Amid Supply Chain Issues",
+        "Automotive Industry Faces Supply Chain Challenges",
+        "Technology Supply Chain Under Pressure",
+        "Healthcare Supply Chain Disruptions Continue",
+        "Retail Supply Chain Adapts to New Challenges"
     ]
     
-    for i in range(min(num_results, len(news_templates))):
+    for i in range(min(num_results, len(scm_news_titles))):
         site = random.choice(news_sites)
         article = {
-            'title': news_templates[i],
+            'title': scm_news_titles[i],
             'url': site['url'],
             'source': site['name'],
             'published_time': (datetime.now() - timedelta(hours=random.randint(0, 24))).strftime('%Y-%m-%d %H:%M'),
-            'description': f"{query}에 대한 최신 뉴스와 분석을 제공합니다.",
-            'views': random.randint(100, 5000),
-            'category': categorize_news(news_templates[i], query)
+            'description': f"SCM Risk 관련 최신 뉴스와 분석을 제공합니다.",
+            'views': random.randint(100, 5000)
         }
         articles.append(article)
     
@@ -634,40 +856,50 @@ def get_category_stats(articles: List[Dict]) -> Dict[str, int]:
     return stats
 
 def main():
-    # 테마 토글 버튼
-    if 'dark_mode' not in st.session_state:
-        st.session_state.dark_mode = False
+    # 메인 레이아웃
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    # 사이드바
-    with st.sidebar:
-        st.markdown("""
-        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-            <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🎨 테마 설정</h3>
+    # 좌측 컬럼 - 시간, 날씨, 검색
+    with col1:
+        # 서울 시간
+        date_str, time_str = get_korean_time()
+        st.markdown(f"""
+        <div class="weather-card">
+            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🇰🇷 서울 시간</h4>
+            <p style="color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 1.1rem; margin-bottom: 0.5rem;"><strong>{date_str}</strong></p>
+            <p style="color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 1.3rem; font-weight: bold;"><strong>{time_str}</strong></p>
         </div>
         """, unsafe_allow_html=True)
         
-        if st.button("🌙 다크모드" if not st.session_state.dark_mode else "☀️ 라이트모드"):
-            st.session_state.dark_mode = not st.session_state.dark_mode
-            st.rerun()
+        # 서울 날씨
+        weather_info = get_seoul_weather()
+        st.markdown(f"""
+        <div class="weather-card">
+            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🌤️ 서울 날씨</h4>
+            <p style="color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 1.1rem; margin-bottom: 0.5rem;">☁️ {weather_info['condition']}</p>
+            <p style="color: rgba(255, 255, 255, 0.8); text-align: center; font-size: 1.3rem; font-weight: bold; margin-bottom: 0.5rem;">🌡️ {weather_info['temperature']}°C</p>
+            <p style="color: rgba(255, 255, 255, 0.7); text-align: center; font-size: 0.9rem;">체감 {weather_info['feels_like']}°C | 습도 {weather_info['humidity']}% | 풍속 {weather_info['wind_speed']}m/s</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # 검색 설정
+        # 검색 섹션
         st.markdown("""
-        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-            <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🔍 뉴스 검색</h3>
+        <div class="search-section">
+            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🔍 뉴스 검색</h4>
         </div>
         """, unsafe_allow_html=True)
         
         with st.form("search_form"):
-            query = st.text_input("검색 키워드", placeholder="예: 인공지능, 반도체, 경제...", value="")
+            query = st.text_input("Keyword", placeholder="예: supply chain, logistics...", value="")
             num_results = st.slider("검색 결과 개수", 10, 50, 20)
-            submit_button = st.form_submit_button("🔍 검색", type="primary")
+            submit_button = st.form_submit_button("Search", type="primary")
             
             if submit_button:
                 if not query.strip():
                     st.error("검색어를 입력해주세요!")
                 else:
                     with st.spinner("뉴스를 검색하고 있습니다..."):
-                        articles = crawl_google_news(query, num_results)
+                        articles = crawl_scm_risk_news(num_results)
                         
                         if articles:
                             st.success(f"✅ '{query}' 키워드로 {len(articles)}개의 뉴스를 찾았습니다!")
@@ -676,105 +908,133 @@ def main():
                             st.session_state.search_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         else:
                             st.warning(f"'{query}' 키워드로 검색 결과가 없습니다.")
+    
+    # 중앙 컬럼 - 메인 뉴스
+    with col2:
+        # 헤더
+        st.markdown('<h1 class="main-header">🚨 SCM Risk Monitor</h1>', unsafe_allow_html=True)
+        st.markdown('<h2 class="sub-header">🌍 글로벌 공급망 위험을 실시간으로 모니터링하세요</h2>', unsafe_allow_html=True)
         
-        # 실시간 정보
-        if 'articles' in st.session_state and st.session_state.articles:
-            st.markdown("""
-            <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">📊 검색 통계</h3>
+        # SCM Risk 뉴스 자동 로드
+        if 'scm_articles' not in st.session_state:
+            with st.spinner("SCM Risk 뉴스를 로딩하고 있습니다..."):
+                st.session_state.scm_articles = crawl_scm_risk_news(15)
+                st.session_state.scm_load_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # SCM Risk 뉴스 표시
+        if st.session_state.scm_articles:
+            load_time = st.session_state.get('scm_load_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            st.markdown(f"""
+            <div class="search-section">
+                <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem;">🚨 SCM Risk 최신 뉴스</h4>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                    📰 총 {len(st.session_state.scm_articles)}개 기사 | 
+                    🕒 업데이트: {load_time}
+                </p>
             </div>
             """, unsafe_allow_html=True)
             
-            stats = get_category_stats(st.session_state.articles)
-            
-            for category, count in stats.items():
+            # 뉴스 카드들
+            for i, article in enumerate(st.session_state.scm_articles, 1):
                 st.markdown(f"""
-                <div class="stats-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="color: rgba(255, 255, 255, 0.9); font-weight: 600;">{category}</span>
-                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">{count}</span>
+                <div class="news-card">
+                    <div class="news-title">{i}. {article['title']}</div>
+                    <div class="news-meta">
+                        <span class="news-source">📰 {article['source']}</span>
+                        <span class="news-time">🕒 {article['published_time']}</span>
+                        <span class="news-views">👁️ {article['views']:,} 조회</span>
                     </div>
+                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem; line-height: 1.6;">
+                        {article['description']}
+                    </div>
+                    <a href="{article['url']}" target="_blank" class="news-link">
+                        🔗 원문 보기
+                    </a>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # 검색 결과가 있는 경우 표시
+        if 'articles' in st.session_state and st.session_state.articles:
+            search_time = st.session_state.get('search_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            st.markdown(f"""
+            <div class="search-section">
+                <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem;">🔍 검색 결과</h4>
+                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
+                    키워드: <strong>"{st.session_state.query}"</strong> | 
+                    📰 총 {len(st.session_state.articles)}개 기사 | 
+                    🕒 검색 시간: {search_time}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # 검색 결과 뉴스 카드들
+            for i, article in enumerate(st.session_state.articles, 1):
+                st.markdown(f"""
+                <div class="news-card">
+                    <div class="news-title">{i}. {article['title']}</div>
+                    <div class="news-meta">
+                        <span class="news-source">📰 {article['source']}</span>
+                        <span class="news-time">🕒 {article['published_time']}</span>
+                        <span class="news-views">👁️ {article['views']:,} 조회</span>
+                    </div>
+                    <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem; line-height: 1.6;">
+                        {article['description']}
+                    </div>
+                    <a href="{article['url']}" target="_blank" class="news-link">
+                        🔗 원문 보기
+                    </a>
                 </div>
                 """, unsafe_allow_html=True)
     
-    # 메인 컨텐츠
-    # 헤더
-    st.markdown('<h1 class="main-header">📰 Google News Crawler</h1>', unsafe_allow_html=True)
-    st.markdown('<h2 class="sub-header">🌍 최신 뉴스를 실시간으로 검색하고 분석하세요</h2>', unsafe_allow_html=True)
-    
-    # 환영 메시지
-    date_str, time_str = get_korean_time()
-    st.markdown(f"""
-    <div class="welcome-message">
-        🎉 안녕하세요! 현재 시간: {date_str} {time_str}<br>
-        원하는 키워드로 최신 뉴스를 검색해보세요!
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 뉴스 표시
-    if 'articles' in st.session_state and st.session_state.articles:
-        # 필터링 옵션
-        col1, col2 = st.columns([1, 1])
-        
-        with col1:
-            categories = ["전체"] + list(set(article.get('category', '기타') for article in st.session_state.articles))
-            selected_category = st.selectbox("카테고리", categories, key="category_filter")
-        
-        with col2:
-            sort_options = ["최신순", "조회순", "제목순", "출처순"]
-            selected_sort = st.selectbox("정렬 기준", sort_options, key="sort_filter")
-        
-        # 필터링된 뉴스 표시
-        filtered_articles = filter_articles(st.session_state.articles, selected_category, selected_sort)
-        
-        # 검색 정보
-        search_time = st.session_state.get('search_time', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        st.markdown(f"""
-        <div class="search-section">
-            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem;">🔍 검색 결과</h4>
-            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">
-                키워드: <strong>"{st.session_state.query}"</strong> | 
-                📰 총 {len(filtered_articles)}개 기사 | 
-                🕒 검색 시간: {search_time}
-            </p>
+    # 우측 컬럼 - SCM Risk 지역 플래그
+    with col3:
+        st.markdown("""
+        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🚨 SCM Risk 지역</h3>
         </div>
         """, unsafe_allow_html=True)
         
-        # 뉴스 카드들
-        for i, article in enumerate(filtered_articles, 1):
+        # 위험 지역 플래그들
+        risk_locations = get_scm_risk_locations()
+        
+        for location in risk_locations:
+            risk_class = location['risk_level']
             st.markdown(f"""
-            <div class="news-card">
-                <div class="news-title">{i}. {article['title']}</div>
-                <div class="news-meta">
-                    <span class="news-source">📰 {article['source']}</span>
-                    <span class="news-time">🕒 {article['published_time']}</span>
-                    <span class="news-views">👁️ {article['views']:,} 조회</span>
+            <div class="risk-flag {risk_class}" style="margin-bottom: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.1); border-radius: 10px; cursor: pointer;" 
+                 onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" 
+                 onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">{location['flag']}</div>
+                    <div style="color: rgba(255, 255, 255, 0.9); font-weight: bold; margin-bottom: 0.3rem;">{location['name']}</div>
+                    <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem; margin-bottom: 0.3rem;">{location['risk_type']}</div>
+                    <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.7rem; text-align: left;">{location['description']}</div>
                 </div>
-                <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem; line-height: 1.6;">
-                    {article['description']}
-                </div>
-                <a href="{article['url']}" target="_blank" class="news-link">
-                    🔗 원문 보기
-                </a>
             </div>
             """, unsafe_allow_html=True)
-    else:
-        # 빈 상태
+        
+        # 위험도 범례
         st.markdown("""
-        <div class="empty-state">
-            <div class="empty-state-icon">📰</div>
-            <h3 style="color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem;">뉴스를 검색해보세요!</h3>
-            <p style="color: rgba(255, 255, 255, 0.5); font-size: 1.1rem;">
-                사이드바에서 원하는 키워드를 입력하고 검색 버튼을 눌러보세요.<br>
-                최신 뉴스를 실시간으로 가져와드립니다.
-            </p>
+        <div class="glass-card" style="padding: 1.5rem; margin-top: 2rem;">
+            <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem; text-align: center;">🚨 위험도 범례</h4>
+            <div style="margin-bottom: 0.5rem;">
+                <span style="color: #ff4757; font-weight: bold;">🔴 높음</span>
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem;"> - 즉시 대응 필요</span>
+            </div>
+            <div style="margin-bottom: 0.5rem;">
+                <span style="color: #ffa502; font-weight: bold;">🟠 중간</span>
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem;"> - 모니터링 필요</span>
+            </div>
+            <div style="margin-bottom: 0.5rem;">
+                <span style="color: #2ed573; font-weight: bold;">🟢 낮음</span>
+                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.8rem;"> - 정상 운영</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
     
     # 푸터
     st.markdown("""
     <div style="text-align: center; margin-top: 3rem; padding: 2rem; color: rgba(255, 255, 255, 0.6);">
-        <p>📰 Google News Crawler | 2024-2025년 최신 UI/UX 트렌드 적용</p>
+        <p>🚨 SCM Risk Monitor | 글로벌 공급망 위험 실시간 모니터링</p>
         <p>Made with ❤️ using Streamlit</p>
     </div>
     """, unsafe_allow_html=True)

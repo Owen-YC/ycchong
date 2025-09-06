@@ -8,3 +8,4 @@ pytz
 lxml
 folium
 streamlit-folium
+selenium

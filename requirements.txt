@@ -9,3 +9,5 @@ lxml
 folium
 streamlit-folium
 selenium
+newspaper3k
+google-genai

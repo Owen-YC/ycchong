@@ -1453,20 +1453,20 @@ def main():
             
             with col_header:
                 # SCM Risk News 배너와 언어 선택을 함께 배치
-        st.markdown(f"""
-        <div class="unified-info-card">
+                st.markdown(f"""
+                <div class="unified-info-card">
                     <h3 class="section-header">SCM Risk News</h3>
                     <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
-            </div>
+                </div>
                 """, unsafe_allow_html=True)
                 
                 # 언어 전환 버튼을 작게 배너 아래에 배치
                 st.markdown("""
                 <div style="margin-top: 0.5rem; margin-bottom: 1rem;">
                     <div style="font-size: 0.7rem; color: #7f8c8d; margin-bottom: 0.25rem;">🌐 Language</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
+                </div>
+                """, unsafe_allow_html=True)
+                
                 # 언어 전환 버튼 (작은 크기)
                 lang_col1, lang_col2 = st.columns(2)
                 with lang_col1:
@@ -1487,12 +1487,12 @@ def main():
                 """, unsafe_allow_html=True)
             
             with col_search:
-        st.markdown("""
-        <div class="search-section">
+                st.markdown("""
+                <div class="search-section">
                     <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">🔍 Search News</h4>
-        </div>
-        """, unsafe_allow_html=True)
-        
+                </div>
+                """, unsafe_allow_html=True)
+                
                 # 검색 입력과 버튼을 같은 행에 배치
                 search_col1, search_col2 = st.columns([3, 1])
                 
@@ -1501,98 +1501,98 @@ def main():
                 
                 with search_col2:
                     if st.button("Search", key="search_button", use_container_width=True):
-            if search_query:
-                with st.spinner(f"Searching for: {search_query}..."):
-                    # 새로운 검색 결과 로드
-                    st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
-                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                    st.session_state.search_query = search_query
-                    st.rerun()
-            else:
-                st.warning("Please enter a search term")
-        
+                        if search_query:
+                            with st.spinner(f"Searching for: {search_query}..."):
+                                # 새로운 검색 결과 로드
+                                st.session_state.scm_articles = crawl_scm_risk_news(50, search_query)
+                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                st.session_state.search_query = search_query
+                                st.rerun()
+                        else:
+                            st.warning("Please enter a search term")
+                
                 # 검색어 표시 및 클리어 버튼
-        if 'search_query' in st.session_state and st.session_state.search_query:
+                if 'search_query' in st.session_state and st.session_state.search_query:
                     st.info(f"🔍 Current: {st.session_state.search_query}")
                     if st.button("Clear", key="clear_search", use_container_width=True):
-                st.session_state.search_query = ""
-                st.session_state.scm_articles = crawl_scm_risk_news(50)
-                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                st.rerun()
-    
-            # 뉴스 정렬 옵션 추가
-            st.markdown("""
-            <div style="margin-bottom: 1rem;">
-                <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">📊 Sort Options</h4>
+                        st.session_state.search_query = ""
+                        st.session_state.scm_articles = crawl_scm_risk_news(50)
+                        st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                        st.rerun()
+        
+        # 뉴스 정렬 옵션 추가
+        st.markdown("""
+        <div style="margin-bottom: 1rem;">
+            <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">📊 Sort Options</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        sort_col1, sort_col2 = st.columns([1, 1])
+        with sort_col1:
+            sort_option = st.selectbox(
+                "정렬 기준",
+                ["최신순", "조회순", "제목순", "출처순"],
+                key="sort_news",
+                label_visibility="collapsed"
+                )
+        
+        # 뉴스 정렬
+        sorted_articles = st.session_state.scm_articles.copy()
+        if sort_option == "최신순":
+            sorted_articles.sort(key=lambda x: x['published_time'], reverse=True)
+        elif sort_option == "조회순":
+            sorted_articles.sort(key=lambda x: x['views'], reverse=True)
+        elif sort_option == "제목순":
+            sorted_articles.sort(key=lambda x: x['title'])
+        elif sort_option == "출처순":
+            sorted_articles.sort(key=lambda x: x['source'])
+        
+        # 뉴스 리스트 (Motion 효과 + 해시태그 + 번역)
+        for i, article in enumerate(sorted_articles, 1):
+            # 키워드 안전하게 처리 (기존 데이터 호환성)
+            if 'keywords' in article and article['keywords']:
+                keywords = article['keywords']
+            else:
+                # 기존 데이터의 경우 제목에서 키워드 추출
+                keywords = extract_keywords_from_title(article['title'])
+            
+            # 언어에 따른 번역
+            current_language = st.session_state.get('language', 'ko')
+            
+            # 제목 번역
+            if current_language == 'ko':
+                display_title = translate_text(article['title'], 'ko')
+            else:
+                display_title = article['title']  # 영어는 원본 유지
+            
+            # 키워드 번역
+            display_keywords = get_keywords_for_language(keywords, current_language)
+            
+            # 키워드를 HTML로 변환
+            keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in display_keywords])
+            
+            # 메타 정보 번역
+            if current_language == 'ko':
+                views_text = f"{article['views']:,} 조회"
+                read_more_text = "더 읽기 →"
+            else:
+                views_text = f"{article['views']:,} views"
+                read_more_text = "Read more →"
+            
+            st.markdown(f"""
+            <div class="news-item">
+                <div class="news-title">{display_title}</div>
+                <div class="news-description" style="margin: 0.5rem 0;">
+                    {keywords_html}
+                </div>
+                <div class="news-meta">
+                    <span class="news-source">{article['source']}</span>
+                    <span>{article['published_time']}</span>
+                    <span>{views_text}</span>
+                </div>
+                <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
             </div>
             """, unsafe_allow_html=True)
-            
-            sort_col1, sort_col2 = st.columns([1, 1])
-            with sort_col1:
-                sort_option = st.selectbox(
-                    "정렬 기준",
-                    ["최신순", "조회순", "제목순", "출처순"],
-                    key="sort_news",
-                    label_visibility="collapsed"
-                )
-            
-            # 뉴스 정렬
-            sorted_articles = st.session_state.scm_articles.copy()
-            if sort_option == "최신순":
-                sorted_articles.sort(key=lambda x: x['published_time'], reverse=True)
-            elif sort_option == "조회순":
-                sorted_articles.sort(key=lambda x: x['views'], reverse=True)
-            elif sort_option == "제목순":
-                sorted_articles.sort(key=lambda x: x['title'])
-            elif sort_option == "출처순":
-                sorted_articles.sort(key=lambda x: x['source'])
-            
-            # 뉴스 리스트 (Motion 효과 + 해시태그 + 번역)
-            for i, article in enumerate(sorted_articles, 1):
-                # 키워드 안전하게 처리 (기존 데이터 호환성)
-                if 'keywords' in article and article['keywords']:
-                    keywords = article['keywords']
-                else:
-                    # 기존 데이터의 경우 제목에서 키워드 추출
-                    keywords = extract_keywords_from_title(article['title'])
-                
-                # 언어에 따른 번역
-                current_language = st.session_state.get('language', 'ko')
-                
-                # 제목 번역
-                if current_language == 'ko':
-                    display_title = translate_text(article['title'], 'ko')
-                else:
-                    display_title = article['title']  # 영어는 원본 유지
-                
-                # 키워드 번역
-                display_keywords = get_keywords_for_language(keywords, current_language)
-                
-                # 키워드를 HTML로 변환
-                keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in display_keywords])
-                
-                # 메타 정보 번역
-                if current_language == 'ko':
-                    views_text = f"{article['views']:,} 조회"
-                    read_more_text = "더 읽기 →"
-                else:
-                    views_text = f"{article['views']:,} views"
-                    read_more_text = "Read more →"
-                
-                st.markdown(f"""
-                <div class="news-item">
-                    <div class="news-title">{display_title}</div>
-                    <div class="news-description" style="margin: 0.5rem 0;">
-                        {keywords_html}
-                    </div>
-                    <div class="news-meta">
-                        <span class="news-source">{article['source']}</span>
-                        <span>{article['published_time']}</span>
-                        <span>{views_text}</span>
-                    </div>
-                    <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
-                </div>
-                """, unsafe_allow_html=True)
     
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
@@ -1650,8 +1650,8 @@ def main():
             st.markdown('<h3 class="section-header">🗺️ Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
-                # 지도 크기를 컨테이너에 맞게 조정
-                st_folium(risk_map, width=250, height=200, returned_objects=[])
+            # 지도 크기를 컨테이너에 맞게 조정
+            st_folium(risk_map, width=250, height=200, returned_objects=[])
         except Exception as e:
             st.error(f"Map error: {e}")
         

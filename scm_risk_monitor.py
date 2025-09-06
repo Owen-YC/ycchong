@@ -367,6 +367,32 @@ st.markdown("""
         25% { transform: rotate(10deg); }
         75% { transform: rotate(-10deg); }
     }
+    
+    /* 버튼 스타일 - 작고 밝은 회색 */
+    .stButton > button {
+        background-color: #e9ecef !important;
+        color: #495057 !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 4px !important;
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        height: auto !important;
+        min-height: 1.5rem !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .stButton > button:hover {
+        background-color: #dee2e6 !important;
+        border-color: #adb5bd !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .stButton > button:disabled {
+        background-color: #f8f9fa !important;
+        color: #6c757d !important;
+        border-color: #e9ecef !important;
+        opacity: 0.6 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1452,47 +1478,14 @@ def main():
             col_header, col_search = st.columns([2, 1])
             
             with col_header:
-                # SCM Risk News 배너 안에 언어 선택 포함
+                # SCM Risk News 배너 (언어 선택 제거)
                 st.markdown(f"""
                 <div class="unified-info-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <h3 class="section-header" style="margin: 0;">SCM Risk News</h3>
-                        <div style="display: flex; gap: 0.25rem; align-items: center;">
-                            <span style="font-size: 0.6rem; color: #7f8c8d; margin-right: 0.25rem;">🌐</span>
-                            <button onclick="window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'ko'}}, '*')" 
-                                    style="background: {'#3498db' if st.session_state.get('language', 'ko') == 'ko' else '#ecf0f1'}; 
-                                           color: {'white' if st.session_state.get('language', 'ko') == 'ko' else '#2c3e50'}; 
-                                           border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;"
-                                    title="한국어">🇰🇷</button>
-                            <button onclick="window.parent.postMessage({{type: 'streamlit:setComponentValue', value: 'en'}}, '*')" 
-                                    style="background: {'#3498db' if st.session_state.get('language', 'ko') == 'en' else '#ecf0f1'}; 
-                                           color: {'white' if st.session_state.get('language', 'ko') == 'en' else '#2c3e50'}; 
-                                           border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;"
-                                    title="English">🇺🇸</button>
-                        </div>
-                    </div>
+                    <h3 class="section-header" style="margin: 0 0 0.5rem 0;">SCM Risk News</h3>
                     <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 언어 전환을 위한 숨겨진 버튼들 (실제 기능용)
-                if st.button("", key="lang_ko_hidden", help="한국어", type="primary"):
-                    st.session_state.language = 'ko'
-                    st.rerun()
-                
-                if st.button("", key="lang_en_hidden", help="English", type="primary"):
-                    st.session_state.language = 'en'
-                    st.rerun()
-                
-                # 숨겨진 버튼들을 완전히 숨기기
-                st.markdown("""
-                <style>
-                div[data-testid="column"]:has(button[key="lang_ko_hidden"]),
-                div[data-testid="column"]:has(button[key="lang_en_hidden"]) {
-                    display: none !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
             
             with col_search:
                 # 단순한 검색 입력과 버튼
@@ -1502,7 +1495,7 @@ def main():
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                 
                 with search_col2:
-                    search_clicked = st.button("Search", key="search_button", use_container_width=True)
+                    search_clicked = st.button("Search", key="search_button", use_container_width=True, type="secondary")
                 
                 # 검색 실행 (버튼 클릭 또는 엔터키)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
@@ -1521,7 +1514,7 @@ def main():
                 # 검색어 표시 및 클리어 버튼
                 if 'search_query' in st.session_state and st.session_state.search_query:
                     st.info(f"🔍 Current: {st.session_state.search_query}")
-                    if st.button("Clear", key="clear_search", use_container_width=True):
+                    if st.button("Clear", key="clear_search", use_container_width=True, type="secondary"):
                         st.session_state.search_query = ""
                         st.session_state.scm_articles = crawl_scm_risk_news(100)
                         st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
@@ -1574,20 +1567,20 @@ def main():
         
         with col_prev:
             prev_disabled = st.session_state.current_page <= 1
-            if st.button("◀ Prev", key="prev_page", disabled=prev_disabled, use_container_width=True):
+            if st.button("◀ Prev", key="prev_page", disabled=prev_disabled, use_container_width=True, type="secondary"):
                 st.session_state.current_page -= 1
                 st.rerun()
         
         with col_info:
             st.markdown(f"""
-            <div style="text-align: center; font-size: 0.8rem; color: #2c3e50; padding: 0.5rem 0; font-weight: bold;">
+            <div style="text-align: center; font-size: 0.7rem; color: #2c3e50; padding: 0.3rem 0; font-weight: bold;">
                 Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
             </div>
             """, unsafe_allow_html=True)
         
         with col_next:
             next_disabled = st.session_state.current_page >= total_pages
-            if st.button("Next ▶", key="next_page", disabled=next_disabled, use_container_width=True):
+            if st.button("Next ▶", key="next_page", disabled=next_disabled, use_container_width=True, type="secondary"):
                 st.session_state.current_page += 1
                 st.rerun()
         

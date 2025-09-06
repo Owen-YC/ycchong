@@ -24,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Professional Compact CSS Design
+# Enhanced Professional CSS with Motion Effects
 st.markdown("""
 <style>
     /* 전체 배경 - 깔끔한 화이트 */
@@ -33,46 +33,122 @@ st.markdown("""
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* 메인 헤더 - 컴팩트 */
+    /* 메인 헤더 - 은회색 + Motion */
     .main-header {
-        background: #2c3e50;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 8px;
         margin-bottom: 1.5rem;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+        animation: slideInFromTop 0.8s ease-out;
+    }
+    
+    .main-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        animation: shimmer 3s infinite;
     }
     
     .main-title {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0;
+        position: relative;
+        z-index: 1;
     }
     
     .main-subtitle {
         font-size: 0.85rem;
         opacity: 0.8;
         margin: 0.25rem 0 0 0;
+        position: relative;
+        z-index: 1;
     }
     
-    /* 컴팩트 카드 */
-    .compact-card {
+    /* 통합 정보 카드 */
+    .unified-info-card {
         background: white;
         border: 1px solid #e1e5e9;
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 1rem;
         margin-bottom: 0.75rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
     }
     
-    /* 뉴스 카드 - 컴팩트 */
+    .unified-info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .info-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 0.5rem 0;
+        text-align: center;
+    }
+    
+    .info-content {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        margin: 0;
+        text-align: center;
+    }
+    
+    /* 검색 섹션 */
+    .search-section {
+        background: white;
+        border: 1px solid #e1e5e9;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.8s ease-out;
+    }
+    
+    /* 뉴스 카드 - Motion 효과 */
     .news-item {
         background: white;
         border: 1px solid #e1e5e9;
-        border-radius: 6px;
+        border-radius: 8px;
         padding: 0.75rem;
         margin-bottom: 0.5rem;
         border-left: 3px solid #3498db;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .news-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .news-item:hover::before {
+        left: 100%;
+    }
+    
+    .news-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        border-left-color: #2980b9;
     }
     
     .news-title {
@@ -81,6 +157,19 @@ st.markdown("""
         color: #2c3e50;
         margin: 0 0 0.5rem 0;
         line-height: 1.3;
+        transition: color 0.3s ease;
+    }
+    
+    .news-item:hover .news-title {
+        color: #2980b9;
+    }
+    
+    .news-description {
+        font-size: 0.7rem;
+        color: #7f8c8d;
+        margin: 0.25rem 0 0.5rem 0;
+        line-height: 1.4;
+        font-style: italic;
     }
     
     .news-meta {
@@ -97,6 +186,12 @@ st.markdown("""
         padding: 0.2rem 0.5rem;
         border-radius: 3px;
         font-size: 0.7rem;
+        transition: all 0.3s ease;
+    }
+    
+    .news-source:hover {
+        background: #2980b9;
+        transform: scale(1.05);
     }
     
     .news-link {
@@ -104,52 +199,41 @@ st.markdown("""
         text-decoration: none;
         font-size: 0.75rem;
         font-weight: 500;
+        transition: all 0.3s ease;
     }
     
     .news-link:hover {
         color: #2980b9;
+        transform: translateX(2px);
     }
     
-    /* 사이드바 정보 */
-    .info-card {
-        background: white;
-        border: 1px solid #e1e5e9;
-        border-radius: 6px;
-        padding: 0.75rem;
-        margin-bottom: 0.75rem;
-        text-align: center;
-    }
-    
-    .info-title {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin: 0 0 0.5rem 0;
-    }
-    
-    .info-content {
-        font-size: 0.75rem;
-        color: #7f8c8d;
-        margin: 0;
-    }
-    
-    /* 지도 컨테이너 */
+    /* 지도 컨테이너 - 더 크게 */
     .map-wrapper {
         background: white;
         border: 1px solid #e1e5e9;
-        border-radius: 6px;
-        padding: 0.5rem;
+        border-radius: 8px;
+        padding: 0.75rem;
         margin-bottom: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        animation: fadeInUp 0.8s ease-out;
     }
     
-    /* 위험도 표시 */
+    /* 위험도 표시 - 작고 귀여운 플래그 */
     .risk-item {
         background: white;
         border: 1px solid #e1e5e9;
         border-radius: 6px;
-        padding: 0.5rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.75rem;
+        padding: 0.4rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.65rem;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
+        position: relative;
+    }
+    
+    .risk-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .risk-high { border-left: 3px solid #e74c3c; }
@@ -159,13 +243,46 @@ st.markdown("""
     .risk-title {
         font-weight: 600;
         color: #2c3e50;
-        margin: 0 0 0.25rem 0;
+        margin: 0 0 0.2rem 0;
+        font-size: 0.7rem;
     }
     
     .risk-desc {
         color: #7f8c8d;
         margin: 0;
+        font-size: 0.6rem;
+    }
+    
+    /* 귀여운 플래그 애니메이션 */
+    .cute-flag {
+        display: inline-block;
+        animation: wave 2s ease-in-out infinite;
+        transform-origin: bottom center;
+    }
+    
+    /* 환율/시세 정보 */
+    .market-info {
+        background: white;
+        border: 1px solid #e1e5e9;
+        border-radius: 6px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
         font-size: 0.7rem;
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .market-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 0.3rem 0;
+        font-size: 0.75rem;
+    }
+    
+    .market-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.2rem 0;
+        color: #7f8c8d;
     }
     
     /* 섹션 헤더 */
@@ -185,6 +302,40 @@ st.markdown("""
         padding: 1rem;
         color: #7f8c8d;
         font-size: 0.75rem;
+    }
+    
+    /* 애니메이션 */
+    @keyframes slideInFromTop {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    @keyframes wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(10deg); }
+        75% { transform: rotate(-10deg); }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -262,6 +413,66 @@ def get_seoul_weather():
             "feels_like": 22,
             "wind_speed": 5,
             "location": "서울"
+        }
+
+def get_exchange_rates():
+    """실시간 환율 정보 가져오기"""
+    try:
+        # 실제 환율 API 대신 시뮬레이션 데이터
+        base_rates = {
+            "USD/KRW": 1320.50,
+            "EUR/KRW": 1445.30,
+            "JPY/KRW": 8.95,
+            "CNY/KRW": 182.40,
+            "GBP/KRW": 1675.80
+        }
+        
+        # 랜덤 변동 추가 (±0.5%)
+        exchange_rates = {}
+        for pair, rate in base_rates.items():
+            variation = random.uniform(-0.005, 0.005)
+            new_rate = rate * (1 + variation)
+            exchange_rates[pair] = round(new_rate, 2)
+        
+        return exchange_rates
+        
+    except Exception as e:
+        return {
+            "USD/KRW": 1320.50,
+            "EUR/KRW": 1445.30,
+            "JPY/KRW": 8.95,
+            "CNY/KRW": 182.40,
+            "GBP/KRW": 1675.80
+        }
+
+def get_lme_prices():
+    """LME 주요 광물 시세 가져오기"""
+    try:
+        # LME 주요 광물 시세 (USD/ton)
+        base_prices = {
+            "Copper": 8425.50,
+            "Aluminum": 2180.30,
+            "Zinc": 2485.75,
+            "Nickel": 16520.80,
+            "Lead": 1985.40
+        }
+        
+        # 랜덤 변동 추가 (±1%)
+        lme_prices = {}
+        for metal, price in base_prices.items():
+            variation = random.uniform(-0.01, 0.01)
+            new_price = price * (1 + variation)
+            lme_prices[metal] = round(new_price, 2)
+        
+        return lme_prices
+        
+    except Exception as e:
+        return {
+            "Copper": 8425.50,
+            "Aluminum": 2180.30,
+            "Zinc": 2485.75,
+            "Nickel": 16520.80,
+            "Lead": 1985.40
         }
 
 def get_scm_risk_locations():
@@ -538,35 +749,80 @@ def generate_scm_backup_news(num_results: int) -> List[Dict]:
         {"name": "AP", "url": "https://apnews.com"}
     ]
     
-    # SCM Risk 관련 뉴스 제목
-    scm_news_titles = [
-        "Global Supply Chain Disruptions Impact Manufacturing",
-        "Shipping Crisis Causes Port Congestion Worldwide",
-        "Semiconductor Shortage Affects Global Electronics",
-        "Energy Crisis Disrupts Global Supply Chains",
-        "Trade War Escalates Supply Chain Risks",
-        "Logistics Disruption Hits Global Commerce",
-        "Manufacturing Shortage Creates Supply Chain Bottlenecks",
-        "Port Congestion Delays Global Shipping",
-        "Supply Chain Risk Management Strategies",
-        "Global Trade Tensions Impact Supply Chains",
-        "Food Security Concerns Rise Amid Supply Chain Issues",
-        "Automotive Industry Faces Supply Chain Challenges",
-        "Technology Supply Chain Under Pressure",
-        "Healthcare Supply Chain Disruptions Continue",
-        "Retail Supply Chain Adapts to New Challenges"
+    # SCM Risk 관련 뉴스 제목과 설명
+    scm_news_data = [
+        {
+            "title": "Global Supply Chain Disruptions Impact Manufacturing",
+            "description": "글로벌 제조업체들이 공급망 중단으로 인한 생산 지연과 비용 증가를 겪고 있습니다."
+        },
+        {
+            "title": "Shipping Crisis Causes Port Congestion Worldwide",
+            "description": "전 세계 주요 항구에서 화물선 대기 시간이 길어지며 물류 비용이 급증하고 있습니다."
+        },
+        {
+            "title": "Semiconductor Shortage Affects Global Electronics",
+            "description": "반도체 부족 현상이 전자제품 생산에 심각한 영향을 미치고 있습니다."
+        },
+        {
+            "title": "Energy Crisis Disrupts Global Supply Chains",
+            "description": "에너지 위기로 인한 전력 부족이 공급망 전반에 걸쳐 영향을 주고 있습니다."
+        },
+        {
+            "title": "Trade War Escalates Supply Chain Risks",
+            "description": "무역 분쟁 심화로 글로벌 공급망의 불확실성이 증가하고 있습니다."
+        },
+        {
+            "title": "Logistics Disruption Hits Global Commerce",
+            "description": "물류 혼잡으로 인한 배송 지연이 전 세계 상거래에 영향을 미치고 있습니다."
+        },
+        {
+            "title": "Manufacturing Shortage Creates Supply Chain Bottlenecks",
+            "description": "제조업 부품 부족으로 인한 공급망 병목 현상이 심화되고 있습니다."
+        },
+        {
+            "title": "Port Congestion Delays Global Shipping",
+            "description": "항구 혼잡으로 인한 해상 운송 지연이 전 세계적으로 확산되고 있습니다."
+        },
+        {
+            "title": "Supply Chain Risk Management Strategies",
+            "description": "기업들이 공급망 위험 관리 전략을 강화하고 있습니다."
+        },
+        {
+            "title": "Global Trade Tensions Impact Supply Chains",
+            "description": "글로벌 무역 긴장으로 인한 공급망 불안정성이 지속되고 있습니다."
+        },
+        {
+            "title": "Food Security Concerns Rise Amid Supply Chain Issues",
+            "description": "공급망 문제로 인한 식량 안보 우려가 전 세계적으로 확산되고 있습니다."
+        },
+        {
+            "title": "Automotive Industry Faces Supply Chain Challenges",
+            "description": "자동차 산업이 공급망 위기로 인한 생산 중단을 겪고 있습니다."
+        },
+        {
+            "title": "Technology Supply Chain Under Pressure",
+            "description": "기술 산업의 공급망이 심각한 압박을 받고 있습니다."
+        },
+        {
+            "title": "Healthcare Supply Chain Disruptions Continue",
+            "description": "의료용품 공급망 중단이 지속되며 의료 서비스에 영향을 주고 있습니다."
+        },
+        {
+            "title": "Retail Supply Chain Adapts to New Challenges",
+            "description": "소매업계가 새로운 공급망 도전에 적응하고 있습니다."
+        }
     ]
     
-    # 100개 뉴스 생성
+    # 뉴스 생성
     for i in range(num_results):
         site = random.choice(news_sites)
-        title_index = i % len(scm_news_titles)
+        news_data = scm_news_data[i % len(scm_news_data)]
         article = {
-            'title': scm_news_titles[title_index] + f" - Part {i+1}",
+            'title': news_data['title'],
             'url': site['url'],
             'source': site['name'],
             'published_time': (datetime.now() - timedelta(hours=random.randint(0, 24))).strftime('%Y-%m-%d %H:%M'),
-            'description': f"SCM Risk 관련 최신 뉴스와 분석을 제공합니다.",
+            'description': news_data['description'],
             'views': random.randint(100, 5000)
         }
         articles.append(article)
@@ -582,36 +838,42 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 메인 레이아웃 - 더 컴팩트하게
+    # 메인 레이아웃
     col1, col2, col3 = st.columns([1, 2.5, 1])
     
-    # 좌측 컬럼 - 시간, 날씨
+    # 좌측 컬럼 - 통합 정보
     with col1:
-        # 서울 시간
+        # 통합 시간/날씨 카드
         date_str, time_str = get_korean_time()
-        st.markdown(f"""
-        <div class="info-card">
-            <div class="info-title">Seoul Time</div>
-            <div class="info-content">{date_str}<br><strong>{time_str}</strong></div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 서울 날씨
         weather_info = get_seoul_weather()
         st.markdown(f"""
-        <div class="info-card">
-            <div class="info-title">Seoul Weather</div>
+        <div class="unified-info-card">
+            <div class="info-title">🇰🇷 Seoul Info</div>
             <div class="info-content">
-                {weather_info['condition']}<br>
+                <strong>{date_str}</strong><br>
+                <strong style="font-size: 1rem;">{time_str}</strong><br><br>
+                ☁️ {weather_info['condition']}<br>
                 <strong>{weather_info['temperature']}°C</strong><br>
                 체감 {weather_info['feels_like']}°C
             </div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # 검색 기능
+        st.markdown("""
+        <div class="search-section">
+            <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0; color: #2c3e50;">🔍 Search</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Streamlit 검색 입력
+        search_query = st.text_input("", placeholder="Search SCM news...", key="search_input")
+        if search_query:
+            st.info(f"Searching for: {search_query}")
     
     # 중앙 컬럼 - 뉴스
     with col2:
-        # SCM Risk 뉴스 자동 로드 (50개로 줄임)
+        # SCM Risk 뉴스 자동 로드
         if 'scm_articles' not in st.session_state:
             with st.spinner("Loading SCM Risk news..."):
                 st.session_state.scm_articles = crawl_scm_risk_news(50)
@@ -621,17 +883,18 @@ def main():
         if st.session_state.scm_articles:
             load_time = st.session_state.get('scm_load_time', datetime.now().strftime('%H:%M'))
             st.markdown(f"""
-            <div class="compact-card">
+            <div class="unified-info-card">
                 <h3 class="section-header">SCM Risk News ({len(st.session_state.scm_articles)} articles)</h3>
                 <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time}</p>
             </div>
             """, unsafe_allow_html=True)
             
-            # 뉴스 리스트 (컴팩트)
+            # 뉴스 리스트 (Motion 효과 + 설명)
             for i, article in enumerate(st.session_state.scm_articles, 1):
                 st.markdown(f"""
                 <div class="news-item">
                     <div class="news-title">{article['title']}</div>
+                    <div class="news-description">{article['description']}</div>
                     <div class="news-meta">
                         <span class="news-source">{article['source']}</span>
                         <span>{article['published_time']}</span>
@@ -641,47 +904,70 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
     
-    # 우측 컬럼 - 지도와 위험 정보
+    # 우측 컬럼 - 지도와 시장 정보
     with col3:
-        # 지도
+        # 지도 (더 크게)
         st.markdown('<h3 class="section-header">Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
             st.markdown('<div class="map-wrapper">', unsafe_allow_html=True)
-            st_folium(risk_map, width=300, height=200, returned_objects=[])
+            st_folium(risk_map, width=350, height=250, returned_objects=[])
             st.markdown('</div>', unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Map error: {e}")
         
-        # 위험도 범례
+        # 위험도 범례 (작고 귀여운 플래그)
         st.markdown("""
-        <div class="compact-card">
-            <h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0;">Risk Levels</h4>
+        <div class="market-info">
+            <div class="market-title">🚩 Risk Levels</div>
             <div class="risk-item risk-high">
-                <div class="risk-title">High Risk</div>
+                <div class="risk-title"><span class="cute-flag">🔴</span> High Risk</div>
                 <div class="risk-desc">Immediate action required</div>
             </div>
             <div class="risk-item risk-medium">
-                <div class="risk-title">Medium Risk</div>
+                <div class="risk-title"><span class="cute-flag">🟠</span> Medium Risk</div>
                 <div class="risk-desc">Monitor closely</div>
             </div>
             <div class="risk-item risk-low">
-                <div class="risk-title">Low Risk</div>
+                <div class="risk-title"><span class="cute-flag">🟢</span> Low Risk</div>
                 <div class="risk-desc">Normal operations</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # 주요 위험 지역 (상위 3개만)
-        st.markdown('<h4 style="font-size: 0.8rem; margin: 0 0 0.5rem 0;">Key Risk Areas</h4>', unsafe_allow_html=True)
-        for location in risk_locations[:3]:
-            risk_class = f"risk-{location['risk_level']}"
+        # 실시간 환율 정보
+        exchange_rates = get_exchange_rates()
+        st.markdown("""
+        <div class="market-info">
+            <div class="market-title">💱 Exchange Rates</div>
+        """, unsafe_allow_html=True)
+        
+        for pair, rate in exchange_rates.items():
             st.markdown(f"""
-            <div class="risk-item {risk_class}">
-                <div class="risk-title">{location['flag']} {location['name']}</div>
-                <div class="risk-desc">{location['risk_type']} - {location['description'][:50]}...</div>
+            <div class="market-item">
+                <span>{pair}</span>
+                <span>{rate}</span>
             </div>
             """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # LME 시세
+        lme_prices = get_lme_prices()
+        st.markdown("""
+        <div class="market-info">
+            <div class="market-title">⛏️ LME Prices (USD/ton)</div>
+        """, unsafe_allow_html=True)
+        
+        for metal, price in lme_prices.items():
+            st.markdown(f"""
+            <div class="market-item">
+                <span>{metal}</span>
+                <span>${price:,}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # 푸터
     st.markdown("""

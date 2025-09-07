@@ -1910,213 +1910,59 @@ def main():
                         "물류", "logistics", "공급망", "supply chain", "제조업", "manufacturing"
                     ]
                     
+                    # 검색창과 키워드 표시를 함께 배치
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                     
-                    # 인기 키워드 표시 (검색창 클릭 시에만 표시) + 자동 완성 기능
-                    st.markdown(f"""
-                    <script>
-                    // 자동 완성 키워드 리스트
-                    const autocompleteKeywords = {autocomplete_keywords};
+                    # 검색창 아래에 키워드 목록을 항상 표시 (간단하게)
+                    if st.button("🔍 Show Keywords", key="show_keywords_btn", type="secondary"):
+                        st.session_state.show_keywords = not st.session_state.get('show_keywords', False)
                     
-                    function searchKeyword(keyword) {{
-                        // 검색 입력 필드에 키워드 설정
-                        const input = document.querySelector('[data-testid=stTextInput] input');
-                        if (input) {{
-                            input.value = keyword;
-                            // 입력 이벤트 트리거
-                            input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                        }}
-                        
-                        // 검색 버튼 클릭
-                        setTimeout(() => {{
-                            const searchButton = document.querySelector('[data-testid="baseButton-secondary"]');
-                            if (searchButton) {{
-                                searchButton.click();
-                            }}
-                        }}, 100);
-                    }}
+                    # 키워드 표시 상태 확인
+                    if st.session_state.get('show_keywords', False):
+                        st.markdown("**🔥 Popular SCM Risk Keywords:**")
+                        # 키워드를 2열로 표시
+                        col_kw1, col_kw2 = st.columns(2)
+                        with col_kw1:
+                            for i, keyword in enumerate(autocomplete_keywords[:len(autocomplete_keywords)//2]):
+                                if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
+                                    # 키워드 클릭 시 자동으로 검색 실행
+                                    st.session_state.search_input = keyword
+                                    st.session_state.auto_search = keyword
+                                    st.rerun()
+                        with col_kw2:
+                            for i, keyword in enumerate(autocomplete_keywords[len(autocomplete_keywords)//2:], len(autocomplete_keywords)//2):
+                                if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
+                                    # 키워드 클릭 시 자동으로 검색 실행
+                                    st.session_state.search_input = keyword
+                                    st.session_state.auto_search = keyword
+                                    st.rerun()
                     
-                    function createAutocompleteDropdown(input, suggestions) {{
-                        // 기존 드롭다운 제거
-                        const existingDropdown = document.getElementById('autocomplete-dropdown');
-                        if (existingDropdown) {{
-                            existingDropdown.remove();
-                        }}
-                        
-                        if (suggestions.length === 0) return;
-                        
-                        // 드롭다운 생성
-                        const dropdown = document.createElement('div');
-                        dropdown.id = 'autocomplete-dropdown';
-                        dropdown.style.cssText = `
-                            position: absolute;
-                            top: 100%;
-                            left: 0;
-                            right: 0;
-                            background: white;
-                            border: 1px solid #ddd;
-                            border-top: none;
-                            border-radius: 0 0 4px 4px;
-                            max-height: 200px;
-                            overflow-y: auto;
-                            z-index: 1000;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        `;
-                        
-                        suggestions.forEach(suggestion => {{
-                            const item = document.createElement('div');
-                            item.style.cssText = `
-                                padding: 8px 12px;
-                                cursor: pointer;
-                                border-bottom: 1px solid #f0f0f0;
-                                font-size: 14px;
-                            `;
-                            item.textContent = suggestion;
-                            item.addEventListener('mouseenter', () => {{
-                                item.style.backgroundColor = '#f5f5f5';
-                            }});
-                            item.addEventListener('mouseleave', () => {{
-                                item.style.backgroundColor = 'white';
-                            }});
-                            item.addEventListener('click', () => {{
-                                input.value = suggestion;
-                                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                                dropdown.remove();
-                            }});
-                            dropdown.appendChild(item);
-                        }});
-                        
-                        // 입력 필드의 부모 요소에 드롭다운 추가
-                        input.parentElement.style.position = 'relative';
-                        input.parentElement.appendChild(dropdown);
-                    }}
-                    
-                    // 검색창 클릭 이벤트 리스너 추가
-                    document.addEventListener('DOMContentLoaded', function() {{
-                        const searchInput = document.querySelector('[data-testid=stTextInput] input');
-                        if (searchInput) {{
-                            // 포커스 이벤트
-                            searchInput.addEventListener('focus', function() {{
-                                const keywordsDiv = document.getElementById('popular-keywords');
-                                if (keywordsDiv) {{
-                                    keywordsDiv.style.display = 'block';
-                                }}
-                            }});
-                            
-                            // 블러 이벤트
-                            searchInput.addEventListener('blur', function() {{
-                                setTimeout(() => {{
-                                    const keywordsDiv = document.getElementById('popular-keywords');
-                                    if (keywordsDiv) {{
-                                        keywordsDiv.style.display = 'none';
-                                    }}
-                                    const dropdown = document.getElementById('autocomplete-dropdown');
-                                    if (dropdown) {{
-                                        dropdown.remove();
-                                    }}
-                                }}, 200);
-                            }});
-                            
-                            // 입력 이벤트 (자동 완성)
-                            searchInput.addEventListener('input', function() {{
-                                const value = this.value.toLowerCase();
-                                if (value.length > 0) {{
-                                    const suggestions = autocompleteKeywords.filter(keyword => 
-                                        keyword.toLowerCase().includes(value)
-                                    ).slice(0, 5); // 최대 5개 제안
-                                    createAutocompleteDropdown(this, suggestions);
-                                }} else {{
-                                    const dropdown = document.getElementById('autocomplete-dropdown');
-                                    if (dropdown) {{
-                                        dropdown.remove();
-                                    }}
-                                }}
-                            }});
-                            
-                            // 키보드 이벤트
-                            searchInput.addEventListener('keydown', function(e) {{
-                                const dropdown = document.getElementById('autocomplete-dropdown');
-                                if (dropdown && dropdown.children.length > 0) {{
-                                    const items = Array.from(dropdown.children);
-                                    const activeItem = dropdown.querySelector('.active');
-                                    let activeIndex = activeItem ? items.indexOf(activeItem) : -1;
-                                    
-                                    if (e.key === 'ArrowDown') {{
-                                        e.preventDefault();
-                                        activeIndex = Math.min(activeIndex + 1, items.length - 1);
-                                        items.forEach(item => item.classList.remove('active'));
-                                        if (activeIndex >= 0) {{
-                                            items[activeIndex].classList.add('active');
-                                            items[activeIndex].style.backgroundColor = '#e3f2fd';
-                                        }}
-                                    }} else if (e.key === 'ArrowUp') {{
-                                        e.preventDefault();
-                                        activeIndex = Math.max(activeIndex - 1, -1);
-                                        items.forEach(item => item.classList.remove('active'));
-                                        if (activeIndex >= 0) {{
-                                            items[activeIndex].classList.add('active');
-                                            items[activeIndex].style.backgroundColor = '#e3f2fd';
-                                        }}
-                                    }} else if (e.key === 'Enter' && activeIndex >= 0) {{
-                                        e.preventDefault();
-                                        items[activeIndex].click();
-                                    }}
-                                }}
-                            }});
-                        }}
-                    }});
-                    </script>
-                    <div id="popular-keywords" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem; display: none;">
-                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem; animation: fadeInUp 0.8s ease-out;">🔥 Popular SCM Risk Keywords:</div>
-                        <div style="display: flex; flex-direction: column; gap: 0.15rem;">
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #ff6b6b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">1</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('supply chain disruption')">supply chain disruption</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #ffa726; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">2</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('logistics crisis')">logistics crisis</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #ffeb3b; color: #333; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">3</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('manufacturing shortage')">manufacturing shortage</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #4caf50; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">4</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('port congestion')">port congestion</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #2196f3; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">5</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('shipping delays')">shipping delays</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #9c27b0; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">6</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('raw material price')">raw material price</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #607d8b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">7</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('inventory management')">inventory management</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #795548; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">8</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('supplier risk')">supplier risk</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #e91e63; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">9</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('trade war impact')">trade war impact</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
-                                <span style="background: #00bcd4; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">10</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('global supply chain')">global supply chain</span>
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
                 
                 with search_col2:
                     search_clicked = st.button("Search", key="search_button", use_container_width=True, type="secondary")
                 
-                # 검색 실행 (버튼 클릭 또는 엔터키)
+                # 자동 검색 처리 (키워드 버튼 클릭 시)
+                if st.session_state.get('auto_search'):
+                    auto_search_query = st.session_state.auto_search
+                    st.session_state.auto_search = None  # 자동 검색 플래그 초기화
+                    
+                    with st.spinner(f"Searching for: {auto_search_query}..."):
+                        try:
+                            new_articles = crawl_scm_risk_news(100, auto_search_query)
+                            
+                            if new_articles:
+                                st.session_state.scm_articles = new_articles
+                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                st.session_state.search_query = auto_search_query
+                                st.session_state.last_search = auto_search_query
+                                st.session_state.current_page = 1
+                                st.rerun()
+                            else:
+                                st.warning("No articles found for your search. Please try different keywords.")
+                        except Exception as e:
+                            st.error(f"Search error: {e}")
+                
+                # 검색 실행 (버튼 클릭, 엔터키, 또는 키워드 버튼 클릭)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
                     if search_query and search_query.strip():
                         with st.spinner(f"Searching for: {search_query}..."):

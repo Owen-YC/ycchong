@@ -1900,30 +1900,173 @@ def main():
                 search_col1, search_col2 = st.columns([3, 1])
                 
                 with search_col1:
+                    # 자동 완성을 위한 키워드 리스트
+                    autocomplete_keywords = [
+                        "supply chain disruption", "logistics crisis", "manufacturing shortage", 
+                        "port congestion", "shipping delays", "raw material price", 
+                        "inventory management", "supplier risk", "trade war impact", 
+                        "global supply chain", "semiconductor shortage", "energy crisis",
+                        "대만", "taiwan", "대만 지진", "taiwan earthquake", "반도체", "semiconductor",
+                        "물류", "logistics", "공급망", "supply chain", "제조업", "manufacturing"
+                    ]
+                    
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                     
-                    # 인기 키워드 표시 (세로 배열, top10 순위)
-                    st.markdown("""
+                    # 인기 키워드 표시 (검색창 클릭 시에만 표시) + 자동 완성 기능
+                    st.markdown(f"""
                     <script>
-                    function searchKeyword(keyword) {
+                    // 자동 완성 키워드 리스트
+                    const autocompleteKeywords = {autocomplete_keywords};
+                    
+                    function searchKeyword(keyword) {{
                         // 검색 입력 필드에 키워드 설정
                         const input = document.querySelector('[data-testid=stTextInput] input');
-                        if (input) {
+                        if (input) {{
                             input.value = keyword;
                             // 입력 이벤트 트리거
-                            input.dispatchEvent(new Event('input', { bubbles: true }));
-                        }
+                            input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        }}
                         
                         // 검색 버튼 클릭
-                        setTimeout(() => {
+                        setTimeout(() => {{
                             const searchButton = document.querySelector('[data-testid="baseButton-secondary"]');
-                            if (searchButton) {
+                            if (searchButton) {{
                                 searchButton.click();
-                            }
-                        }, 100);
-                    }
+                            }}
+                        }}, 100);
+                    }}
+                    
+                    function createAutocompleteDropdown(input, suggestions) {{
+                        // 기존 드롭다운 제거
+                        const existingDropdown = document.getElementById('autocomplete-dropdown');
+                        if (existingDropdown) {{
+                            existingDropdown.remove();
+                        }}
+                        
+                        if (suggestions.length === 0) return;
+                        
+                        // 드롭다운 생성
+                        const dropdown = document.createElement('div');
+                        dropdown.id = 'autocomplete-dropdown';
+                        dropdown.style.cssText = `
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            background: white;
+                            border: 1px solid #ddd;
+                            border-top: none;
+                            border-radius: 0 0 4px 4px;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            z-index: 1000;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        `;
+                        
+                        suggestions.forEach(suggestion => {{
+                            const item = document.createElement('div');
+                            item.style.cssText = `
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                border-bottom: 1px solid #f0f0f0;
+                                font-size: 14px;
+                            `;
+                            item.textContent = suggestion;
+                            item.addEventListener('mouseenter', () => {{
+                                item.style.backgroundColor = '#f5f5f5';
+                            }});
+                            item.addEventListener('mouseleave', () => {{
+                                item.style.backgroundColor = 'white';
+                            }});
+                            item.addEventListener('click', () => {{
+                                input.value = suggestion;
+                                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                                dropdown.remove();
+                            }});
+                            dropdown.appendChild(item);
+                        }});
+                        
+                        // 입력 필드의 부모 요소에 드롭다운 추가
+                        input.parentElement.style.position = 'relative';
+                        input.parentElement.appendChild(dropdown);
+                    }}
+                    
+                    // 검색창 클릭 이벤트 리스너 추가
+                    document.addEventListener('DOMContentLoaded', function() {{
+                        const searchInput = document.querySelector('[data-testid=stTextInput] input');
+                        if (searchInput) {{
+                            // 포커스 이벤트
+                            searchInput.addEventListener('focus', function() {{
+                                const keywordsDiv = document.getElementById('popular-keywords');
+                                if (keywordsDiv) {{
+                                    keywordsDiv.style.display = 'block';
+                                }}
+                            }});
+                            
+                            // 블러 이벤트
+                            searchInput.addEventListener('blur', function() {{
+                                setTimeout(() => {{
+                                    const keywordsDiv = document.getElementById('popular-keywords');
+                                    if (keywordsDiv) {{
+                                        keywordsDiv.style.display = 'none';
+                                    }}
+                                    const dropdown = document.getElementById('autocomplete-dropdown');
+                                    if (dropdown) {{
+                                        dropdown.remove();
+                                    }}
+                                }}, 200);
+                            }});
+                            
+                            // 입력 이벤트 (자동 완성)
+                            searchInput.addEventListener('input', function() {{
+                                const value = this.value.toLowerCase();
+                                if (value.length > 0) {{
+                                    const suggestions = autocompleteKeywords.filter(keyword => 
+                                        keyword.toLowerCase().includes(value)
+                                    ).slice(0, 5); // 최대 5개 제안
+                                    createAutocompleteDropdown(this, suggestions);
+                                }} else {{
+                                    const dropdown = document.getElementById('autocomplete-dropdown');
+                                    if (dropdown) {{
+                                        dropdown.remove();
+                                    }}
+                                }}
+                            }});
+                            
+                            // 키보드 이벤트
+                            searchInput.addEventListener('keydown', function(e) {{
+                                const dropdown = document.getElementById('autocomplete-dropdown');
+                                if (dropdown && dropdown.children.length > 0) {{
+                                    const items = Array.from(dropdown.children);
+                                    const activeItem = dropdown.querySelector('.active');
+                                    let activeIndex = activeItem ? items.indexOf(activeItem) : -1;
+                                    
+                                    if (e.key === 'ArrowDown') {{
+                                        e.preventDefault();
+                                        activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                                        items.forEach(item => item.classList.remove('active'));
+                                        if (activeIndex >= 0) {{
+                                            items[activeIndex].classList.add('active');
+                                            items[activeIndex].style.backgroundColor = '#e3f2fd';
+                                        }}
+                                    }} else if (e.key === 'ArrowUp') {{
+                                        e.preventDefault();
+                                        activeIndex = Math.max(activeIndex - 1, -1);
+                                        items.forEach(item => item.classList.remove('active'));
+                                        if (activeIndex >= 0) {{
+                                            items[activeIndex].classList.add('active');
+                                            items[activeIndex].style.backgroundColor = '#e3f2fd';
+                                        }}
+                                    }} else if (e.key === 'Enter' && activeIndex >= 0) {{
+                                        e.preventDefault();
+                                        items[activeIndex].click();
+                                    }}
+                                }}
+                            }});
+                        }}
+                    }});
                     </script>
-                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;">
+                    <div id="popular-keywords" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem; display: none;">
                         <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem; animation: fadeInUp 0.8s ease-out;">🔥 Popular SCM Risk Keywords:</div>
                         <div style="display: flex; flex-direction: column; gap: 0.15rem;">
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">

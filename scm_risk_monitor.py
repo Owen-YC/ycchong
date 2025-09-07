@@ -318,7 +318,7 @@ st.markdown("""
     
     /* 섹션 헤더 */
     .section-header {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         font-weight: 600;
         color: #2c3e50;
         margin: 0 0 0.75rem 0;
@@ -1880,7 +1880,7 @@ def main():
                     # SCM Risk News 배너 (언어 선택 제거)
                     st.markdown(f"""
                     <div class="unified-info-card">
-                        <h3 class="section-header" style="margin: 0 0 0.5rem 0; animation: fadeInUp 0.8s ease-out;">SCM Risk News</h3>
+                        <h3 class="section-header" style="margin: 0 0 0.5rem 0; font-size: 1.1rem; animation: fadeInUp 0.6s ease-out;">SCM Risk News</h3>
                         <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -1913,29 +1913,24 @@ def main():
                     # 검색창과 키워드 표시를 함께 배치
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                     
-                    # 검색창 아래에 키워드 목록을 항상 표시 (간단하게)
-                    if st.button("🔍 Show Keywords", key="show_keywords_btn", type="secondary"):
-                        st.session_state.show_keywords = not st.session_state.get('show_keywords', False)
-                    
-                    # 키워드 표시 상태 확인
-                    if st.session_state.get('show_keywords', False):
-                        st.markdown("**🔥 Popular SCM Risk Keywords:**")
-                        # 키워드를 2열로 표시
-                        col_kw1, col_kw2 = st.columns(2)
-                        with col_kw1:
-                            for i, keyword in enumerate(autocomplete_keywords[:len(autocomplete_keywords)//2]):
-                                if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
-                                    # 키워드 클릭 시 자동으로 검색 실행
-                                    st.session_state.search_input = keyword
-                                    st.session_state.auto_search = keyword
-                                    st.rerun()
-                        with col_kw2:
-                            for i, keyword in enumerate(autocomplete_keywords[len(autocomplete_keywords)//2:], len(autocomplete_keywords)//2):
-                                if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
-                                    # 키워드 클릭 시 자동으로 검색 실행
-                                    st.session_state.search_input = keyword
-                                    st.session_state.auto_search = keyword
-                                    st.rerun()
+                    # 키워드 목록을 항상 표시
+                    st.markdown("**🔥 Popular SCM Risk Keywords:**")
+                    # 키워드를 2열로 표시
+                    col_kw1, col_kw2 = st.columns(2)
+                    with col_kw1:
+                        for i, keyword in enumerate(autocomplete_keywords[:len(autocomplete_keywords)//2]):
+                            if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
+                                # 키워드 클릭 시 자동으로 검색 실행
+                                st.session_state.search_input = keyword
+                                st.session_state.auto_search = keyword
+                                st.rerun()
+                    with col_kw2:
+                        for i, keyword in enumerate(autocomplete_keywords[len(autocomplete_keywords)//2:], len(autocomplete_keywords)//2):
+                            if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
+                                # 키워드 클릭 시 자동으로 검색 실행
+                                st.session_state.search_input = keyword
+                                st.session_state.auto_search = keyword
+                                st.rerun()
                     
                 
                 with search_col2:
@@ -2164,7 +2159,7 @@ def main():
     # 우측 컬럼 - 지도와 시장 정보
     with col2:
         # 실시간 정보 (시간과 날씨를 나란히 배치)
-        st.markdown('<h3 class="section-header" style="animation: fadeInUp 0.8s ease-out;">🌤️ Real-time Info</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header" style="font-size: 1.1rem; animation: fadeInUp 0.6s ease-out;">🌤️ Real-time Info</h3>', unsafe_allow_html=True)
         
         # 한국 시간 정보와 날씨 정보를 나란히 배치
         col_time, col_weather = st.columns([1, 1])
@@ -2213,7 +2208,7 @@ def main():
             """, unsafe_allow_html=True)
         
         # Risk Map (아래로 이동하고 크기 조정)
-        st.markdown('<h3 class="section-header" style="animation: fadeInUp 0.8s ease-out;">🗺️ Risk Map</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-header" style="font-size: 1.1rem; animation: fadeInUp 0.6s ease-out;">🗺️ Risk Map</h3>', unsafe_allow_html=True)
         try:
             risk_map, risk_locations = create_risk_map()
             # 지도 컨테이너로 감싸서 크기 조정

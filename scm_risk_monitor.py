@@ -1832,11 +1832,17 @@ def main():
                 try:
                     st.session_state.scm_articles = crawl_scm_risk_news(100)
                     st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    # 원본 데이터 저장 (홈 버튼용)
+                    st.session_state.original_articles = st.session_state.scm_articles.copy()
+                    st.session_state.original_load_time = st.session_state.scm_load_time
                 except Exception as e:
                     st.error(f"Error loading news: {e}")
                     st.info("Loading backup news...")
                     st.session_state.scm_articles = generate_scm_backup_news(100)
                     st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    # 원본 데이터 저장 (홈 버튼용)
+                    st.session_state.original_articles = st.session_state.scm_articles.copy()
+                    st.session_state.original_load_time = st.session_state.scm_load_time
         else:
             # 기존 데이터에 keywords 필드가 없는 경우 새로 로드
             if st.session_state.scm_articles and 'keywords' not in st.session_state.scm_articles[0]:
@@ -1844,9 +1850,15 @@ def main():
                     try:
                         st.session_state.scm_articles = crawl_scm_risk_news(100)
                         st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                        # 원본 데이터 저장 (홈 버튼용)
+                        st.session_state.original_articles = st.session_state.scm_articles.copy()
+                        st.session_state.original_load_time = st.session_state.scm_load_time
                     except Exception as e:
                         st.error(f"Error updating news: {e}")
                         st.session_state.scm_articles = generate_scm_backup_news(100)
+                        # 원본 데이터 저장 (홈 버튼용)
+                        st.session_state.original_articles = st.session_state.scm_articles.copy()
+                        st.session_state.original_load_time = st.session_state.scm_load_time
                         st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         
         # 뉴스 헤더와 검색 기능
@@ -1861,13 +1873,26 @@ def main():
             col_header, col_search = st.columns([2, 1])
             
             with col_header:
-                # SCM Risk News 배너 (언어 선택 제거)
-                st.markdown(f"""
-                <div class="unified-info-card">
-                    <h3 class="section-header" style="margin: 0 0 0.5rem 0; animation: fadeInUp 0.8s ease-out;">SCM Risk News</h3>
-                    <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
-                </div>
-                """, unsafe_allow_html=True)
+                # SCM Risk News 배너와 홈 버튼을 같은 행에 배치
+                col_title, col_home = st.columns([3, 1])
+                
+                with col_title:
+                    # SCM Risk News 배너 (언어 선택 제거)
+                    st.markdown(f"""
+                    <div class="unified-info-card">
+                        <h3 class="section-header" style="margin: 0 0 0.5rem 0; animation: fadeInUp 0.8s ease-out;">SCM Risk News</h3>
+                        <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_home:
+                    # 검색 결과가 있을 때만 홈 버튼 표시
+                    if st.session_state.get('search_query'):
+                        if st.button("🏠 Home", key="home_button_with_results", type="secondary", use_container_width=True):
+                            st.session_state.search_query = ""
+                            st.session_state.scm_articles = st.session_state.get('original_articles', [])
+                            st.session_state.scm_load_time = st.session_state.get('original_load_time', datetime.now().strftime('%H:%M'))
+                            st.rerun()
                 
             
             with col_search:
@@ -1879,48 +1904,67 @@ def main():
                     
                     # 인기 키워드 표시 (세로 배열, top10 순위)
                     st.markdown("""
+                    <script>
+                    function searchKeyword(keyword) {
+                        // 검색 입력 필드에 키워드 설정
+                        const input = document.querySelector('[data-testid=stTextInput] input');
+                        if (input) {
+                            input.value = keyword;
+                            // 입력 이벤트 트리거
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        
+                        // 검색 버튼 클릭
+                        setTimeout(() => {
+                            const searchButton = document.querySelector('[data-testid="baseButton-secondary"]');
+                            if (searchButton) {
+                                searchButton.click();
+                            }
+                        }, 100);
+                    }
+                    </script>
                     <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;">
-                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem;">🔥 Popular SCM Risk Keywords (Top 10):</div>
+                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem; animation: fadeInUp 0.8s ease-out;">🔥 Popular SCM Risk Keywords:</div>
                         <div style="display: flex; flex-direction: column; gap: 0.15rem;">
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #ff6b6b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">1</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supply chain disruption'">supply chain disruption</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('supply chain disruption')">supply chain disruption</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #ffa726; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">2</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='logistics crisis'">logistics crisis</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('logistics crisis')">logistics crisis</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #ffeb3b; color: #333; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">3</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='manufacturing shortage'">manufacturing shortage</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('manufacturing shortage')">manufacturing shortage</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #4caf50; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">4</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='port congestion'">port congestion</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('port congestion')">port congestion</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #2196f3; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">5</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='shipping delays'">shipping delays</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('shipping delays')">shipping delays</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #9c27b0; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">6</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='raw material price'">raw material price</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('raw material price')">raw material price</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #607d8b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">7</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='inventory management'">inventory management</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('inventory management')">inventory management</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #795548; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">8</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supplier risk'">supplier risk</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('supplier risk')">supplier risk</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #e91e63; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">9</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='trade war impact'">trade war impact</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('trade war impact')">trade war impact</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
                                 <span style="background: #00bcd4; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">10</span>
-                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='global supply chain'">global supply chain</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="searchKeyword('global supply chain')">global supply chain</span>
                             </div>
                         </div>
                     </div>
@@ -1954,6 +1998,14 @@ def main():
                                 else:
                                     st.warning("No articles found for your search. Please try different keywords.")
                                     st.info("💡 Try these popular keywords: supply chain, logistics, manufacturing, semiconductor, trade war")
+                                    
+                                    # 홈 버튼 추가
+                                    if st.button("🏠 Back to Home", key="home_button_no_results", type="secondary"):
+                                        st.session_state.search_query = ""
+                                        st.session_state.scm_articles = st.session_state.get('original_articles', [])
+                                        st.session_state.scm_load_time = st.session_state.get('original_load_time', datetime.now().strftime('%H:%M'))
+                                        st.rerun()
+                                    
                                     # 백업 뉴스로 fallback
                                     st.session_state.scm_articles = generate_scm_backup_news(100, search_query)
                                     st.session_state.scm_load_time = datetime.now().strftime('%H:%M')

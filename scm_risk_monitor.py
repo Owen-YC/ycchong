@@ -1655,6 +1655,11 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                     }
                     articles.append(article)
         
+        # 결과가 없으면 백업 뉴스 사용
+        if not articles:
+            st.warning("No articles found from Google News. Using backup news.")
+            return generate_scm_backup_news(num_results, search_query)
+        
         return articles[:num_results]
         
     except Exception as e:
@@ -1911,9 +1916,18 @@ def main():
                                     st.rerun()
                                 else:
                                     st.warning("No articles found for your search. Please try different keywords.")
+                                    st.info("💡 Try these popular keywords: supply chain, logistics, manufacturing, semiconductor, trade war")
+                                    # 백업 뉴스로 fallback
+                                    st.session_state.scm_articles = generate_scm_backup_news(100, search_query)
+                                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                    st.rerun()
                             except Exception as e:
                                 st.error(f"Search error: {e}")
-                                st.info("Showing default SCM news instead.")
+                                st.info("Showing backup news instead.")
+                                # 백업 뉴스로 fallback
+                                st.session_state.scm_articles = generate_scm_backup_news(100, search_query)
+                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                st.rerun()
                     elif search_clicked and (not search_query or not search_query.strip()):
                         st.warning("Please enter a search term")
                 

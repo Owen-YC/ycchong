@@ -1474,6 +1474,12 @@ def translate_korean_to_english(korean_text: str) -> str:
 def is_scm_related(title: str, search_query: str) -> bool:
     """제목이 SCM 관련성이 있는지 체크"""
     title_lower = title.lower()
+    search_lower = search_query.lower()
+    
+    # 검색어가 제목에 직접 포함되어 있으면 통과 (가장 우선)
+    search_words = search_lower.split()
+    if any(word in title_lower for word in search_words if len(word) > 1):
+        return True
     
     # SCM 관련 키워드 (한국어 + 영어)
     scm_keywords = [
@@ -1502,7 +1508,6 @@ def is_scm_related(title: str, search_query: str) -> bool:
         return True
     
     # 검색어 자체가 SCM 관련이면 통과
-    search_lower = search_query.lower()
     if any(keyword in search_lower for keyword in scm_keywords):
         return True
     
@@ -1568,12 +1573,21 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
         all_items = []
         for i, news_url in enumerate(news_urls):
             try:
+                # 테스트용: URL 출력
+                if search_query == "대만 지진":
+                    st.write(f"🌐 크롤링 URL {i+1}: {news_url}")
+                
                 response = requests.get(news_url, headers=headers, timeout=10)
                 response.raise_for_status()
                 
                 # XML 파싱
                 soup = BeautifulSoup(response.content, 'xml')
                 items = soup.find_all('item')
+                
+                # 테스트용: 원본 아이템 수 출력
+                if search_query == "대만 지진":
+                    st.write(f"📄 원본 아이템 {len(items)}개 발견")
+                
                 all_items.extend(items)
             except Exception as e:
                 st.warning(f"Failed to fetch from URL: {news_url}")
@@ -1610,6 +1624,9 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 
                 # SCM 관련성 체크 (검색어가 있을 때만)
                 if search_query and not is_scm_related(title, search_query):
+                    # 테스트용: 필터링된 기사 출력
+                    if search_query == "대만 지진":
+                        st.write(f"🚫 필터링됨: {title}")
                     continue
                 
                 # 키워드 추출
@@ -1912,9 +1929,11 @@ def main():
                                 if search_query == "대만 지진":
                                     st.write(f"🔍 테스트: '{search_query}' 검색 결과 {len(new_articles)}개")
                                     if new_articles:
-                                        st.write("📰 첫 3개 기사 제목:")
-                                        for i, article in enumerate(new_articles[:3]):
+                                        st.write("📰 첫 5개 기사 제목:")
+                                        for i, article in enumerate(new_articles[:5]):
                                             st.write(f"{i+1}. {article['title']}")
+                                    else:
+                                        st.write("❌ 검색 결과가 없습니다!")
                                 
                                 if new_articles:
                                     st.session_state.scm_articles = new_articles

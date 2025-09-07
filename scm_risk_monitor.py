@@ -2019,9 +2019,9 @@ def main():
                 # 검색 실행 (버튼 클릭 또는 엔터키)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
                     if search_query and search_query.strip():
-                with st.spinner(f"Searching for: {search_query}..."):
+                        with st.spinner(f"Searching for: {search_query}..."):
                             try:
-                    # 새로운 검색 결과 로드
+                                # 새로운 검색 결과 로드
                                 new_articles = crawl_scm_risk_news(100, search_query)
                                 
                                 # 테스트용: 검색 결과 확인 (간단하게)

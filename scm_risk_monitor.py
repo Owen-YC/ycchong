@@ -1268,8 +1268,8 @@ def create_risk_map():
                 <h5 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">📰 관련 뉴스</h5>
                 {news_links_html}
                 <div style="margin-top: 12px; text-align: center;">
-                    <button onclick="searchLocationNews('{location['name']}')" style="
-                        background: #3b82f6; 
+                    <button onclick="searchLocationRisk('{location['name']}')" style="
+                        background: #dc2626; 
                         color: white; 
                         border: none; 
                         padding: 8px 16px; 
@@ -1278,8 +1278,8 @@ def create_risk_map():
                         font-weight: 600; 
                         cursor: pointer;
                         transition: background 0.2s;
-                    " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-                        🔍 관련 뉴스 검색
+                    " onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
+                        🚨 해당 지역 Risk 검색
                     </button>
                 </div>
             </div>
@@ -1421,21 +1421,14 @@ def create_risk_map():
         }}
         </style>
         <script>
-        function searchLocationNews(locationName) {{
-            // Streamlit 세션 상태에 검색어 설정
-            const searchInput = document.querySelector('[data-testid=stTextInput] input');
-            if (searchInput) {{
-                searchInput.value = locationName;
-                searchInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-            }}
+        function searchLocationRisk(locationName) {{
+            // SCM Risk 관련 검색어로 확장
+            const riskSearchQuery = locationName + ' supply chain risk OR logistics OR manufacturing OR trade';
             
-            // 검색 버튼 클릭
-            setTimeout(() => {{
-                const searchButton = document.querySelector('[data-testid="baseButton-secondary"]');
-                if (searchButton) {{
-                    searchButton.click();
-                }}
-            }}, 100);
+            // URL 파라미터로 검색어 전달
+            const url = new URL(window.location);
+            url.searchParams.set('location_search', riskSearchQuery);
+            window.location.href = url.toString();
         }}
         </script>
         """
@@ -1641,8 +1634,8 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 news_urls = [korean_url, english_url]
             else:
                 # 영어 검색어는 SCM 관련 키워드 추가
-                enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
-                encoded_query = urllib.parse.quote(enhanced_query)
+            enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
+            encoded_query = urllib.parse.quote(enhanced_query)
                 news_urls = [f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"]
         else:
             # SCM Risk 관련 키워드들
@@ -1674,13 +1667,13 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 # 테스트용: URL 출력 (간단하게)
                 if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:
                     st.info(f"🔍 검색 중... ({len(news_urls)}개 소스)")
-                
-                response = requests.get(news_url, headers=headers, timeout=10)
-                response.raise_for_status()
-                
-                # XML 파싱
-                soup = BeautifulSoup(response.content, 'xml')
-                items = soup.find_all('item')
+        
+        response = requests.get(news_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        # XML 파싱
+        soup = BeautifulSoup(response.content, 'xml')
+        items = soup.find_all('item')
                 
                 # 테스트용: 원본 아이템 수 출력 (간단하게)
                 if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:
@@ -1905,6 +1898,30 @@ def generate_scm_backup_news(num_results: int, search_query: str = None) -> List
     return articles
 
 def main():
+    # URL 파라미터 처리 (지역 검색)
+    query_params = st.query_params
+    if 'location_search' in query_params:
+        location_search_query = query_params['location_search']
+        # URL 파라미터 제거
+        st.query_params.clear()
+        
+        # 지역 검색 실행
+        with st.spinner(f"Searching for: {location_search_query}..."):
+            try:
+                new_articles = crawl_scm_risk_news(100, location_search_query)
+                if new_articles:
+                    st.session_state.scm_articles = new_articles
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    st.session_state.search_query = location_search_query
+                    st.session_state.last_search = location_search_query
+                    st.session_state.current_page = 1
+                    st.session_state.show_all_news = False
+                    st.success(f"✅ Found {len(new_articles)} articles for '{location_search_query}'")
+                else:
+                    st.warning(f"No articles found for '{location_search_query}'")
+            except Exception as e:
+                st.error(f"Search error: {e}")
+    
     # 메인 헤더
     st.markdown("""
     <div class="main-header">
@@ -1970,13 +1987,13 @@ def main():
                 
                 with col_title:
                     # SCM Risk News 배너 (언어 선택 제거)
-                    st.markdown(f"""
-                    <div class="unified-info-card">
+        st.markdown(f"""
+        <div class="unified-info-card">
                         <h3 class="section-header" style="margin: 0 0 0.5rem 0; font-size: 1.1rem; animation: fadeInUp 0.6s ease-out;">SCM Risk News</h3>
                         <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+        </div>
+        """, unsafe_allow_html=True)
+        
                 with col_home:
                     # 검색 결과가 있을 때만 홈 버튼 표시
                     if st.session_state.get('search_query'):
@@ -2002,9 +2019,9 @@ def main():
                 # 검색 실행 (버튼 클릭 또는 엔터키)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
                     if search_query and search_query.strip():
-                        with st.spinner(f"Searching for: {search_query}..."):
+                with st.spinner(f"Searching for: {search_query}..."):
                             try:
-                                # 새로운 검색 결과 로드
+                    # 새로운 검색 결과 로드
                                 new_articles = crawl_scm_risk_news(100, search_query)
                                 
                                 # 테스트용: 검색 결과 확인 (간단하게)
@@ -2016,12 +2033,12 @@ def main():
                                 
                                 if new_articles:
                                     st.session_state.scm_articles = new_articles
-                                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                                    st.session_state.search_query = search_query
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    st.session_state.search_query = search_query
                                     st.session_state.last_search = search_query
                                     st.session_state.current_page = 1  # 검색 시 페이지 리셋
-                                    st.rerun()
-                                else:
+                    st.rerun()
+            else:
                                     st.warning("No articles found for your search. Please try different keywords.")
                                     st.info("💡 Try these popular keywords: supply chain, logistics, manufacturing, semiconductor, trade war")
                                     
@@ -2044,23 +2061,23 @@ def main():
                                 st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
                                 st.rerun()
                     elif search_clicked and (not search_query or not search_query.strip()):
-                        st.warning("Please enter a search term")
-                
+                st.warning("Please enter a search term")
+        
                 # 검색어 표시 및 클리어 버튼
-                if 'search_query' in st.session_state and st.session_state.search_query:
+        if 'search_query' in st.session_state and st.session_state.search_query:
                     st.info(f"🔍 Current: {st.session_state.search_query}")
                     if st.button("Clear", key="clear_search", use_container_width=True, type="secondary"):
                         try:
-                            st.session_state.search_query = ""
+                st.session_state.search_query = ""
                             st.session_state.scm_articles = crawl_scm_risk_news(100)
-                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
                             st.session_state.current_page = 1  # 클리어 시 페이지 리셋
-                            st.rerun()
+                st.rerun()
                         except Exception as e:
                             st.error(f"Error loading default news: {e}")
                             # 백업 뉴스로 fallback
                             st.session_state.scm_articles = generate_scm_backup_news(100)
-                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
                             st.rerun()
         
         # 뉴스 정렬 옵션 추가 (컴팩트하게)
@@ -2119,7 +2136,7 @@ def main():
                 Page {st.session_state.current_page} of {total_pages} ({total_articles} articles)
             </div>
             """, unsafe_allow_html=True)
-        
+            
         with col_next:
             next_disabled = st.session_state.current_page >= total_pages
             if st.button("Next ▶", key="next_page", disabled=next_disabled, use_container_width=True, type="secondary"):
@@ -2169,17 +2186,17 @@ def main():
             share_url = article['url']
             share_title = display_title
             
-            st.markdown(f"""
-            <div class="news-item">
+                st.markdown(f"""
+                <div class="news-item">
                 <div class="news-title">{display_title}</div>
                 <div class="news-description" style="margin: 0.5rem 0;">
                     {keywords_html}
                 </div>
-                <div class="news-meta">
-                    <span class="news-source">{article['source']}</span>
-                    <span>{article['published_time']}</span>
+                    <div class="news-meta">
+                        <span class="news-source">{article['source']}</span>
+                        <span>{article['published_time']}</span>
                     <span>{views_text}</span>
-                </div>
+                    </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
                     <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
@@ -2200,8 +2217,8 @@ def main():
                            title="이메일 공유">📧</a>
                     </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
         
         # 더보기 버튼 추가
         if show_more_button:
@@ -2344,7 +2361,7 @@ def main():
                 change_color = "#e74c3c" if change >= 0 else "#27ae60"  # 상승: 빨강, 하락: 초록
                 change_symbol = "▲" if change >= 0 else "▼"
                 
-                st.markdown(f"""
+            st.markdown(f"""
                 <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; font-weight: 500;">{currency_name}</span>
@@ -2355,8 +2372,8 @@ def main():
                             </span>
                         </div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
@@ -2407,8 +2424,8 @@ def main():
                 # 등락폭 색상 결정
                 change_color = "#e74c3c" if change >= 0 else "#27ae60"  # 상승: 빨강, 하락: 초록
                 change_symbol = "▲" if change >= 0 else "▼"
-                
-                st.markdown(f"""
+            
+            st.markdown(f"""
                 <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; font-weight: 500;">{icon} {commodity}</span>
@@ -2427,8 +2444,8 @@ def main():
         st.markdown("""
         <div style="font-size: 0.6rem; color: #95a5a6; text-align: center; margin-top: 0.5rem;">
             📊 LME (London Metal Exchange) 실시간 데이터
-        </div>
-        """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
     

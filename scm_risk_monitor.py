@@ -1914,7 +1914,6 @@ def main():
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                     
                     # 키워드 목록을 항상 표시
-                    st.markdown("**🔥 Popular SCM Risk Keywords:**")
                     # 키워드를 2열로 표시
                     col_kw1, col_kw2 = st.columns(2)
                     with col_kw1:

@@ -1947,11 +1947,11 @@ def main():
                 <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; font-weight: 500;">{currency_name}</span>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; font-size: 0.8rem;">{formatted_rate} {unit}</div>
-                            <div style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: bold; font-size: 0.8rem;">{formatted_rate} {unit}</span>
+                            <span style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} {abs(change):.2f} ({change_percent:+.2f}%)
-                            </div>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -2011,11 +2011,11 @@ def main():
                 <div class="market-item" style="padding: 0.4rem; border-radius: 6px; background: #f8f9fa; margin-bottom: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; font-weight: 500;">{icon} {commodity}</span>
-                        <div style="text-align: right;">
-                            <div style="font-weight: bold; font-size: 0.8rem;">{formatted_price}{unit}</div>
-                            <div style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-weight: bold; font-size: 0.8rem;">{formatted_price}{unit}</span>
+                            <span style="font-size: 0.6rem; color: {change_color}; font-weight: 500;">
                                 {change_symbol} ${abs(change):.2f} ({change_percent:+.2f}%)
-                            </div>
+                            </span>
                         </div>
                     </div>
                 </div>

@@ -1398,6 +1398,48 @@ def create_risk_map():
     
     return m, risk_locations
 
+def is_scm_related(title: str, search_query: str) -> bool:
+    """제목이 SCM 관련성이 있는지 체크"""
+    title_lower = title.lower()
+    
+    # SCM 관련 키워드 (한국어 + 영어)
+    scm_keywords = [
+        # 한국어
+        '공급망', '물류', '제조업', '운송', '반도체', '에너지', '무역', '수출입', '원자재', 
+        '재고', '창고', '배송', '항만', '선박', '항공', '철도', '트럭', '화물',
+        '생산', '제조', '공장', '설비', '기계', '부품', '소재', '원료',
+        '경제', '시장', '가격', '비용', '효율', '최적화', '관리', '운영',
+        '위험', '리스크', '중단', '지연', '부족', '과잉', '불균형',
+        '글로벌', '국제', '해외', '수입', '수출', '무역전쟁', '제재',
+        '기술', '디지털', '자동화', 'AI', '인공지능', '로봇', '스마트',
+        
+        # 영어
+        'supply chain', 'logistics', 'manufacturing', 'shipping', 'transport',
+        'semiconductor', 'energy', 'trade', 'import', 'export', 'raw material',
+        'inventory', 'warehouse', 'delivery', 'port', 'ship', 'air', 'rail', 'truck', 'cargo',
+        'production', 'factory', 'equipment', 'machine', 'component', 'material',
+        'economy', 'market', 'price', 'cost', 'efficiency', 'optimization', 'management',
+        'risk', 'disruption', 'delay', 'shortage', 'surplus', 'imbalance',
+        'global', 'international', 'overseas', 'trade war', 'sanction',
+        'technology', 'digital', 'automation', 'artificial intelligence', 'robot', 'smart'
+    ]
+    
+    # 검색어가 SCM 키워드에 포함되어 있으면 통과
+    if any(keyword in title_lower for keyword in scm_keywords):
+        return True
+    
+    # 검색어 자체가 SCM 관련이면 통과
+    search_lower = search_query.lower()
+    if any(keyword in search_lower for keyword in scm_keywords):
+        return True
+    
+    # 특별한 경우: 자연재해나 정치적 사건이지만 경제/무역에 영향을 주는 경우
+    economic_impact_keywords = ['경제', '시장', '가격', '비용', '무역', '수출입', 'economy', 'market', 'price', 'cost', 'trade']
+    if any(keyword in title_lower for keyword in economic_impact_keywords):
+        return True
+    
+    return False
+
 def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> List[Dict]:
     """SCM Risk 관련 뉴스 크롤링"""
     try:
@@ -1406,8 +1448,9 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
             # 한국어 검색어인지 확인
             korean_pattern = re.compile(r'[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]')
             if korean_pattern.search(search_query):
-                # 한국어 검색어는 그대로 사용
-                encoded_query = urllib.parse.quote(search_query)
+                # 한국어 검색어에 SCM 관련 키워드 추가
+                enhanced_query = f"{search_query} 공급망 OR 물류 OR 제조업 OR 운송 OR 반도체 OR 에너지 OR 무역"
+                encoded_query = urllib.parse.quote(enhanced_query)
                 news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
             else:
                 # 영어 검색어는 SCM 관련 키워드 추가
@@ -1462,6 +1505,10 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 except:
                     formatted_date = datetime.now().strftime('%Y-%m-%d %H:%M')
                 
+                # SCM 관련성 체크 (검색어가 있을 때만)
+                if search_query and not is_scm_related(title, search_query):
+                    continue
+                
                 # 키워드 추출
                 keywords = extract_keywords_from_title(title)
                 
@@ -1474,6 +1521,36 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                     'views': random.randint(100, 5000)
                 }
                 articles.append(article)
+        
+        # SCM 관련 필터링 후 결과가 너무 적으면 필터링 완화
+        if len(articles) < 5 and search_query:
+            # 필터링 없이 다시 시도
+            articles = []
+            for item in items[:num_results]:
+                title = item.find('title').text if item.find('title') else ""
+                link = item.find('link').text if item.find('link') else ""
+                pub_date = item.find('pubDate').text if item.find('pubDate') else ""
+                source = item.find('source').text if item.find('source') else ""
+                
+                if title.strip():
+                    try:
+                        from email.utils import parsedate_to_datetime
+                        parsed_date = parsedate_to_datetime(pub_date)
+                        formatted_date = parsed_date.strftime('%Y-%m-%d %H:%M')
+                    except:
+                        formatted_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+                    
+                    keywords = extract_keywords_from_title(title)
+                    
+                    article = {
+                        'title': title,
+                        'url': link,
+                        'source': source,
+                        'published_time': formatted_date,
+                        'keywords': keywords,
+                        'views': random.randint(100, 5000)
+                    }
+                    articles.append(article)
         
         return articles[:num_results]
         

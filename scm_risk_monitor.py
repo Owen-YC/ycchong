@@ -2033,12 +2033,12 @@ def main():
                                 
                                 if new_articles:
                                     st.session_state.scm_articles = new_articles
-                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                    st.session_state.search_query = search_query
+                                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                    st.session_state.search_query = search_query
                                     st.session_state.last_search = search_query
                                     st.session_state.current_page = 1  # 검색 시 페이지 리셋
-                    st.rerun()
-            else:
+                                    st.rerun()
+                                else:
                                     st.warning("No articles found for your search. Please try different keywords.")
                                     st.info("💡 Try these popular keywords: supply chain, logistics, manufacturing, semiconductor, trade war")
                                     

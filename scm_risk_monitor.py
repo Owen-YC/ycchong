@@ -1634,8 +1634,8 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 news_urls = [korean_url, english_url]
             else:
                 # 영어 검색어는 SCM 관련 키워드 추가
-            enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
-            encoded_query = urllib.parse.quote(enhanced_query)
+                enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
+                encoded_query = urllib.parse.quote(enhanced_query)
                 news_urls = [f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"]
         else:
             # SCM Risk 관련 키워드들

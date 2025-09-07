@@ -1477,8 +1477,13 @@ def is_scm_related(title: str, search_query: str) -> bool:
     search_lower = search_query.lower()
     
     # 검색어가 제목에 직접 포함되어 있으면 통과 (가장 우선)
+    # 단어 단위로도 체크하고, 전체 검색어도 체크
     search_words = search_lower.split()
     if any(word in title_lower for word in search_words if len(word) > 1):
+        return True
+    
+    # 전체 검색어가 제목에 포함되어 있으면 통과
+    if search_lower in title_lower:
         return True
     
     # SCM 관련 키워드 (한국어 + 영어)
@@ -1622,12 +1627,12 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 except:
                     formatted_date = datetime.now().strftime('%Y-%m-%d %H:%M')
                 
-                # SCM 관련성 체크 (검색어가 있을 때만)
-                if search_query and not is_scm_related(title, search_query):
-                    # 테스트용: 필터링된 기사 출력
-                    if search_query == "대만 지진":
-                        st.write(f"🚫 필터링됨: {title}")
-                    continue
+                # SCM 관련성 체크 (검색어가 있을 때만) - 테스트용으로 일시 비활성화
+                # if search_query and not is_scm_related(title, search_query):
+                #     # 테스트용: 필터링된 기사 출력
+                #     if search_query == "대만 지진":
+                #         st.write(f"🚫 필터링됨: {title}")
+                #     continue
                 
                 # 키워드 추출
                 keywords = extract_keywords_from_title(title)

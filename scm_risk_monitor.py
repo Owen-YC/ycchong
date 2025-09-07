@@ -395,6 +395,7 @@ st.markdown("""
     }
 </style>
 
+
 """, unsafe_allow_html=True)
 
 def get_korean_time():
@@ -1654,6 +1655,25 @@ def main():
                 
                 with search_col1:
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
+                    
+                    # 인기 키워드 표시 (항상 표시)
+                    st.markdown("""
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;">
+                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem;">🔥 Popular SCM Risk Keywords:</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supply chain disruption'">supply chain disruption</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='logistics crisis'">logistics crisis</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='manufacturing shortage'">manufacturing shortage</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='port congestion'">port congestion</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='shipping delays'">shipping delays</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='raw material price'">raw material price</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='inventory management'">inventory management</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supplier risk'">supplier risk</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='trade war impact'">trade war impact</span>
+                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='global supply chain'">global supply chain</span>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 with search_col2:
                     search_clicked = st.button("Search", key="search_button", use_container_width=True, type="secondary")
@@ -1677,7 +1697,7 @@ def main():
                             except Exception as e:
                                 st.error(f"Search error: {e}")
                                 st.info("Showing default SCM news instead.")
-                    elif search_clicked and not search_query.strip():
+                    elif search_clicked and (not search_query or not search_query.strip()):
                         st.warning("Please enter a search term")
                 
                 # 검색어 표시 및 클리어 버튼

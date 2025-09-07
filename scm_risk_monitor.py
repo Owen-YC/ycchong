@@ -2186,17 +2186,17 @@ def main():
             share_url = article['url']
             share_title = display_title
             
-                st.markdown(f"""
-                <div class="news-item">
+            st.markdown(f"""
+            <div class="news-item">
                 <div class="news-title">{display_title}</div>
                 <div class="news-description" style="margin: 0.5rem 0;">
                     {keywords_html}
                 </div>
-                    <div class="news-meta">
-                        <span class="news-source">{article['source']}</span>
-                        <span>{article['published_time']}</span>
+                <div class="news-meta">
+                    <span class="news-source">{article['source']}</span>
+                    <span>{article['published_time']}</span>
                     <span>{views_text}</span>
-                    </div>
+                </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
                     <a href="{article['url']}" target="_blank" class="news-link">{read_more_text}</a>
                     <div style="display: flex; gap: 0.25rem; align-items: center;">
@@ -2217,8 +2217,8 @@ def main():
                            title="이메일 공유">📧</a>
                     </div>
                 </div>
-                </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
         
         # 더보기 버튼 추가
         if show_more_button:

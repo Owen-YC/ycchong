@@ -1907,6 +1907,15 @@ def main():
                             try:
                                 # 새로운 검색 결과 로드
                                 new_articles = crawl_scm_risk_news(100, search_query)
+                                
+                                # 테스트용: 검색 결과 확인
+                                if search_query == "대만 지진":
+                                    st.write(f"🔍 테스트: '{search_query}' 검색 결과 {len(new_articles)}개")
+                                    if new_articles:
+                                        st.write("📰 첫 3개 기사 제목:")
+                                        for i, article in enumerate(new_articles[:3]):
+                                            st.write(f"{i+1}. {article['title']}")
+                                
                                 if new_articles:
                                     st.session_state.scm_articles = new_articles
                                     st.session_state.scm_load_time = datetime.now().strftime('%H:%M')

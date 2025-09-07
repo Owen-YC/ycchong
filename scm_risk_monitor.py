@@ -2032,30 +2032,18 @@ def main():
                 # 기존 데이터의 경우 제목에서 키워드 추출
                 keywords = extract_keywords_from_title(article['title'])
             
-            # 언어에 따른 번역 (기본값: 한국어)
-            current_language = st.session_state.get('language', 'ko')
+            # 제목은 원문 그대로 표시 (번역하지 않음)
+            display_title = article['title']
             
-            # 제목 번역 - 기본 설정된 언어로 표시
-            if current_language == 'ko':
-                # 한국어 설정 시: 영어 제목을 한국어로 번역
-                display_title = translate_text(article['title'], 'ko')
-            else:
-                # 영어 설정 시: 원본 영어 제목 유지
-                display_title = article['title']
-            
-            # 키워드 번역 - 기본 설정된 언어로 표시
-            display_keywords = get_keywords_for_language(keywords, current_language)
+            # 키워드도 원문 그대로 표시 (번역하지 않음)
+            display_keywords = keywords
             
             # 키워드를 HTML로 변환
             keywords_html = " ".join([f'<span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 12px; font-size: 0.7rem; margin-right: 4px; display: inline-block;">{keyword}</span>' for keyword in display_keywords])
             
-            # 메타 정보 번역 - 기본 설정된 언어로 표시
-            if current_language == 'ko':
-                views_text = f"{article['views']:,} 조회"
-                read_more_text = "더 읽기 →"
-            else:
-                views_text = f"{article['views']:,} views"
-                read_more_text = "Read more →"
+            # 메타 정보는 영어로 고정 표시
+            views_text = f"{article['views']:,} views"
+            read_more_text = "Read more →"
             
             # 공유 URL 생성
             share_url = article['url']

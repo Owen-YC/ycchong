@@ -1579,7 +1579,7 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
         for i, news_url in enumerate(news_urls):
             try:
                 # 테스트용: URL 출력
-                if search_query == "대만 지진":
+                if search_query in ["대만", "taiwan", "대만 지진"]:
                     st.write(f"🌐 크롤링 URL {i+1}: {news_url}")
                 
                 response = requests.get(news_url, headers=headers, timeout=10)
@@ -1590,7 +1590,7 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 items = soup.find_all('item')
                 
                 # 테스트용: 원본 아이템 수 출력
-                if search_query == "대만 지진":
+                if search_query in ["대만", "taiwan", "대만 지진"]:
                     st.write(f"📄 원본 아이템 {len(items)}개 발견")
                 
                 all_items.extend(items)
@@ -1610,6 +1610,11 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 unique_items.append(item)
         
         items = unique_items
+        
+        # 테스트용: 중복 제거 후 아이템 수 출력
+        if search_query in ["대만", "taiwan", "대만 지진"]:
+            st.write(f"🔄 중복 제거 후 아이템 {len(items)}개")
+        
         articles = []
         
         for item in items[:num_results]:
@@ -1677,16 +1682,17 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                     }
                     articles.append(article)
         
-        # 결과가 없으면 백업 뉴스 사용
-        if not articles:
-            st.warning("No articles found from Google News. Using backup news.")
-            return generate_scm_backup_news(num_results, search_query)
+        # 결과가 없으면 백업 뉴스 사용 (테스트용으로 주석 처리)
+        # if not articles:
+        #     st.warning("No articles found from Google News. Using backup news.")
+        #     return generate_scm_backup_news(num_results, search_query)
         
         return articles[:num_results]
         
     except Exception as e:
         st.error(f"뉴스 크롤링 오류: {e}")
-        return generate_scm_backup_news(num_results, search_query)
+        # 테스트용으로 백업 뉴스 대신 빈 리스트 반환
+        return []
 
 def generate_scm_backup_news(num_results: int, search_query: str = None) -> List[Dict]:
     """SCM Risk 백업 뉴스 생성"""
@@ -1931,7 +1937,7 @@ def main():
                                 new_articles = crawl_scm_risk_news(100, search_query)
                                 
                                 # 테스트용: 검색 결과 확인
-                                if search_query == "대만 지진":
+                                if search_query in ["대만", "taiwan", "대만 지진"]:
                                     st.write(f"🔍 테스트: '{search_query}' 검색 결과 {len(new_articles)}개")
                                     if new_articles:
                                         st.write("📰 첫 5개 기사 제목:")

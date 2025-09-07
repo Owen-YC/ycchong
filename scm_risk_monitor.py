@@ -1987,12 +1987,12 @@ def main():
                 
                 with col_title:
                     # SCM Risk News 배너 (언어 선택 제거)
-        st.markdown(f"""
-        <div class="unified-info-card">
+                    st.markdown(f"""
+                    <div class="unified-info-card">
                         <h3 class="section-header" style="margin: 0 0 0.5rem 0; font-size: 1.1rem; animation: fadeInUp 0.6s ease-out;">SCM Risk News</h3>
                         <p style="font-size: 0.75rem; color: #7f8c8d; margin: 0;">Last updated: {load_time} | {len(st.session_state.scm_articles)} articles</p>
-        </div>
-        """, unsafe_allow_html=True)
+                    </div>
+                    """, unsafe_allow_html=True)
         
                 with col_home:
                     # 검색 결과가 있을 때만 홈 버튼 표시

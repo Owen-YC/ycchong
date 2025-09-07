@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import time
 import random
+import re
 from datetime import datetime, timedelta
 import pandas as pd
 import plotly.express as px
@@ -1578,9 +1579,9 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
         all_items = []
         for i, news_url in enumerate(news_urls):
             try:
-                # 테스트용: URL 출력
-                if search_query in ["대만", "taiwan", "대만 지진"]:
-                    st.write(f"🌐 크롤링 URL {i+1}: {news_url}")
+                # 테스트용: URL 출력 (간단하게)
+                if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:
+                    st.info(f"🔍 검색 중... ({len(news_urls)}개 소스)")
                 
                 response = requests.get(news_url, headers=headers, timeout=10)
                 response.raise_for_status()
@@ -1589,9 +1590,9 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 soup = BeautifulSoup(response.content, 'xml')
                 items = soup.find_all('item')
                 
-                # 테스트용: 원본 아이템 수 출력
-                if search_query in ["대만", "taiwan", "대만 지진"]:
-                    st.write(f"📄 원본 아이템 {len(items)}개 발견")
+                # 테스트용: 원본 아이템 수 출력 (간단하게)
+                if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:
+                    st.info(f"📰 {len(items)}개 기사 발견")
                 
                 all_items.extend(items)
             except Exception as e:
@@ -1611,9 +1612,9 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
         
         items = unique_items
         
-        # 테스트용: 중복 제거 후 아이템 수 출력
+        # 테스트용: 중복 제거 후 아이템 수 출력 (간단하게)
         if search_query in ["대만", "taiwan", "대만 지진"]:
-            st.write(f"🔄 중복 제거 후 아이템 {len(items)}개")
+            st.info(f"🔄 중복 제거 후 {len(items)}개 기사")
         
         articles = []
         
@@ -1936,15 +1937,12 @@ def main():
                                 # 새로운 검색 결과 로드
                                 new_articles = crawl_scm_risk_news(100, search_query)
                                 
-                                # 테스트용: 검색 결과 확인
+                                # 테스트용: 검색 결과 확인 (간단하게)
                                 if search_query in ["대만", "taiwan", "대만 지진"]:
-                                    st.write(f"🔍 테스트: '{search_query}' 검색 결과 {len(new_articles)}개")
                                     if new_articles:
-                                        st.write("📰 첫 5개 기사 제목:")
-                                        for i, article in enumerate(new_articles[:5]):
-                                            st.write(f"{i+1}. {article['title']}")
+                                        st.success(f"✅ '{search_query}' 검색 결과 {len(new_articles)}개 발견")
                                     else:
-                                        st.write("❌ 검색 결과가 없습니다!")
+                                        st.warning(f"⚠️ '{search_query}' 검색 결과 없음")
                                 
                                 if new_articles:
                                     st.session_state.scm_articles = new_articles

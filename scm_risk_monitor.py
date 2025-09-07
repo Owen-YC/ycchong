@@ -1667,13 +1667,13 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 # 테스트용: URL 출력 (간단하게)
                 if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:
                     st.info(f"🔍 검색 중... ({len(news_urls)}개 소스)")
-        
-        response = requests.get(news_url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
-        # XML 파싱
-        soup = BeautifulSoup(response.content, 'xml')
-        items = soup.find_all('item')
+                
+                response = requests.get(news_url, headers=headers, timeout=10)
+                response.raise_for_status()
+                
+                # XML 파싱
+                soup = BeautifulSoup(response.content, 'xml')
+                items = soup.find_all('item')
                 
                 # 테스트용: 원본 아이템 수 출력 (간단하게)
                 if search_query in ["대만", "taiwan", "대만 지진"] and i == 0:

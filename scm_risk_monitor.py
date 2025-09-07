@@ -1516,7 +1516,6 @@ def is_scm_related(title: str, search_query: str) -> bool:
 def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> List[Dict]:
     """SCM Risk 관련 뉴스 크롤링"""
     try:
-        st.write(f"🔍 Debug: Starting search for '{search_query}'")
         # 검색어가 있으면 사용, 없으면 기본 SCM 키워드 사용
         if search_query:
             # 한국어 검색어인지 확인
@@ -1524,19 +1523,16 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
             if korean_pattern.search(search_query):
                 # 한국어 검색어를 영어로 번역하여 두 언어로 검색
                 translated_query = translate_korean_to_english(search_query)
-                st.write(f"🔍 Debug: Korean search detected. Translated: '{translated_query}'")
                 
                 # 한국어 검색
                 korean_query = f"{search_query} 공급망 OR 물류 OR 제조업 OR 운송 OR 반도체 OR 에너지 OR 무역"
                 korean_encoded = urllib.parse.quote(korean_query)
                 korean_url = f"https://news.google.com/rss/search?q={korean_encoded}&hl=ko&gl=KR&ceid=KR:ko"
-                st.write(f"🔍 Debug: Korean URL: {korean_url}")
                 
                 # 영어 검색
                 english_query = f"{translated_query} supply chain OR logistics OR manufacturing OR shipping"
                 english_encoded = urllib.parse.quote(english_query)
                 english_url = f"https://news.google.com/rss/search?q={english_encoded}&hl=en&gl=US&ceid=US:en"
-                st.write(f"🔍 Debug: English URL: {english_url}")
                 
                 # 두 URL을 리스트로 반환
                 news_urls = [korean_url, english_url]
@@ -1572,19 +1568,15 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
         all_items = []
         for i, news_url in enumerate(news_urls):
             try:
-                st.write(f"🔍 Debug: Fetching from URL {i+1}/{len(news_urls)}")
                 response = requests.get(news_url, headers=headers, timeout=10)
                 response.raise_for_status()
-                st.write(f"🔍 Debug: Response status: {response.status_code}")
                 
                 # XML 파싱
                 soup = BeautifulSoup(response.content, 'xml')
                 items = soup.find_all('item')
-                st.write(f"🔍 Debug: Found {len(items)} items from URL {i+1}")
                 all_items.extend(items)
             except Exception as e:
                 st.warning(f"Failed to fetch from URL: {news_url}")
-                st.write(f"🔍 Debug: Error: {e}")
                 continue
         
         items = all_items
@@ -1599,7 +1591,6 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 unique_items.append(item)
         
         items = unique_items
-        st.write(f"🔍 Debug: After deduplication: {len(items)} unique items")
         articles = []
         
         for item in items[:num_results]:
@@ -1619,10 +1610,7 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                 
                 # SCM 관련성 체크 (검색어가 있을 때만)
                 if search_query and not is_scm_related(title, search_query):
-                    st.write(f"🔍 Debug: Filtered out (not SCM related): {title[:50]}...")
                     continue
-                else:
-                    st.write(f"🔍 Debug: Keeping article: {title[:50]}...")
                 
                 # 키워드 추출
                 keywords = extract_keywords_from_title(title)
@@ -1666,8 +1654,6 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
                         'views': random.randint(100, 5000)
                     }
                     articles.append(article)
-        
-        st.write(f"🔍 Debug: Final result: {len(articles)} articles")
         
         # 결과가 없으면 백업 뉴스 사용
         if not articles:

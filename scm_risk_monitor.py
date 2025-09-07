@@ -1607,14 +1607,25 @@ def main():
         # SCM Risk 뉴스 자동 로드 (기존 데이터 호환성 체크)
         if 'scm_articles' not in st.session_state:
             with st.spinner("Loading SCM Risk news..."):
-                st.session_state.scm_articles = crawl_scm_risk_news(100)
-                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                try:
+                    st.session_state.scm_articles = crawl_scm_risk_news(100)
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                except Exception as e:
+                    st.error(f"Error loading news: {e}")
+                    st.info("Loading backup news...")
+                    st.session_state.scm_articles = generate_scm_backup_news(100)
+                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         else:
             # 기존 데이터에 keywords 필드가 없는 경우 새로 로드
             if st.session_state.scm_articles and 'keywords' not in st.session_state.scm_articles[0]:
                 with st.spinner("Updating news format..."):
-                    st.session_state.scm_articles = crawl_scm_risk_news(100)
-                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    try:
+                        st.session_state.scm_articles = crawl_scm_risk_news(100)
+                        st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                    except Exception as e:
+                        st.error(f"Error updating news: {e}")
+                        st.session_state.scm_articles = generate_scm_backup_news(100)
+                        st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
         
         # 뉴스 헤더와 검색 기능
         if st.session_state.scm_articles:
@@ -1649,27 +1660,42 @@ def main():
                 
                 # 검색 실행 (버튼 클릭 또는 엔터키)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
-                    if search_query:
+                    if search_query and search_query.strip():
                         with st.spinner(f"Searching for: {search_query}..."):
-                            # 새로운 검색 결과 로드
-                            st.session_state.scm_articles = crawl_scm_risk_news(100, search_query)
-                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                            st.session_state.search_query = search_query
-                            st.session_state.last_search = search_query
-                            st.session_state.current_page = 1  # 검색 시 페이지 리셋
-                            st.rerun()
-                    else:
+                            try:
+                                # 새로운 검색 결과 로드
+                                new_articles = crawl_scm_risk_news(100, search_query)
+                                if new_articles:
+                                    st.session_state.scm_articles = new_articles
+                                    st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                                    st.session_state.search_query = search_query
+                                    st.session_state.last_search = search_query
+                                    st.session_state.current_page = 1  # 검색 시 페이지 리셋
+                                    st.rerun()
+                                else:
+                                    st.warning("No articles found for your search. Please try different keywords.")
+                            except Exception as e:
+                                st.error(f"Search error: {e}")
+                                st.info("Showing default SCM news instead.")
+                    elif search_clicked and not search_query.strip():
                         st.warning("Please enter a search term")
                 
                 # 검색어 표시 및 클리어 버튼
                 if 'search_query' in st.session_state and st.session_state.search_query:
                     st.info(f"🔍 Current: {st.session_state.search_query}")
                     if st.button("Clear", key="clear_search", use_container_width=True, type="secondary"):
-                        st.session_state.search_query = ""
-                        st.session_state.scm_articles = crawl_scm_risk_news(100)
-                        st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                        st.session_state.current_page = 1  # 클리어 시 페이지 리셋
-                        st.rerun()
+                        try:
+                            st.session_state.search_query = ""
+                            st.session_state.scm_articles = crawl_scm_risk_news(100)
+                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                            st.session_state.current_page = 1  # 클리어 시 페이지 리셋
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error loading default news: {e}")
+                            # 백업 뉴스로 fallback
+                            st.session_state.scm_articles = generate_scm_backup_news(100)
+                            st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
+                            st.rerun()
         
         # 뉴스 정렬 옵션 추가 (컴팩트하게)
         st.markdown("""

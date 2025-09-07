@@ -1398,6 +1398,79 @@ def create_risk_map():
     
     return m, risk_locations
 
+def translate_korean_to_english(korean_text: str) -> str:
+    """한국어를 영어로 번역하는 간단한 함수"""
+    translation_dict = {
+        # 자연재해
+        '지진': 'earthquake',
+        '태풍': 'typhoon',
+        '홍수': 'flood',
+        '가뭄': 'drought',
+        '화재': 'fire',
+        '폭설': 'heavy snow',
+        '폭우': 'heavy rain',
+        
+        # 국가/지역
+        '대만': 'Taiwan',
+        '중국': 'China',
+        '일본': 'Japan',
+        '미국': 'United States',
+        '한국': 'South Korea',
+        '북한': 'North Korea',
+        '러시아': 'Russia',
+        '유럽': 'Europe',
+        '아시아': 'Asia',
+        
+        # 경제/무역
+        '경제': 'economy',
+        '무역': 'trade',
+        '수출': 'export',
+        '수입': 'import',
+        '시장': 'market',
+        '가격': 'price',
+        '비용': 'cost',
+        '부족': 'shortage',
+        '과잉': 'surplus',
+        '위기': 'crisis',
+        '충격': 'shock',
+        '영향': 'impact',
+        '효과': 'effect',
+        
+        # 산업/제품
+        '반도체': 'semiconductor',
+        '자동차': 'automobile',
+        '스마트폰': 'smartphone',
+        '전자제품': 'electronics',
+        '철강': 'steel',
+        '석유': 'oil',
+        '가스': 'gas',
+        '전력': 'electricity',
+        '에너지': 'energy',
+        
+        # 기타
+        '공장': 'factory',
+        '생산': 'production',
+        '제조': 'manufacturing',
+        '물류': 'logistics',
+        '운송': 'transportation',
+        '배송': 'delivery',
+        '항만': 'port',
+        '공항': 'airport'
+    }
+    
+    # 단어별로 번역
+    words = korean_text.split()
+    translated_words = []
+    
+    for word in words:
+        if word in translation_dict:
+            translated_words.append(translation_dict[word])
+        else:
+            # 번역되지 않은 단어는 그대로 유지
+            translated_words.append(word)
+    
+    return ' '.join(translated_words)
+
 def is_scm_related(title: str, search_query: str) -> bool:
     """제목이 SCM 관련성이 있는지 체크"""
     title_lower = title.lower()
@@ -1448,15 +1521,26 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
             # 한국어 검색어인지 확인
             korean_pattern = re.compile(r'[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]')
             if korean_pattern.search(search_query):
-                # 한국어 검색어에 SCM 관련 키워드 추가
-                enhanced_query = f"{search_query} 공급망 OR 물류 OR 제조업 OR 운송 OR 반도체 OR 에너지 OR 무역"
-                encoded_query = urllib.parse.quote(enhanced_query)
-                news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
+                # 한국어 검색어를 영어로 번역하여 두 언어로 검색
+                translated_query = translate_korean_to_english(search_query)
+                
+                # 한국어 검색
+                korean_query = f"{search_query} 공급망 OR 물류 OR 제조업 OR 운송 OR 반도체 OR 에너지 OR 무역"
+                korean_encoded = urllib.parse.quote(korean_query)
+                korean_url = f"https://news.google.com/rss/search?q={korean_encoded}&hl=ko&gl=KR&ceid=KR:ko"
+                
+                # 영어 검색
+                english_query = f"{translated_query} supply chain OR logistics OR manufacturing OR shipping"
+                english_encoded = urllib.parse.quote(english_query)
+                english_url = f"https://news.google.com/rss/search?q={english_encoded}&hl=en&gl=US&ceid=US:en"
+                
+                # 두 URL을 리스트로 반환
+                news_urls = [korean_url, english_url]
             else:
                 # 영어 검색어는 SCM 관련 키워드 추가
                 enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
                 encoded_query = urllib.parse.quote(enhanced_query)
-                news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
+                news_urls = [f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"]
         else:
             # SCM Risk 관련 키워드들
             scm_keywords = [
@@ -1474,20 +1558,39 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
             # 랜덤하게 키워드 선택
             selected_keyword = random.choice(scm_keywords)
             encoded_query = urllib.parse.quote(selected_keyword)
-            news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
+            news_urls = [f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"]
         
-        # 실제 뉴스 크롤링
+        # 실제 뉴스 크롤링 (여러 URL에서)
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        response = requests.get(news_url, headers=headers, timeout=10)
-        response.raise_for_status()
+        all_items = []
+        for news_url in news_urls:
+            try:
+                response = requests.get(news_url, headers=headers, timeout=10)
+                response.raise_for_status()
+                
+                # XML 파싱
+                soup = BeautifulSoup(response.content, 'xml')
+                items = soup.find_all('item')
+                all_items.extend(items)
+            except Exception as e:
+                st.warning(f"Failed to fetch from URL: {news_url}")
+                continue
         
-        # XML 파싱
-        soup = BeautifulSoup(response.content, 'xml')
-        items = soup.find_all('item')
+        items = all_items
         
+        # 중복 제거 (제목 기준)
+        seen_titles = set()
+        unique_items = []
+        for item in items:
+            title = item.find('title').text if item.find('title') else ""
+            if title and title not in seen_titles:
+                seen_titles.add(title)
+                unique_items.append(item)
+        
+        items = unique_items
         articles = []
         
         for item in items[:num_results]:

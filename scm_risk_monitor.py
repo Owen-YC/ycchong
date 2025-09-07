@@ -1900,63 +1900,14 @@ def main():
                 search_col1, search_col2 = st.columns([3, 1])
                 
                 with search_col1:
-                    # 자동 완성을 위한 키워드 리스트
-                    autocomplete_keywords = [
-                        "supply chain disruption", "logistics crisis", "manufacturing shortage", 
-                        "port congestion", "shipping delays", "raw material price", 
-                        "inventory management", "supplier risk", "trade war impact", 
-                        "global supply chain", "semiconductor shortage", "energy crisis",
-                        "대만", "taiwan", "대만 지진", "taiwan earthquake", "반도체", "semiconductor",
-                        "물류", "logistics", "공급망", "supply chain", "제조업", "manufacturing"
-                    ]
-                    
-                    # 검색창과 키워드 표시를 함께 배치
+                    # 검색창만 표시
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
-                    
-                    # 키워드 목록을 항상 표시
-                    # 키워드를 2열로 표시
-                    col_kw1, col_kw2 = st.columns(2)
-                    with col_kw1:
-                        for i, keyword in enumerate(autocomplete_keywords[:len(autocomplete_keywords)//2]):
-                            if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
-                                # 키워드 클릭 시 자동으로 검색 실행
-                                st.session_state.search_input = keyword
-                                st.session_state.auto_search = keyword
-                                st.rerun()
-                    with col_kw2:
-                        for i, keyword in enumerate(autocomplete_keywords[len(autocomplete_keywords)//2:], len(autocomplete_keywords)//2):
-                            if st.button(f"{i+1}. {keyword}", key=f"kw_{i}", type="secondary"):
-                                # 키워드 클릭 시 자동으로 검색 실행
-                                st.session_state.search_input = keyword
-                                st.session_state.auto_search = keyword
-                                st.rerun()
                     
                 
                 with search_col2:
                     search_clicked = st.button("Search", key="search_button", use_container_width=True, type="secondary")
                 
-                # 자동 검색 처리 (키워드 버튼 클릭 시)
-                if st.session_state.get('auto_search'):
-                    auto_search_query = st.session_state.auto_search
-                    st.session_state.auto_search = None  # 자동 검색 플래그 초기화
-                    
-                    with st.spinner(f"Searching for: {auto_search_query}..."):
-                        try:
-                            new_articles = crawl_scm_risk_news(100, auto_search_query)
-                            
-                            if new_articles:
-                                st.session_state.scm_articles = new_articles
-                                st.session_state.scm_load_time = datetime.now().strftime('%H:%M')
-                                st.session_state.search_query = auto_search_query
-                                st.session_state.last_search = auto_search_query
-                                st.session_state.current_page = 1
-                                st.rerun()
-                            else:
-                                st.warning("No articles found for your search. Please try different keywords.")
-                        except Exception as e:
-                            st.error(f"Search error: {e}")
-                
-                # 검색 실행 (버튼 클릭, 엔터키, 또는 키워드 버튼 클릭)
+                # 검색 실행 (버튼 클릭 또는 엔터키)
                 if search_clicked or (search_query and search_query != st.session_state.get('last_search', '')):
                     if search_query and search_query.strip():
                         with st.spinner(f"Searching for: {search_query}..."):

@@ -1244,7 +1244,7 @@ def create_risk_map():
             </div>
             """
         
-        # 팝업 HTML
+        # 팝업 HTML (클릭 버튼 추가)
         popup_html = f"""
         <div style="width: 300px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
             <div style="display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid {risk_colors[location['risk_level']]};">
@@ -1267,6 +1267,21 @@ def create_risk_map():
             <div style="margin-top: 12px;">
                 <h5 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">📰 관련 뉴스</h5>
                 {news_links_html}
+                <div style="margin-top: 12px; text-align: center;">
+                    <button onclick="searchLocationNews('{location['name']}')" style="
+                        background: #3b82f6; 
+                        color: white; 
+                        border: none; 
+                        padding: 8px 16px; 
+                        border-radius: 6px; 
+                        font-size: 12px; 
+                        font-weight: 600; 
+                        cursor: pointer;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                        🔍 관련 뉴스 검색
+                    </button>
+                </div>
             </div>
         </div>
         """
@@ -1282,6 +1297,16 @@ def create_risk_map():
             align-items: center;
             justify-content: center;
         ">
+            <!-- 외부 링 애니메이션 -->
+            <div style="
+                position: absolute;
+                background: {icon_color};
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                opacity: 0.2;
+                animation: ripple 3s infinite;
+            "></div>
             <!-- 펄스 애니메이션 배경 -->
             <div style="
                 position: absolute;
@@ -1304,7 +1329,7 @@ def create_risk_map():
             <!-- 메인 마커 -->
             <div style="
                 position: relative;
-                background: {icon_color};
+                background: linear-gradient(135deg, {icon_color} 0%, {icon_color}dd 100%);
                 border: 3px solid white;
                 border-radius: 50%;
                 width: 32px;
@@ -1313,20 +1338,28 @@ def create_risk_map():
                 align-items: center;
                 justify-content: center;
                 font-size: 16px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 20px {icon_color}40;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 z-index: 10;
+                animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
             " onmouseover="
-                this.style.transform='scale(1.2)';
-                this.style.boxShadow='0 6px 20px rgba(0,0,0,0.4)';
+                this.style.transform='scale(1.3) rotate(5deg)';
+                this.style.boxShadow='0 8px 25px rgba(0,0,0,0.4), 0 0 30px {icon_color}60';
                 this.style.borderColor='#fbbf24';
+                this.style.animation='none';
             " onmouseout="
-                this.style.transform='scale(1)';
-                this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';
+                this.style.transform='scale(1) rotate(0deg)';
+                this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3), 0 0 20px {icon_color}40';
                 this.style.borderColor='white';
+                this.style.animation='float 3s ease-in-out infinite, glow 2s ease-in-out infinite';
             ">
+                <span style="
+                    animation: bounce 2s infinite;
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+                ">
                 {location['flag']}
+                </span>
             </div>
         </div>
         
@@ -1345,7 +1378,66 @@ def create_risk_map():
                 opacity: 0.3;
             }}
         }}
+        @keyframes ripple {{
+            0% {{
+                transform: scale(0.8);
+                opacity: 0.2;
+            }}
+            50% {{
+                transform: scale(1.5);
+                opacity: 0.05;
+            }}
+            100% {{
+                transform: scale(2);
+                opacity: 0;
+            }}
+        }}
+        @keyframes float {{
+            0%, 100% {{
+                transform: translateY(0px);
+            }}
+            50% {{
+                transform: translateY(-5px);
+            }}
+        }}
+        @keyframes bounce {{
+            0%, 20%, 50%, 80%, 100% {{
+                transform: translateY(0);
+            }}
+            40% {{
+                transform: translateY(-3px);
+            }}
+            60% {{
+                transform: translateY(-2px);
+            }}
+        }}
+        @keyframes glow {{
+            0%, 100% {{
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 20px {icon_color}40;
+            }}
+            50% {{
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 30px {icon_color}80;
+            }}
+        }}
         </style>
+        <script>
+        function searchLocationNews(locationName) {{
+            // Streamlit 세션 상태에 검색어 설정
+            const searchInput = document.querySelector('[data-testid=stTextInput] input');
+            if (searchInput) {{
+                searchInput.value = locationName;
+                searchInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            }}
+            
+            // 검색 버튼 클릭
+            setTimeout(() => {{
+                const searchButton = document.querySelector('[data-testid="baseButton-secondary"]');
+                if (searchButton) {{
+                    searchButton.click();
+                }}
+            }}, 100);
+        }}
+        </script>
         """
         
         # 깔끔한 툴팁 HTML 생성
@@ -2041,13 +2133,18 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # 현재 페이지에 해당하는 뉴스만 표시
-        start_idx = (st.session_state.current_page - 1) * articles_per_page
-        end_idx = start_idx + articles_per_page
-        current_page_articles = sorted_articles[start_idx:end_idx]
+        # 최신 뉴스 5개만 표시 (더보기 버튼으로 확장)
+        if not st.session_state.get('show_all_news', False):
+            # 최신 5개만 표시
+            display_articles = sorted_articles[:5]
+            show_more_button = len(sorted_articles) > 5
+        else:
+            # 전체 표시
+            display_articles = sorted_articles
+            show_more_button = False
         
         # 뉴스 리스트 (Motion 효과 + 해시태그 + 번역)
-        for i, article in enumerate(current_page_articles, start_idx + 1):
+        for i, article in enumerate(display_articles, 1):
             # 키워드 안전하게 처리 (기존 데이터 호환성)
             if 'keywords' in article and article['keywords']:
                 keywords = article['keywords']
@@ -2105,6 +2202,22 @@ def main():
                 </div>
             </div>
             """, unsafe_allow_html=True)
+        
+        # 더보기 버튼 추가
+        if show_more_button:
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+            with col_btn2:
+                if st.button("📰 더보기", key="show_more_btn", type="secondary", use_container_width=True):
+                    st.session_state.show_all_news = True
+                    st.rerun()
+        
+        # 전체 표시 중일 때 접기 버튼
+        if st.session_state.get('show_all_news', False) and len(sorted_articles) > 5:
+            col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 1])
+            with col_btn2:
+                if st.button("📰 접기", key="show_less_btn", type="secondary", use_container_width=True):
+                    st.session_state.show_all_news = False
+                    st.rerun()
     
     # 우측 컬럼 - 지도와 시장 정보
     with col2:

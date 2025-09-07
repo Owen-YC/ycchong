@@ -1403,9 +1403,17 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
     try:
         # 검색어가 있으면 사용, 없으면 기본 SCM 키워드 사용
         if search_query:
-            # 검색어에 SCM 관련 키워드 추가
-            enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
-            encoded_query = urllib.parse.quote(enhanced_query)
+            # 한국어 검색어인지 확인
+            korean_pattern = re.compile(r'[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]')
+            if korean_pattern.search(search_query):
+                # 한국어 검색어는 그대로 사용
+                encoded_query = urllib.parse.quote(search_query)
+                news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ko&gl=KR&ceid=KR:ko"
+            else:
+                # 영어 검색어는 SCM 관련 키워드 추가
+                enhanced_query = f"{search_query} supply chain OR logistics OR manufacturing OR shipping"
+                encoded_query = urllib.parse.quote(enhanced_query)
+                news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
         else:
             # SCM Risk 관련 키워드들
             scm_keywords = [
@@ -1423,8 +1431,7 @@ def crawl_scm_risk_news(num_results: int = 100, search_query: str = None) -> Lis
             # 랜덤하게 키워드 선택
             selected_keyword = random.choice(scm_keywords)
             encoded_query = urllib.parse.quote(selected_keyword)
-        
-        news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
+            news_url = f"https://news.google.com/rss/search?q={encoded_query}&hl=en&gl=US&ceid=US:en"
         
         # 실제 뉴스 크롤링
         headers = {
@@ -1656,21 +1663,51 @@ def main():
                 with search_col1:
                     search_query = st.text_input("", placeholder="Search SCM news...", key="search_input", label_visibility="collapsed")
                     
-                    # 인기 키워드 표시 (항상 표시)
+                    # 인기 키워드 표시 (세로 배열, top10 순위)
                     st.markdown("""
                     <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 0.5rem; margin-top: 0.25rem; font-size: 0.7rem;">
-                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem;">🔥 Popular SCM Risk Keywords:</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supply chain disruption'">supply chain disruption</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='logistics crisis'">logistics crisis</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='manufacturing shortage'">manufacturing shortage</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='port congestion'">port congestion</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='shipping delays'">shipping delays</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='raw material price'">raw material price</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='inventory management'">inventory management</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supplier risk'">supplier risk</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='trade war impact'">trade war impact</span>
-                            <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer;" onclick="document.querySelector('[data-testid=stTextInput] input').value='global supply chain'">global supply chain</span>
+                        <div style="font-weight: bold; color: #2c3e50; margin-bottom: 0.25rem;">🔥 Popular SCM Risk Keywords (Top 10):</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #ff6b6b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">1</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supply chain disruption'">supply chain disruption</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #ffa726; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">2</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='logistics crisis'">logistics crisis</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #ffeb3b; color: #333; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">3</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='manufacturing shortage'">manufacturing shortage</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #4caf50; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">4</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='port congestion'">port congestion</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #2196f3; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">5</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='shipping delays'">shipping delays</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #9c27b0; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">6</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='raw material price'">raw material price</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #607d8b; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">7</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='inventory management'">inventory management</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #795548; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">8</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='supplier risk'">supplier risk</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #e91e63; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">9</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='trade war impact'">trade war impact</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.3rem; padding: 0.1rem 0;">
+                                <span style="background: #00bcd4; color: white; border-radius: 50%; width: 1.2rem; height: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold;">10</span>
+                                <span style="background: #e3f2fd; color: #1976d2; padding: 0.1rem 0.3rem; border-radius: 12px; cursor: pointer; flex: 1;" onclick="document.querySelector('[data-testid=stTextInput] input').value='global supply chain'">global supply chain</span>
+                            </div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
